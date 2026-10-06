@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any, Callable, Literal
 
 import mujoco
 import mujoco_warp as mjwarp
@@ -73,7 +73,25 @@ class ContactMatch:
     mode: MuJoCo element type to match against ("geom", "body", or "subtree").
     pattern: A regex (or tuple of regexes) matched against element names within
       ``entity``. If ``entity`` is unset, the pattern is treated as a literal
-      MuJoCo name (no regex expansion).
+      MuJoCo name (no regex expansion). May also be a callable taking the
+      scene's authoritative ``num_envs`` (an ``int``) and returning a literal
+      name or tuple of names -- useful when the full name list depends on a
+      runtime value that is not yet known when the ``ContactMatch`` is
+      constructed. The callable is invoked lazily, at ``Scene`` build time
+      (inside ``edit_spec``), with the FINAL, fully-resolved environment
+      count -- i.e. after any CLI/eval overrides to ``SceneCfg.num_envs``
+      have already been applied. This is deliberately NOT a zero-arg
+      closure over a captured config object: config objects (e.g. the
+      ``SceneCfg``/``ContactSensorCfg`` built by a task's env-cfg factory)
+      may be deep-copied or entirely reconstructed with new field values
+      between construction and use (notably by tyro's CLI parsing, which
+      rebuilds nested dataclasses to apply overrides while passing opaque
+      ``Callable``-typed leaf fields through unchanged by reference) --
+      a closure captured at construction time would silently keep
+      observing the stale, pre-override value. Only supported when
+      ``entity`` is unset (literal mode); entity-scoped patterns are
+      always regexes resolved against that entity's single canonical
+      definition, which needs no per-env expansion.
     entity: Entity name to scope the pattern to. If ``None``/``""``, the
       pattern is taken as a literal MuJoCo name.
     exclude: Names to filter out of the match. Each entry is treated as a
@@ -82,7 +100,7 @@ class ContactMatch:
   """
 
   mode: Literal["geom", "body", "subtree"]
-  pattern: str | tuple[str, ...]
+  pattern: str | tuple[str, ...] | Callable[[int], str | tuple[str, ...]]
   entity: str | None = None
   exclude: tuple[str, ...] = ()
 
@@ -252,11 +270,16 @@ class ContactSensor(Sensor[ContactData]):
     """
     return list(dict.fromkeys(slot.primary_name for slot in self._slots))
 
-  def edit_spec(self, scene_spec: mujoco.MjSpec, entities: dict[str, Entity]) -> None:
+  def edit_spec(
+    self,
+    scene_spec: mujoco.MjSpec,
+    entities: dict[str, Entity],
+    num_envs: int,
+  ) -> None:
     """Expand patterns and add MuJoCo sensors (one per primary x field pair)."""
     self._slots.clear()
 
-    primary_names = self._resolve_primary_names(entities, self.cfg.primary)
+    primary_names = self._resolve_primary_names(entities, self.cfg.primary, num_envs)
     if self.cfg.secondary is None or self.cfg.secondary_policy == "any":
       secondary_name = None
     else:
@@ -503,12 +526,11 @@ class ContactSensor(Sensor[ContactData]):
       self._history_state["dist"][:, :, 0] = contact_data.dist
 
   def _resolve_primary_names(
-    self, entities: dict[str, Entity], match: ContactMatch
+    self, entities: dict[str, Entity], match: ContactMatch, num_envs: int
   ) -> list[str]:
     if match.entity in (None, ""):
-      result = (
-        [match.pattern] if isinstance(match.pattern, str) else list(match.pattern)
-      )
+      pattern = match.pattern(num_envs) if callable(match.pattern) else match.pattern
+      result = [pattern] if isinstance(pattern, str) else list(pattern)
       return result
 
     if match.entity not in entities:

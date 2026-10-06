@@ -5,6 +5,13 @@ Changelog
 Upcoming version (not yet released)
 -----------------------------------
 
+Added
+^^^^^
+
+- Added upstream-style Unitree Go2 robot assets and flat/rough velocity task
+  configurations, including task registration under the ``Mjlab-Velocity-*``
+  naming scheme.
+
 Changed
 ^^^^^^^
 

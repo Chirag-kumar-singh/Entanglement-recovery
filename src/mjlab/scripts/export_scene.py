@@ -18,6 +18,7 @@ from mjlab.utils.lab_api.string import string_to_callable
 ENTITY_ALIASES: dict[str, str] = {
   "g1": "mjlab.asset_zoo.robots:get_g1_robot_cfg",
   "go1": "mjlab.asset_zoo.robots:get_go1_robot_cfg",
+  "go2": "mjlab.asset_zoo.robots:get_go2_robot_cfg",
   "yam": "mjlab.asset_zoo.robots:get_yam_robot_cfg",
 }
 

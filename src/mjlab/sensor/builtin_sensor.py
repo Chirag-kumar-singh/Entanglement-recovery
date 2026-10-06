@@ -295,8 +295,10 @@ class BuiltinSensor(Sensor[torch.Tensor]):
     """Wrap an existing sensor already defined in entity XML."""
     return cls(cfg=None, name=name)
 
-  def edit_spec(self, scene_spec: mujoco.MjSpec, entities: dict[str, Entity]) -> None:
-    del entities
+  def edit_spec(
+    self, scene_spec: mujoco.MjSpec, entities: dict[str, Entity], num_envs: int
+  ) -> None:
+    del entities, num_envs
     if self.cfg is None:
       return
 

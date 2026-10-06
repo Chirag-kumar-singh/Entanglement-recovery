@@ -59,6 +59,7 @@ class Sensor(ABC, Generic[T]):
     self,
     scene_spec: mujoco.MjSpec,
     entities: dict[str, Entity],
+    num_envs: int,
   ) -> None:
     """Edit the scene spec to add this sensor.
 
@@ -68,6 +69,16 @@ class Sensor(ABC, Generic[T]):
     Args:
       scene_spec: The scene MjSpec to edit.
       entities: Dictionary of entities in the scene, keyed by name.
+      num_envs: The scene's authoritative, final environment count (i.e.
+        ``scene_cfg.num_envs`` as resolved by the time ``Scene.__init__``
+        actually builds the spec -- after any CLI/eval overrides have
+        been applied). Sensors whose literal (non-regex, non-entity-
+        scoped) match patterns must cover every replicated environment
+        (e.g. per-env-indexed geom names) should derive those patterns
+        from THIS value rather than from a value captured at config-
+        construction time, since config objects may be deep-copied or
+        reconstructed (e.g. by tyro CLI parsing) between construction
+        and use, silently invalidating any closure captured earlier.
     """
     raise NotImplementedError
 

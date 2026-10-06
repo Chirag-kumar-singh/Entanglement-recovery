@@ -44,9 +44,12 @@ class SceneCfg:
   """Override for ``mjModel.stat.extent``. If ``None``, MuJoCo computes
   it automatically."""
 
-  spec_fn: Callable[[mujoco.MjSpec], None] | None = None
+  spec_fn: Callable[[mujoco.MjSpec, int], None] | None = None
   """Optional callback to modify the ``MjSpec`` after entities and sensors
-  have been added but before compilation."""
+  have been added but before compilation. Receives the scene's
+  authoritative, final ``num_envs`` as its second argument (not a value
+  captured at config-construction time) -- see ``Scene.__init__`` for
+  exactly when this is invoked relative to CLI/eval overrides."""
 
 
 class Scene:
@@ -66,7 +69,7 @@ class Scene:
     self._add_entities()
     self._add_sensors()
     if self._cfg.spec_fn is not None:
-      self._cfg.spec_fn(self._spec)
+      self._cfg.spec_fn(self._spec, self._cfg.num_envs)
 
   def compile(self) -> mujoco.MjModel:
     return self._spec.compile()
@@ -266,7 +269,7 @@ class Scene:
   def _add_sensors(self) -> None:
     for sensor_cfg in self._cfg.sensors:
       sns = sensor_cfg.build()
-      sns.edit_spec(self._spec, self._entities)
+      sns.edit_spec(self._spec, self._entities, self._cfg.num_envs)
       self._sensors[sensor_cfg.prefixed_name] = sns
 
     for sns in self._spec.sensors:

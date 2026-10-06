@@ -477,8 +477,9 @@ class RayCastSensor(Sensor[RayCastData]):
     self,
     scene_spec: mujoco.MjSpec,
     entities: dict[str, Entity],
+    num_envs: int,
   ) -> None:
-    del scene_spec, entities
+    del scene_spec, entities, num_envs
 
   def initialize(
     self,

@@ -384,7 +384,8 @@ def test_full_scene_lifecycle(robot_entity_cfg, device, tmp_path):
 def test_scene_spec_fn_adds_site(device):
   """Test that spec_fn can add elements to the scene spec."""
 
-  def add_custom_site(spec: mujoco.MjSpec) -> None:
+  def add_custom_site(spec: mujoco.MjSpec, num_envs: int) -> None:
+    del num_envs
     spec.worldbody.add_site(name="custom_site", pos=(1, 2, 3))
 
   cfg = SceneCfg(spec_fn=add_custom_site)
@@ -402,7 +403,8 @@ def test_scene_spec_fn_cross_entity_tendon(entity_with_site_xml, device):
     spec_fn=lambda: mujoco.MjSpec.from_string(entity_with_site_xml)
   )
 
-  def add_tendon_between_entities(spec: mujoco.MjSpec) -> None:
+  def add_tendon_between_entities(spec: mujoco.MjSpec, num_envs: int) -> None:
+    del num_envs
     # Add a world anchor site.
     spec.worldbody.add_site(name="anchor", pos=(0, 0, 2), size=(0.01,) * 3)
     # Create tendon from anchor to entity A.

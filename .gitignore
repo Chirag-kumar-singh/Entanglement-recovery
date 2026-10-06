@@ -17,3 +17,22 @@ benchmark_results/
 # Documentation outputs.
 **/_build/*
 **/generated/*
+
+# Python / tooling caches.
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+*.py[cod]
+
+# Editors / OS.
+.idea/
+.DS_Store
+
+# Env files.
+.env
+*.local
+
+# Allow kept directory placeholders.
+!**/.gitkeep

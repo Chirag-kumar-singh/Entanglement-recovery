@@ -156,8 +156,9 @@ class CameraSensor(Sensor[CameraSensorData]):
     self,
     scene_spec: mujoco.MjSpec,
     entities: dict[str, Entity],
+    num_envs: int,
   ) -> None:
-    del entities
+    del entities, num_envs
 
     if self._is_wrapping_existing:
       cam = scene_spec.camera(self._camera_name)
