@@ -36,6 +36,7 @@ from mjlab.managers.observation_manager import ObservationGroupCfg, ObservationT
 from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.managers.termination_manager import TerminationTermCfg
+from mjlab.managers.metrics_manager import MetricsTermCfg
 from mjlab.scene import SceneCfg
 from mjlab.sensor import ContactMatch, ContactSensorCfg
 from mjlab.sim import MujocoCfg, SimulationCfg
@@ -75,10 +76,12 @@ def go2_wire_recovery_residual_env_cfg(
   walk_checkpoint: str = DEFAULT_WALK_CHECKPOINT,
   wire_cfg: BallCableCfg | None = None,
   num_envs: int = 1,
-  env_spacing: float = 2.0,
+  env_spacing: float = 0.0,
   max_residual: float = 1.0,
-  max_recovery_steps: int = 12,
+  max_recovery_steps: int = 16,
   release_required_steps: int = 5,
+  clearance_margin: float = 0.02,
+  post_recovery_stable_steps: int = 15,
   play: bool = False,
 ) -> ManagerBasedRlEnvCfg:
   """Create the residual-action wire-entanglement recovery environment.
@@ -89,7 +92,12 @@ def go2_wire_recovery_residual_env_cfg(
     walk_checkpoint: Path to the frozen walking policy checkpoint.
     wire_cfg: Optional override for the wire geometry/placement.
     num_envs: Number of parallel environments.
-    env_spacing: Distance (meters) between environment grid origins.
+    env_spacing: Distance (meters) between environment grid origins. Each
+      ``nworld`` world is an independent, non-interacting physics copy,
+      so this only matters for native-viewer visual separation; keep at
+      0.0 (default) so every world's robot resets to the same local
+      (x, y), lining up with the single wire fixed at that same local
+      position in every world copy.
     max_residual: Clamp on |Delta_a| in raw policy-action-space units.
     max_recovery_steps: Hard cap on RECOVERY phase duration (steps).
     release_required_steps: Consecutive no-contact steps required to
@@ -112,8 +120,12 @@ def go2_wire_recovery_residual_env_cfg(
       command_name="twist",
       device="cuda:0",
       wire_contact_sensor_name="wire_contact",
+      wire_geom_names=wire.geom_names(),
+      wire_radius=wire.radius,
+      clearance_margin=clearance_margin,
       max_recovery_steps=max_recovery_steps,
       release_required_steps=release_required_steps,
+      post_recovery_stable_steps=post_recovery_stable_steps,
     )
   }
 
@@ -281,13 +293,23 @@ def go2_wire_recovery_residual_env_cfg(
       weight=1.0,
       params={"command_name": "twist"},
     ),
-    "wire_contact_release": RewardTermCfg(
-      func=mdp.wire_contact_release_reward,
-      weight=0.2,
-      params={"sensor_name": "wire_contact"},
+    "wire_recovery_progress": RewardTermCfg(
+      func=mdp.wire_recovery_progress_reward,
+      weight=0.5,
+      params={"action_term_name": "joint_pos"},
     ),
-    "recovery_phase_success_bonus": RewardTermCfg(
-      func=mdp.recovery_phase_success_bonus,
+    "affected_leg_return_to_stance": RewardTermCfg(
+      func=mdp.affected_leg_return_to_stance_reward_gated,
+      weight=0.3,
+      params={"leg_name": affected_leg_name, "action_term_name": "joint_pos"},
+    ),
+    "wire_crossing_event_bonus": RewardTermCfg(
+      func=mdp.wire_crossing_event_bonus,
+      weight=1.0,
+      params={"action_term_name": "joint_pos"},
+    ),
+    "wire_recovery_final_success_bonus": RewardTermCfg(
+      func=mdp.wire_recovery_final_success_bonus,
       weight=5.0,
       params={"action_term_name": "joint_pos"},
     ),
@@ -300,12 +322,12 @@ def go2_wire_recovery_residual_env_cfg(
     ),
     "affected_leg_joint_vel": RewardTermCfg(
       func=mdp.affected_leg_joint_vel_penalty,
-      weight=-0.01,
+      weight=-0.003,
       params={"leg_name": affected_leg_name},
     ),
     "residual_rate": RewardTermCfg(
       func=mdp.residual_rate_penalty,
-      weight=-0.02,
+      weight=-0.005,
       params={"action_term_name": "joint_pos"},
     ),
   }
@@ -324,68 +346,93 @@ def go2_wire_recovery_residual_env_cfg(
   }
 
   ##
-  # Scene: wire (one copy per env) + contact sensor (same pattern as
-  # env_cfg_wire.py).
-  #
-  # IMPORTANT: `num_envs` (this function's parameter) is only the value
-  # used when THIS function is called. Callers frequently build the env
-  # cfg once (e.g. at task-registration time, with the registry default
-  # num_envs=1) and later override `scene.num_envs` post-hoc (e.g. via
-  # `--env.scene.num-envs 512` on the CLI, or by mutating
-  # `env_cfg.scene.num_envs` directly before constructing the env). A
-  # plain, eagerly-computed tuple of per-env wire geom names (or a
-  # closure capturing this function's `num_envs` parameter) would go
-  # stale in that case -- it would only ever cover the `num_envs` seen
-  # here, silently leaving every other environment's wire undetected by
-  # `wire_contact`.
-  #
-  # NOTE: a naive fix using a closure over a locally-held `SceneCfg`
-  # object (reading `scene_cfg.num_envs` lazily) does NOT work here,
-  # despite superficially resembling `Scene._add_terrain`'s
-  # `terrain.num_envs = scene.num_envs` sync. Empirically verified: tyro's
-  # CLI parsing (used by `train.py` for `--env.scene.num-envs`)
-  # reconstructs `SceneCfg`/`TerrainEntityCfg`/the `sensors` tuple as
-  # BRAND NEW objects on every parse (even for untouched fields), while
-  # passing opaque `Callable`-typed leaf fields (`spec_fn`,
-  # `ContactMatch.pattern`) through UNCHANGED BY REFERENCE. A closure
-  # captured here would therefore keep pointing at the ORIGINAL
-  # (pre-override, registry-default) `SceneCfg` instance forever -- the
-  # exact same silent-staleness bug this fix is meant to eliminate, just
-  # one level removed. See the empirical test that established this
-  # (identity-preservation check against `tyro.cli(..., default=...)`).
-  #
-  # The only mechanism proven to work across BOTH `deepcopy` (used by the
-  # task registry) and tyro's reconstruct-with-pass-through-callables
-  # behavior is to have `Scene.__init__` explicitly PASS its own
-  # authoritative, final `self._cfg.num_envs` into `spec_fn` and into
-  # `ContactSensor.edit_spec` (which forwards it to any callable
-  # `ContactMatch.pattern`) at the moment they are actually invoked. This
-  # requires no captured references to any config object at all -- see
-  # `SceneCfg.spec_fn`'s and `ContactMatch.pattern`'s updated signatures
-  # (both now take `num_envs: int` as an explicit argument).
+  # Metrics: training-time-only behavioral diagnostics (do NOT affect
+  # observations/rewards/termination). Logged automatically under
+  # ``Episode_Metrics/`` (TensorBoard/W&B) by the existing MetricsManager
+  # -- see mjlab.tasks.recovery.mdp.metrics for definitions.
   ##
 
-  def _wire_geom_names(n: int) -> tuple[str, ...]:
-    if n < 1:
-      raise RuntimeError(
-        f"wire_contact sensor: num_envs={n} is invalid (must be >= 1)."
-      )
-    names = tuple(name for env_id in range(n) for name in wire.geom_names(env_id))
-    expected = n * wire.num_segments
-    if len(names) != expected:
-      # Should be unreachable (names/expected are both derived from the
-      # same `n`), but guard against future refactors breaking this
-      # invariant silently.
-      raise RuntimeError(
-        f"wire_contact sensor: generated {len(names)} wire geom names for "
-        f"num_envs={n}, expected {expected} ({wire.num_segments} segments "
-        "per env). This indicates a bug in wire geom-name generation."
-      )
-    return names
+  metrics = {
+    "recovery_triggered": MetricsTermCfg(
+      func=mdp.metric_recovery_triggered,
+      params={"action_term_name": "joint_pos"},
+      reduce="sum",
+    ),
+    "crossing_achieved": MetricsTermCfg(
+      func=mdp.metric_crossing_achieved,
+      params={"action_term_name": "joint_pos"},
+      reduce="sum",
+    ),
+    "recovery_success": MetricsTermCfg(
+      func=mdp.metric_recovery_success,
+      params={"action_term_name": "joint_pos"},
+      reduce="sum",
+    ),
+    "recovery_cap_hit": MetricsTermCfg(
+      func=mdp.metric_recovery_cap_hit,
+      params={"action_term_name": "joint_pos"},
+      reduce="sum",
+    ),
+    "fell_over": MetricsTermCfg(
+      func=mdp.metric_fell_over, params={}, reduce="max"
+    ),
+    "residual_magnitude_mean": MetricsTermCfg(
+      func=mdp.metric_residual_magnitude,
+      params={"action_term_name": "joint_pos"},
+      reduce="mean",
+    ),
+    "residual_magnitude_peak": MetricsTermCfg(
+      func=mdp.metric_residual_magnitude,
+      params={"action_term_name": "joint_pos"},
+      reduce="max",
+    ),
+    "forward_progress": MetricsTermCfg(
+      func=mdp.metric_forward_progress, params={}, reduce="mean"
+    ),
+    "post_recovery_tilt": MetricsTermCfg(
+      func=mdp.metric_post_recovery_tilt,
+      params={"action_term_name": "joint_pos"},
+      reduce="mean",
+    ),
+    "recovery_duration_steps": MetricsTermCfg(
+      func=mdp.metric_in_recovery,
+      params={"action_term_name": "joint_pos"},
+      reduce="sum",
+    ),
+  }
+
+  ##
+  # Scene: ONE wire (native `nworld=num_envs` replication gives every
+  # environment its own independent copy, exactly like the single Go2
+  # robot entity) + contact sensor.
+  #
+  # IMPORTANT ARCHITECTURE NOTE (post wire-replication fix): an earlier
+  # version of this task manually baked `num_envs` separate wire copies
+  # into the single shared `MjSpec` (one per grid cell), on the mistaken
+  # assumption that mujoco_warp's `nworld` batching would NOT otherwise
+  # replicate the wire per-env. In fact `nworld` replication applies to
+  # the WHOLE spec -- so that produced `num_envs` wires PER world (one
+  # "real" copy near that world's robot, plus `num_envs - 1` dead-weight
+  # copies also being fully simulated), i.e. O(num_envs^2) total wire
+  # bodies/contacts. This silently capped the practical num_envs far
+  # below what the GPU should otherwise support and made per-step time
+  # scale quadratically. The fix: exactly ONE wire in the spec (see
+  # `build_ball_cable_spec_fn`), combined with `env_spacing=0.0` above so
+  # every independent per-world robot resets to the same local (x, y) the
+  # single wire is fixed at. `wire_contact`'s pattern is now a plain,
+  # static tuple of literal geom names (`wire._0_geom`, ... -- no env-id
+  # suffix): `ContactSensor`/mujoco_warp resolve a literal geom name
+  # against the model ONCE, and native `nworld` batching automatically
+  # gives every world its own independent contact-sensor reading for that
+  # same name, exactly like the robot's own per-foot contact sensors
+  # (see e.g. `mjlab.tasks.velocity.config.go2.env_cfgs`'s static
+  # `FOOT_GEOM_NAMES`-based `ContactMatch`, which needs no per-env
+  # suffixing either).
+  ##
 
   wire_contact_sensor = ContactSensorCfg(
     name="wire_contact",
-    primary=ContactMatch(mode="geom", pattern=_wire_geom_names, entity=None),
+    primary=ContactMatch(mode="geom", pattern=wire.geom_names(), entity=None),
     secondary=ContactMatch(
       mode="geom", pattern=f"{affected_leg_name}_calf2_collision", entity="robot"
     ),
@@ -401,7 +448,7 @@ def go2_wire_recovery_residual_env_cfg(
       num_envs=num_envs,
       env_spacing=env_spacing,
       extent=2.0,
-      spec_fn=build_ball_cable_spec_fn(wire, env_spacing=env_spacing),
+      spec_fn=build_ball_cable_spec_fn(wire),
       sensors=(wire_contact_sensor,),
     ),
     observations=observations,
@@ -410,6 +457,7 @@ def go2_wire_recovery_residual_env_cfg(
     events=events,
     rewards=rewards,
     terminations=terminations,
+    metrics=metrics,
     viewer=ViewerConfig(
       origin_type=ViewerConfig.OriginType.ASSET_BODY,
       entity_name="robot",
@@ -419,43 +467,17 @@ def go2_wire_recovery_residual_env_cfg(
       azimuth=90.0,
     ),
     sim=SimulationCfg(
-      # Scaled by this function's `num_envs` parameter.
-      #
-      # IMPORTANT, discovered while validating this fix: the required
-      # njmax at CONSTRUCTION time (mujoco_warp's `put_data` buffer-sizing
-      # check, evaluated against the model's default/keyframe pose,
-      # *before* any reset-driven pinned wire-contact spawn ever occurs)
-      # scales linearly with num_envs at ~183 per env for THIS scene
-      # (empirically measured via the overflow error's reported minimum
-      # at num_envs in {96, 128, 160, 256, 512}: all consistent with
-      # njmax_min ~= 183 * num_envs). This differs from
-      # `env_cfg_wire.py`'s untouched njmax=max(800, 128*num_envs)
-      # formula, which is NOT actually sufficient at this scene's true
-      # per-env constraint count -- that sibling task's formula appears
-      # to "work" only because mujoco_warp does not hard-fail at RUNTIME
-      # when per-step nefc exceeds njmax (contacts/constraints beyond the
-      # cap are apparently silently dropped rather than raising), so an
-      # undersized njmax silently degrades physical fidelity rather than
-      # crashing. Use 184 (not 128) per env here to actually pass the
-      # hard construction-time check with margin.
-      #
-      # SEPARATELY, and more restrictively: with MuJoCo's DENSE jacobian
-      # (this scene's default), the per-world Jacobian/Cholesky buffers
-      # scale as O(njmax * nv), and since njmax itself must scale with
-      # num_envs (above), total GPU memory scales roughly as
-      # O(num_envs^2) for this scene. Empirically this exceeds a 16GB GPU
-      # somewhere between num_envs=96 and num_envs=128 (128 requires
-      # ~19.5GB just for one buffer). This means num_envs is effectively
-      # capped well below the 512 used in the (discarded, invalid) prior
-      # training run on hardware of this class -- see the staged
-      # validation report for the chosen num_envs and the reasoning.
-      # Switching to `mujoco.jacobian="sparse"` was explored as a
-      # workaround but hit a separate CUDA-graph-capture OOM during
-      # stepping in preliminary testing and was not pursued further
-      # within this fix's scope (it targets the wire_contact sensor
-      # construction bug specifically).
-      nconmax=max(128, 64 * num_envs),
-      njmax=max(800, 184 * num_envs),
+      # Fixed, NOT scaled by num_envs: with the wire-replication fix
+      # (exactly one wire per independent `nworld` world, see
+      # `build_ball_cable_spec_fn`), per-world contact/constraint counts
+      # are small and constant regardless of num_envs -- scaling these
+      # with num_envs was a symptom of the old O(num_envs^2) multi-wire
+      # bug (every world simulating `num_envs` wire copies), not a
+      # genuine requirement. These values were sized generously for one
+      # robot + one wire's worst-case simultaneous contact/constraint
+      # count and verified across num_envs in {1, 8, 32, 64}.
+      nconmax=128,
+      njmax=800,
       mujoco=MujocoCfg(
         timestep=0.0025,
         iterations=30,
@@ -471,20 +493,27 @@ def go2_wire_recovery_residual_env_cfg(
 
 
 def verify_wire_sensor_coverage(env) -> None:
-  """Explicit, loud sanity check: fails if the `wire_contact` sensor's
-  resolved primary-geom count does not match the actual replicated
-  environment count.
+  """Explicit, loud sanity check for the corrected single-wire
+  architecture: fails if the `wire_contact` sensor's resolved primary-geom
+  set does not exactly match the ONE wire's segment geoms.
 
   Call this right after constructing a `ManagerBasedRlEnv` for this task
   (before trusting any rollout involving wire contact) -- e.g. in the
-  staged Test 1 validation script, or ad hoc after changing `num_envs`.
+  staged validation scripts, or ad hoc after changing `num_envs`.
+
+  Unlike the pre-fix version of this check (which expected
+  `num_envs * segments_per_env` primaries, one set per env baked into the
+  spec), the corrected architecture has exactly ONE wire in the shared
+  spec; native `nworld=num_envs` replication is what gives every
+  environment its own independent contact reading for that same static
+  set of geom names. So the expected primary count is simply
+  `wire.num_segments`, regardless of `num_envs`.
 
   Raises:
-    RuntimeError: if the sensor's resolved primary count does not equal
-      `env.scene.num_envs * wire.num_segments`, which would indicate the
-      sensor is not covering every environment's wire (the original bug
-      this function guards against), or is covering more/fewer wires
-      than actually exist in the compiled scene.
+    RuntimeError: if the sensor's resolved primary names do not exactly
+      equal the single wire's expected segment-geom names (indicating
+      either a naming mismatch or a reintroduction of the old per-env
+      multi-wire-copy bug).
   """
   scene = env.scene
   sensor = scene.sensors.get("wire_contact")
@@ -494,42 +523,39 @@ def verify_wire_sensor_coverage(env) -> None:
       f"{list(scene.sensors.keys())}"
     )
   n_envs = scene.num_envs
-  resolved = len(sensor.primary_names)
-  # Infer segments-per-env from the resolved names themselves (robust to
-  # wire geometry changes) rather than importing DEFAULT_WIRE_CFG.
   if n_envs < 1:
     raise RuntimeError(f"scene.num_envs={n_envs} is invalid.")
-  if resolved % n_envs != 0:
-    raise RuntimeError(
-      f"wire_contact sensor covers {resolved} primary geoms, which is not "
-      f"evenly divisible by scene.num_envs={n_envs}. The sensor is almost "
-      "certainly NOT correctly covering every replicated environment's "
-      "wire. This is exactly the bug class `verify_wire_sensor_coverage` "
-      "exists to catch -- do not proceed with training/eval until fixed."
-    )
-  segs_per_env = resolved // n_envs
-  # Validate by naming-convention structure (env-id-indexed segment names,
-  # as produced by `BallCableCfg.geom_names`) rather than re-instantiating
-  # a specific wire config -- this stays correct even if a caller passed a
-  # custom `wire_cfg` with a different geometry/segment count.
+
   from mjlab.tasks.cable_test.ball_cable import BALL_CABLE_SEG_PREFIX
 
-  expected_names = {
-    f"{BALL_CABLE_SEG_PREFIX}{env_id}_{i}_geom"
-    for env_id in range(n_envs)
-    for i in range(segs_per_env)
-  }
   resolved_names = set(sensor.primary_names)
-  if resolved_names != expected_names:
-    missing = expected_names - resolved_names
-    extra = resolved_names - expected_names
+  # Infer segment count from the resolved names themselves (robust to
+  # wire geometry changes), matching the single-wire naming convention
+  # (`{BALL_CABLE_SEG_PREFIX}_{i}_geom`, no env-id suffix).
+  prefix = f"{BALL_CABLE_SEG_PREFIX}_"
+  segs = sorted(
+    int(name[len(prefix) : -len("_geom")])
+    for name in resolved_names
+    if name.startswith(prefix) and name.endswith("_geom")
+  )
+  if not segs or segs != list(range(len(segs))):
     raise RuntimeError(
       "wire_contact sensor's resolved primary geom names do not match the "
-      f"expected per-env wire geom names for num_envs={n_envs}. "
-      f"Missing ({len(missing)}): {sorted(missing)[:5]}... "
-      f"Extra ({len(extra)}): {sorted(extra)[:5]}..."
+      f"expected single-wire naming convention '{prefix}{{i}}_geom'. "
+      f"Resolved names: {sorted(resolved_names)}. This may indicate the "
+      "O(num_envs^2) multi-wire-per-world bug has been reintroduced (one "
+      "wire copy PER ENV baked into the spec again), or a naming mismatch."
+    )
+  expected_names = {f"{prefix}{i}_geom" for i in segs}
+  if resolved_names != expected_names:
+    extra = resolved_names - expected_names
+    raise RuntimeError(
+      "wire_contact sensor resolved unexpected extra primary geom names "
+      f"beyond the single wire's own segments: {sorted(extra)}."
     )
   print(
-    f"[OK] wire_contact sensor covers all {n_envs} environments "
-    f"({segs_per_env} wire segments/env, {resolved} total primaries)."
+    f"[OK] wire_contact sensor covers exactly ONE wire "
+    f"({len(segs)} segments, {len(resolved_names)} total primaries), "
+    f"correctly relying on native nworld={n_envs} replication for "
+    "per-environment contact detection."
   )

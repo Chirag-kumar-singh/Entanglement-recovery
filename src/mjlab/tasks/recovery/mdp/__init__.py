@@ -15,6 +15,7 @@ from .rewards import (
   affected_leg_clearance,
   affected_leg_joint_vel_penalty,
   affected_leg_return_to_stance_reward,
+  affected_leg_return_to_stance_reward_gated,
   body_stability_penalty,
   clearance_from_obstacle,
   forward_velocity_tracking_reward,
@@ -26,6 +27,9 @@ from .rewards import (
   residual_rate_penalty,
   uprightness_reward,
   wire_contact_release_reward,
+  wire_crossing_event_bonus,
+  wire_recovery_final_success_bonus,
+  wire_recovery_progress_reward,
   wire_recovery_success_bonus,
 )
 from .terminations import (
@@ -33,6 +37,17 @@ from .terminations import (
   recovery_timeout,
   recovery_success,
   wire_recovery_success,
+)
+from .metrics import (
+  metric_recovery_triggered,
+  metric_recovery_success,
+  metric_crossing_achieved,
+  metric_recovery_cap_hit,
+  metric_fell_over,
+  metric_residual_magnitude,
+  metric_forward_progress,
+  metric_post_recovery_tilt,
+  metric_in_recovery,
 )
 
 __all__ = [
@@ -49,6 +64,7 @@ __all__ = [
   "affected_leg_clearance",
   "affected_leg_joint_vel_penalty",
   "affected_leg_return_to_stance_reward",
+  "affected_leg_return_to_stance_reward_gated",
   "clearance_from_obstacle",
   "body_stability_penalty",
   "forward_velocity_tracking_reward",
@@ -60,9 +76,21 @@ __all__ = [
   "residual_rate_penalty",
   "uprightness_reward",
   "wire_contact_release_reward",
+  "wire_crossing_event_bonus",
+  "wire_recovery_final_success_bonus",
+  "wire_recovery_progress_reward",
   "wire_recovery_success_bonus",
   "fell_over",
   "recovery_timeout",
   "recovery_success",
   "wire_recovery_success",
+  "metric_recovery_triggered",
+  "metric_recovery_success",
+  "metric_crossing_achieved",
+  "metric_recovery_cap_hit",
+  "metric_fell_over",
+  "metric_residual_magnitude",
+  "metric_forward_progress",
+  "metric_post_recovery_tilt",
+  "metric_in_recovery",
 ]

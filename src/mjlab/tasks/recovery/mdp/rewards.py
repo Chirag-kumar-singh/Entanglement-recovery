@@ -10,6 +10,7 @@ import torch
 from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.sensor import ContactSensor
+from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY
 
 if TYPE_CHECKING:
   from mjlab.envs import ManagerBasedRlEnv
@@ -435,13 +436,14 @@ def recovery_phase_success_bonus(
   env: ManagerBasedRlEnv,
   action_term_name: str = "joint_pos",
 ) -> torch.Tensor:
-  """Sparse, ONE-TIME event bonus: 1.0 exactly on the step the recovery
-  FSM transitions RECOVERY -> POST_RECOVERY via a genuine sustained
-  release (NOT merely hitting the max-recovery-steps safety cap -- see
-  `ResidualRecoveryAction._update_fsm`, which sets `newly_recovered` on
-  either exit condition; here we additionally require the release counter
-  to have actually reached the sustained-release threshold, since hitting
-  the hard cap without releasing is a failure to recover, not a success).
+  """DEPRECATED (post audit, see chat history): this was the sole
+  contact-release-based "success" bonus that let the policy learn a
+  nudge-and-release exploit instead of genuinely clearing the wire. Kept
+  only for backward compatibility / historical reference -- the residual
+  recovery env no longer wires this into its active rewards dict. Use
+  `wire_recovery_final_success_bonus` instead, which requires geometric
+  crossing+clearance (not just contact release) AND a sustained
+  post-recovery stability window.
 
   Returns:
     Reward tensor of shape [B] in {0.0, 1.0}.
@@ -449,3 +451,112 @@ def recovery_phase_success_bonus(
   term = _get_action_term(env, action_term_name)
   released_sustained = term._release_counter >= term.cfg.release_required_steps
   return (term.newly_recovered & released_sustained).float()
+
+
+# ---------------------------------------------------------------------------
+# Geometry-aware recovery rewards (post-audit fix). These replace
+# `wire_contact_release_reward` / `recovery_phase_success_bonus` as the
+# active recovery-task objective: they read `ResidualRecoveryAction`'s
+# live wire-geometry state (`foot_height_above_wire`, `foot_forward_dist`,
+# `foot_side_far`, `crossing_event`, `crossing_achieved`, `newly_succeeded`
+# -- see mjlab.tasks.recovery.mdp.wire_geometry and the action term's FSM)
+# so that "recovered" requires the affected foot to ACTUALLY go over the
+# wire, not merely for the contact sensor to stop firing.
+# ---------------------------------------------------------------------------
+
+
+def wire_recovery_progress_reward(
+  env: ManagerBasedRlEnv,
+  action_term_name: str = "joint_pos",
+  height_scale: float = 0.05,
+  forward_scale: float = 0.1,
+) -> torch.Tensor:
+  """Dense SHAPING reward active ONLY during RECOVERY, before genuine
+  crossing has been achieved. Rewards (a) lifting the affected foot
+  toward/above the wire's live local height, and (b) making forward
+  progress toward the crossing reference -- i.e. "lift" and "advance",
+  the early/middle stages of the target maneuver (RETRACT -> LIFT ->
+  ADVANCE). Zero outside RECOVERY and zero once `crossing_achieved` (at
+  that point `affected_leg_return_to_stance_reward` takes over as the
+  late-stage shaping term, see below) -- this prevents it from paying out
+  for "hover near the wire forever" once the real goal has been reached.
+
+  Returns:
+    Reward tensor of shape [B], roughly in [-1, 1] per component (so
+    [-2, 2] combined before the term's own weight is applied).
+  """
+  term = _get_action_term(env, action_term_name)
+  active = (term.phase == PHASE_RECOVERY) & ~term.crossing_achieved
+  height_term = torch.clamp(term.foot_height_above_wire / height_scale, min=-1.0, max=1.0)
+  forward_term = torch.clamp(term.foot_forward_dist / forward_scale, min=-1.0, max=1.0)
+  reward = height_term + forward_term
+  return torch.where(active, reward, torch.zeros_like(reward))
+
+
+def wire_crossing_event_bonus(
+  env: ManagerBasedRlEnv,
+  action_term_name: str = "joint_pos",
+) -> torch.Tensor:
+  """Sparse, ONE-TIME event bonus: 1.0 exactly on the step the affected
+  foot genuinely crosses from the near side to the far side of the wire
+  WHILE above it by `clearance_margin` (see `ResidualRecoveryAction
+  .crossing_event`). This is intentionally smaller than the final success
+  bonus, and exists purely to shorten the credit-assignment horizon for
+  PPO (the final success bonus can fire 15+ steps later, after the
+  post-recovery stability window) -- it does NOT by itself reward contact
+  release or idle waiting, since `crossing_event` can only latch true
+  given a real geometric crossing.
+
+  Returns:
+    Reward tensor of shape [B] in {0.0, 1.0}.
+  """
+  term = _get_action_term(env, action_term_name)
+  return term.crossing_event.float()
+
+
+def affected_leg_return_to_stance_reward_gated(
+  env: ManagerBasedRlEnv,
+  leg_name: str,
+  action_term_name: str = "joint_pos",
+  joint_pos_tolerance: float = 0.3,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Same shaping as `affected_leg_return_to_stance_reward`, but gated to
+  only be active once `crossing_achieved` is True (the DESCEND / settle
+  stage of the target maneuver, after the foot has genuinely crossed) --
+  zero before that, so it cannot reward "settle the leg back down without
+  ever crossing", which would otherwise re-introduce a close cousin of the
+  original contact-release exploit.
+
+  Returns:
+    Reward tensor of shape [B] in [0, 1].
+  """
+  term = _get_action_term(env, action_term_name)
+  base_reward = affected_leg_return_to_stance_reward(
+    env, leg_name, joint_pos_tolerance, asset_cfg
+  )
+  return torch.where(term.crossing_achieved, base_reward, torch.zeros_like(base_reward))
+
+
+def wire_recovery_final_success_bonus(
+  env: ManagerBasedRlEnv,
+  action_term_name: str = "joint_pos",
+) -> torch.Tensor:
+  """Sparse, ONE-TIME event bonus: 1.0 exactly on the step the FULL
+  recovery sequence is confirmed -- genuine geometric crossing (above the
+  wire, near->far) AND sustained contact release (gated to only count
+  after that crossing) AND a subsequent `post_recovery_stable_steps`
+  window of uninterrupted upright walking (see `ResidualRecoveryAction
+  .newly_succeeded`, which is the single source of truth this reads
+  directly off of -- reward/metric/FSM can never disagree about what
+  counts as success).
+
+  This is the SOLE replacement for the old contact-release-only
+  `recovery_phase_success_bonus`.
+
+  Returns:
+    Reward tensor of shape [B] in {0.0, 1.0}.
+  """
+  term = _get_action_term(env, action_term_name)
+  return term.newly_succeeded.float()
+

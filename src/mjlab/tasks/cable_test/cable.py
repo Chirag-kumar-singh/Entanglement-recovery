@@ -92,7 +92,8 @@ def build_cable_spec_fn(cable_cfg: CableCfg):
   constraints. This is meant to be assigned to ``SceneCfg.spec_fn``.
   """
 
-  def _add_cable(spec: mujoco.MjSpec) -> None:
+  def _add_cable(spec: mujoco.MjSpec, num_envs: int) -> None:
+    del num_envs  # Unused: single cable, replicated by native nworld.
     start = mujoco.mju_zero3 if False else None  # no-op, keeps linters calm
     del start
 

@@ -85,31 +85,40 @@ class BallCableCfg:
   def joint_armature(self) -> float:
     return 0.00005 * (self.radius / 0.01)
 
-  def segment_names(self, env_id: int = 0) -> tuple[str, ...]:
-    prefix = f"{BALL_CABLE_SEG_PREFIX}{env_id}_"
+  def segment_names(self) -> tuple[str, ...]:
+    prefix = f"{BALL_CABLE_SEG_PREFIX}_"
     return tuple(f"{prefix}{i}" for i in range(self.num_segments))
 
-  def geom_names(self, env_id: int = 0) -> tuple[str, ...]:
-    return tuple(f"{n}_geom" for n in self.segment_names(env_id))
+  def geom_names(self) -> tuple[str, ...]:
+    return tuple(f"{n}_geom" for n in self.segment_names())
 
 
 def _add_single_ball_cable(
   spec: mujoco.MjSpec,
   cfg: BallCableCfg,
-  env_origin_xy: tuple[float, float],
-  env_id: int,
 ) -> None:
-  """Add one copy of the ball-joint wire, offset by an environment's grid
-  origin (x, y only, matching the terrain's own per-env grid layout)."""
+  """Add the ONE ball-joint wire copy that belongs in the shared MjSpec
+  template.
+
+  mujoco_warp's ``nworld=num_envs`` batching (invoked once, by
+  ``Simulation._finish_init`` via ``mjwarp.put_data``) is solely
+  responsible for turning this single wire -- like the single Go2 entity
+  added by ``Scene._add_entities`` -- into ``num_envs`` independent,
+  non-interacting physics copies. Do NOT loop over ``num_envs`` here: a
+  per-env Python loop baking N wire copies into ONE spec combined with
+  mujoco_warp's OWN per-world replication produces N wires PER world
+  (O(num_envs^2) total wire bodies/contacts), not N wires total -- this
+  was a real, previously-shipped bug (see git history / chat record) that
+  made GPU memory and step time scale quadratically in num_envs.
+  """
   import numpy as np
 
-  ox, oy = env_origin_xy
-  p0 = np.array(cfg.anchor_start) + np.array([ox, oy, 0.0])
-  p1 = np.array(cfg.anchor_end) + np.array([ox, oy, 0.0])
+  p0 = np.array(cfg.anchor_start)
+  p1 = np.array(cfg.anchor_end)
   n = cfg.num_segments
   seg_vec = (p1 - p0) / n
 
-  prefix = f"{BALL_CABLE_SEG_PREFIX}{env_id}_"
+  prefix = f"{BALL_CABLE_SEG_PREFIX}_"
   root_name = f"{prefix}0"
   root_body = spec.worldbody.add_body(name=root_name, pos=tuple(p0))
   root_body.add_geom(
@@ -163,48 +172,38 @@ def _add_single_ball_cable(
     type=mujoco.mjtEq.mjEQ_CONNECT,
     name1=prev_name,
     objtype=mujoco.mjtObj.mjOBJ_BODY,
-    name=f"wire_anchor_end_{env_id}",
+    name="wire_anchor_end",
     solref=cfg.eq_solref,
     solimp=cfg.eq_solimp,
   )
   eq.data[0:3] = tuple(seg_vec)
 
 
-def build_ball_cable_spec_fn(
-  cfg: BallCableCfg,
-  env_spacing: float = 2.0,
-):
-  """Return a ``spec_fn`` adding ``num_envs`` independent wire copies, one
-  per environment grid cell (same grid layout as
-  ``TerrainEntity._compute_env_origins_grid`` for ``terrain_type="plane"``),
-  matching the pattern used by the rigid-rod recovery env
-  (:mod:`mjlab.tasks.recovery.env_cfg`).
+def build_ball_cable_spec_fn(cfg: BallCableCfg):
+  """Return a ``spec_fn`` adding exactly ONE ball-joint wire copy to the
+  shared ``MjSpec`` template, matching the single-instance pattern used
+  for every other scene element (the Go2 robot entity, the ground-plane
+  terrain geom, etc.): mujoco_warp's own ``nworld=num_envs`` batching
+  (applied once, at ``Simulation`` construction) is what turns this one
+  spec-level wire into ``num_envs`` independent per-world copies -- NOT
+  anything done here.
 
-  The returned ``spec_fn`` has signature ``(spec, num_envs) -> None``,
-  matching ``SceneCfg.spec_fn``'s calling convention: ``Scene.__init__``
-  invokes it with the scene's authoritative, final ``num_envs`` (resolved
-  after any CLI/eval overrides to ``SceneCfg.num_envs``), NOT a value
-  captured when this factory was called. Always use the ``num_envs``
-  argument passed in at call time -- do not close over a value captured
-  here, since the caller's `num_envs`-at-config-construction-time may be
-  stale by the time the scene is actually built (e.g. deep-copied/
-  reconstructed by a task registry or tyro CLI parsing)."""
+  Physical per-env variation (e.g. the robot spawning at a different
+  grid cell per world via ``env.scene.env_origins``) is irrelevant to the
+  wire: since the robot's own reset pose for THIS task uses
+  ``env_spacing=0.0`` (all robots reset to the same local (x, y), each in
+  its own independent, non-interacting ``nworld`` physics copy), the
+  single wire -- fixed at ``cfg.anchor_start``/``cfg.anchor_end`` in every
+  world identically -- lines up with every world's robot without needing
+  any per-env offset of its own.
 
-  def _grid_origins(n: int, spacing: float) -> list[tuple[float, float]]:
-    num_rows = math.ceil(n / int(math.isqrt(n)) if n > 0 else 1)
-    num_cols = math.ceil(n / num_rows)
-    origins = []
-    for idx in range(n):
-      ii = idx // num_cols
-      jj = idx % num_cols
-      ox = -(ii - (num_rows - 1) / 2) * spacing
-      oy = (jj - (num_cols - 1) / 2) * spacing
-      origins.append((ox, oy))
-    return origins
+  The returned ``spec_fn`` has signature ``(spec, num_envs) -> None`` to
+  match ``SceneCfg.spec_fn``'s calling convention, but ``num_envs`` is
+  unused: exactly one wire is added regardless of how many environments
+  will ultimately be simulated."""
 
-  def _add_wires(spec: mujoco.MjSpec, num_envs: int) -> None:
-    origins = _grid_origins(num_envs, env_spacing)
-    for env_id, origin_xy in enumerate(origins):
-      _add_single_ball_cable(spec, cfg, origin_xy, env_id)
+  def _add_wire(spec: mujoco.MjSpec, num_envs: int) -> None:
+    del num_envs  # Unused: one wire in the spec, replicated by nworld.
+    _add_single_ball_cable(spec, cfg)
 
-  return _add_wires
+  return _add_wire

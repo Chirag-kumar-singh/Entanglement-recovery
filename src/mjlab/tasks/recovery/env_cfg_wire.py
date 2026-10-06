@@ -101,7 +101,7 @@ def go2_wire_entanglement_recovery_env_cfg(
   affected_leg_joint: str = "FL_calf_joint",
   wire_cfg: BallCableCfg | None = None,
   num_envs: int = 1,
-  env_spacing: float = 2.0,
+  env_spacing: float = 0.0,
   play: bool = False,
 ) -> ManagerBasedRlEnvCfg:
   """Create the Go2 wire-entanglement recovery environment configuration.
@@ -339,26 +339,20 @@ def go2_wire_entanglement_recovery_env_cfg(
   }
 
   ##
-  # Scene: wire (one copy per env) + contact sensor.
+  # Scene: ONE wire (native `nworld=num_envs` replication gives every
+  # environment its own independent copy) + contact sensor.
   ##
 
-  all_wire_geom_names = tuple(
-    name for env_id in range(num_envs) for name in wire.geom_names(env_id)
-  )
-
-  # Ground-truth FL-wire contact sensor. Primary = every wire segment
-  # geom across ALL per-env wire copies; secondary = the affected leg's
-  # calf collision geom (the geom confirmed by the diagnostic to make
-  # first/repeated contact, not the foot-tip sphere). Physics isolation
-  # between mjwarp worlds means env b's robot can only ever contact its
-  # OWN wire copy, so `found`/`force` aggregated with `.any()`/reduction
-  # over the full primary axis is already correctly scoped per env -- no
-  # manual per-env slicing needed (same principle as the rod recovery
-  # env's diagonal contact matrix, just aggregated via `.any()` here
-  # instead of relying on a 1:1 diagonal).
+  # Ground-truth FL-wire contact sensor. Primary = the single wire's
+  # segment geoms (static, literal names -- no per-env suffix); native
+  # `nworld` replication automatically gives every environment its own
+  # independent contact reading for that same geom name, exactly like
+  # the robot's own per-foot contact sensors. Secondary = the affected
+  # leg's calf collision geom (the geom confirmed by the diagnostic to
+  # make first/repeated contact, not the foot-tip sphere).
   wire_contact_sensor = ContactSensorCfg(
     name="wire_contact",
-    primary=ContactMatch(mode="geom", pattern=all_wire_geom_names, entity=None),
+    primary=ContactMatch(mode="geom", pattern=wire.geom_names(), entity=None),
     secondary=ContactMatch(
       mode="geom", pattern=f"{affected_leg_name}_calf2_collision", entity="robot"
     ),
@@ -374,7 +368,7 @@ def go2_wire_entanglement_recovery_env_cfg(
       num_envs=num_envs,
       env_spacing=env_spacing,
       extent=2.0,
-      spec_fn=build_ball_cable_spec_fn(wire, env_spacing=env_spacing),
+      spec_fn=build_ball_cable_spec_fn(wire),
       sensors=(wire_contact_sensor,),
     ),
     observations=observations,
@@ -391,14 +385,14 @@ def go2_wire_entanglement_recovery_env_cfg(
       azimuth=90.0,
     ),
     sim=SimulationCfg(
-      # Scaled per env: each env's wire has ~15-20 capsule segments, each
-      # a potential contact/constraint source, plus the robot's own
-      # self-contacts. Fixed rod-task-sized defaults (nconmax=128,
-      # njmax=800) overflow once num_envs is more than a handful (empty
-      # verified: 8 envs already required >244 active contacts). Per-env
-      # allowances below were sized generously against that measurement.
-      nconmax=max(128, 64 * num_envs),
-      njmax=max(800, 128 * num_envs),
+      # Fixed, NOT scaled by num_envs: with the wire-replication fix
+      # (exactly one wire per independent `nworld` world), per-world
+      # contact/constraint counts are small and constant regardless of
+      # num_envs. Scaling with num_envs was a symptom of the old
+      # O(num_envs^2) multi-wire-per-world bug, not a genuine
+      # requirement.
+      nconmax=128,
+      njmax=800,
       mujoco=MujocoCfg(
         timestep=0.0025,
         iterations=30,

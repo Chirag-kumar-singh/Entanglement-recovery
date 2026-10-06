@@ -76,6 +76,7 @@ call wrapped in torch.no_grad()).
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import math
 from typing import TYPE_CHECKING
 
 import torch
@@ -194,9 +195,54 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   #     forever if the policy never manages to release the leg).
   #   POST_RECOVERY: persists until episode end (handled by the
   #     env's own time_out/fell_over terminations).
+  #
+  # GEOMETRIC CLEARANCE (post-audit, see chat history): the above
+  # contact-only release condition let the policy "nudge until contact
+  # disappears" WITHOUT ever lifting the foot above or advancing it past
+  # the wire -- a genuine reward-exploit loophole. The exit condition now
+  # ADDITIONALLY requires `crossing_achieved`: a one-shot latch set only
+  # when the affected foot transitions from the wire's near side to its
+  # far side WHILE simultaneously above the wire's live (deformed)
+  # centerline height by `clearance_margin`. `release_required_steps` of
+  # sustained no-contact only starts being counted AFTER that latch is
+  # set. See `mjlab.tasks.recovery.mdp.wire_geometry` for how the live
+  # wire centerline position is derived from the actual ball-joint
+  # segment geoms (not the wire's static initial placement).
   wire_contact_sensor_name: str = "wire_contact"
-  max_recovery_steps: int = 12
+
+  wire_geom_names: tuple[str, ...] = ()
+  """Static geom names of the wire's segments (BallCableCfg.geom_names()),
+  used to read the wire's LIVE centerline position each step. Must be set
+  by the env_cfg factory."""
+
+  wire_radius: float = 0.006
+  """Wire capsule radius (meters); added to the interpolated centerline z
+  to get the wire's top surface height for clearance checks."""
+
+  clearance_margin: float = 0.02
+  """Minimum height (meters) the affected foot must be above the wire's
+  live top surface, AT THE INSTANT it crosses from near to far side, for
+  that crossing to count as genuine. NEEDS HUMAN CONFIRMATION (see audit
+  report) -- chosen modestly since the prior broken policy's foot stayed
+  6-9cm BELOW the wire the whole episode, so even this small margin is a
+  qualitative, unambiguous improvement over that failure mode."""
+
+  max_recovery_steps: int = 16
+  """Hard safety-cap on RECOVERY phase duration (steps). NEEDS HUMAN
+  CONFIRMATION (see audit report) -- chosen as roughly 2x the ~9-step
+  natural FL swing duration measured for plain walking, to budget for the
+  strictly harder retract+lift+advance+descend maneuver; this has NOT
+  been directly profiled (only plain-swing timing has). If reached
+  without `crossing_achieved`, the attempt is classified FAILURE (no
+  success bonus), not success."""
+
   release_required_steps: int = 5
+
+  post_recovery_stable_steps: int = 15
+  """Consecutive POST_RECOVERY steps the robot must remain upright after a
+  genuine crossing+release before final success is declared. NEEDS HUMAN
+  CONFIRMATION (see audit report) -- chosen as roughly one Go2 trot gait
+  cycle at this control rate, but not directly profiled for this task."""
 
   def build(self, env: ManagerBasedRlEnv) -> "ResidualRecoveryAction":
     return ResidualRecoveryAction(self, env)
@@ -261,6 +307,27 @@ class ResidualRecoveryAction(ActionTerm):
     self._imu_lin_vel: BuiltinSensor = env.scene["robot/imu_lin_vel"]
     self._imu_ang_vel: BuiltinSensor = env.scene["robot/imu_ang_vel"]
 
+    # --- Wire geometry (live, not static) ---
+    from mjlab.tasks.recovery.mdp import wire_geometry
+
+    assert cfg.wire_geom_names, (
+      "ResidualRecoveryActionCfg.wire_geom_names must be set by the env_cfg "
+      "factory (see BallCableCfg.geom_names())."
+    )
+    self._wire_geom_ids = wire_geometry.resolve_wire_segment_geom_ids(
+      env, cfg.wire_geom_names
+    )
+    foot_site_names = list(self._entity.site_names)
+    self._foot_site_idx = foot_site_names.index(LEG_NAMES[cfg.affected_leg_idx])
+
+    # Per-step geometric quantities, recomputed every `_update_fsm` call,
+    # exposed for reward/observation/diagnostic terms (see module
+    # docstring and mjlab.tasks.recovery.mdp.wire_geometry).
+    self.foot_forward_dist = torch.zeros(self.num_envs, device=self.device)
+    self.foot_height_above_wire = torch.zeros(self.num_envs, device=self.device)
+    self.foot_side_far = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+    self.crossing_event = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+
     # --- Recovery FSM state (per-env) ---
     self._phase = torch.full(
       (self.num_envs,), PHASE_NORMAL_WALK, device=self.device, dtype=torch.long
@@ -271,13 +338,40 @@ class ResidualRecoveryAction(ActionTerm):
     self._release_counter = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.long
     )
+    self._crossing_achieved = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self._prev_side_far = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self._recovery_failed_timeout = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self._post_recovery_elapsed = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.long
+    )
+    self._stable_since_post_recovery = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self._post_recovery_eligible = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self._already_succeeded_this_episode = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
     # One-shot flags for the step just completed, exposed for reward/
     # observation terms to read (newly_entangled: NORMAL_WALK->RECOVERY
-    # this step; newly_recovered: RECOVERY->POST_RECOVERY this step).
+    # this step; newly_recovered: RECOVERY->POST_RECOVERY this step,
+    # regardless of success/failure classification; newly_succeeded: the
+    # FINAL geometric-clearance + release + post-recovery-stability
+    # success event, which may fire many steps after newly_recovered).
     self.newly_entangled = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.bool
     )
     self.newly_recovered = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self.newly_succeeded = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.bool
     )
 
@@ -301,21 +395,65 @@ class ResidualRecoveryAction(ActionTerm):
     tensor, shape [B]."""
     return self._recovery_elapsed
 
+  @property
+  def crossing_achieved(self) -> torch.Tensor:
+    """Latched bool, shape [B]: True once the affected foot has genuinely
+    crossed to the far side of the wire WHILE above it by
+    ``clearance_margin``, during the current recovery attempt. Reset on
+    each new NORMAL_WALK->RECOVERY entry."""
+    return self._crossing_achieved
+
+  @property
+  def release_achieved(self) -> torch.Tensor:
+    """Bool, shape [B]: True once sustained no-contact has been observed
+    for ``release_required_steps`` AFTER ``crossing_achieved`` latched
+    (i.e. the genuine, geometry-gated release condition)."""
+    return self._crossing_achieved & (self._release_counter >= self.cfg.release_required_steps)
+
+  @property
+  def recovery_failed_timeout(self) -> torch.Tensor:
+    """Latched bool, shape [B]: True if the most recent RECOVERY phase
+    exited via the ``max_recovery_steps`` safety cap WITHOUT genuine
+    crossing+release (i.e. a failed attempt), else False."""
+    return self._recovery_failed_timeout
+
+  @property
+  def post_recovery_elapsed(self) -> torch.Tensor:
+    """Steps elapsed since entering POST_RECOVERY (0 outside it). Long
+    tensor, shape [B]."""
+    return self._post_recovery_elapsed
+
   def reset(self, env_ids: torch.Tensor | slice | None = None) -> None:
     if env_ids is None:
       self._last_walk_raw_action.zero_()
       self._phase.fill_(PHASE_NORMAL_WALK)
       self._recovery_elapsed.zero_()
       self._release_counter.zero_()
+      self._crossing_achieved.zero_()
+      self._prev_side_far.zero_()
+      self._recovery_failed_timeout.zero_()
+      self._post_recovery_elapsed.zero_()
+      self._stable_since_post_recovery.zero_()
+      self._post_recovery_eligible.zero_()
+      self._already_succeeded_this_episode.zero_()
       self.newly_entangled.zero_()
       self.newly_recovered.zero_()
+      self.newly_succeeded.zero_()
     else:
       self._last_walk_raw_action[env_ids] = 0.0
       self._phase[env_ids] = PHASE_NORMAL_WALK
       self._recovery_elapsed[env_ids] = 0
       self._release_counter[env_ids] = 0
+      self._crossing_achieved[env_ids] = False
+      self._prev_side_far[env_ids] = False
+      self._recovery_failed_timeout[env_ids] = False
+      self._post_recovery_elapsed[env_ids] = 0
+      self._stable_since_post_recovery[env_ids] = False
+      self._post_recovery_eligible[env_ids] = False
+      self._already_succeeded_this_episode[env_ids] = False
       self.newly_entangled[env_ids] = False
       self.newly_recovered[env_ids] = False
+      self.newly_succeeded[env_ids] = False
     self._joint_pos_action.reset(env_ids)
 
   def _update_fsm(self) -> None:
@@ -324,9 +462,25 @@ class ResidualRecoveryAction(ActionTerm):
     for the full transition rules). Must be called exactly once per
     environment step, before the Delta_a gate is applied in
     `process_actions`."""
+    from mjlab.tasks.recovery.mdp import wire_geometry
+
     sensor = self._env.scene.sensors[self.cfg.wire_contact_sensor_name]
     found = sensor.data.found  # [B, P]
     in_contact = (found > 0).any(dim=-1)  # [B]
+
+    # --- Live wire-geometry-aware foot state (every step, regardless of
+    # phase, so observations/rewards always have a fresh value). ---
+    foot_pos = self._entity.data.site_pos_w[:, self._foot_site_idx, :]  # [B, 3]
+    seg_pos = wire_geometry.wire_segment_world_pos(self._env, self._wire_geom_ids)
+    local_x, local_z = wire_geometry.local_wire_xz_at_y(seg_pos, foot_pos[:, 1])
+    forward_dist = foot_pos[:, 0] - local_x
+    height_above_wire = foot_pos[:, 2] - (local_z + self.cfg.wire_radius)
+    side_far = forward_dist > 0.0
+    foot_lifted = height_above_wire > self.cfg.clearance_margin
+
+    self.foot_forward_dist = forward_dist
+    self.foot_height_above_wire = height_above_wire
+    self.foot_side_far = side_far
 
     is_normal = self._phase == PHASE_NORMAL_WALK
     is_recovery = self._phase == PHASE_RECOVERY
@@ -342,29 +496,98 @@ class ResidualRecoveryAction(ActionTerm):
     self._release_counter = torch.where(
       entering_recovery, torch.zeros_like(self._release_counter), self._release_counter
     )
+    self._crossing_achieved = torch.where(
+      entering_recovery, torch.zeros_like(self._crossing_achieved), self._crossing_achieved
+    )
+    self._recovery_failed_timeout = torch.where(
+      entering_recovery, torch.zeros_like(self._recovery_failed_timeout),
+      self._recovery_failed_timeout,
+    )
+    # Initialize side tracking on entry so the very first in-recovery
+    # step can't spuriously register a crossing_event.
+    self._prev_side_far = torch.where(entering_recovery, side_far.clone(), self._prev_side_far)
 
-    # Within RECOVERY: advance elapsed counter and release counter.
+    # Within RECOVERY: advance elapsed counter, detect genuine crossing,
+    # and only THEN start counting sustained release.
     still_recovery_after_entry = is_recovery | entering_recovery
     self._recovery_elapsed = torch.where(
       still_recovery_after_entry, self._recovery_elapsed + 1, self._recovery_elapsed
     )
+
+    # Genuine crossing: NEAR -> FAR transition WHILE above the wire by
+    # `clearance_margin`. A near->far transition that happens while the
+    # foot is still at/below the wire (e.g. sliding/scraping past at
+    # ground level, the observed failure mode) does NOT latch.
+    crossing_event = still_recovery_after_entry & (~self._prev_side_far) & side_far & foot_lifted
+    self.crossing_event = crossing_event
+    self._crossing_achieved = self._crossing_achieved | crossing_event
+
+    eligible_for_release = still_recovery_after_entry & self._crossing_achieved
     self._release_counter = torch.where(
-      still_recovery_after_entry & ~in_contact,
+      eligible_for_release & ~in_contact,
       self._release_counter + 1,
-      torch.where(still_recovery_after_entry & in_contact,
+      torch.where(eligible_for_release & in_contact,
                   torch.zeros_like(self._release_counter), self._release_counter),
     )
 
     released_sustained = self._release_counter >= self.cfg.release_required_steps
+    genuine_recovery_complete = self._crossing_achieved & released_sustained
     cap_reached = self._recovery_elapsed >= self.cfg.max_recovery_steps
-    exiting_recovery = still_recovery_after_entry & (released_sustained | cap_reached)
+    exiting_recovery = still_recovery_after_entry & (genuine_recovery_complete | cap_reached)
+
+    self._recovery_failed_timeout = torch.where(
+      exiting_recovery & ~genuine_recovery_complete,
+      torch.ones_like(self._recovery_failed_timeout),
+      self._recovery_failed_timeout,
+    )
 
     self._phase = torch.where(
       exiting_recovery, torch.full_like(self._phase, PHASE_POST_RECOVERY), self._phase
     )
+    self._post_recovery_elapsed = torch.where(
+      exiting_recovery, torch.zeros_like(self._post_recovery_elapsed), self._post_recovery_elapsed
+    )
+    self._stable_since_post_recovery = torch.where(
+      exiting_recovery, torch.ones_like(self._stable_since_post_recovery), self._stable_since_post_recovery
+    )
+
+    self._prev_side_far = side_far.clone()
 
     self.newly_entangled = entering_recovery
     self.newly_recovered = exiting_recovery
+
+    # --- POST_RECOVERY stability window -> FINAL success ---
+    # CRITICAL: only an episode that exited RECOVERY via genuine
+    # crossing+release (`genuine_recovery_complete`) is even ELIGIBLE for
+    # the stability window to lead to success. A cap-timeout exit
+    # (failure) must NOT be able to accrue success later just because the
+    # frozen walking policy happens to keep walking stably afterward --
+    # that would silently reintroduce a close cousin of the original
+    # contact-release exploit (this was caught during Test A/D
+    # validation: a zero-residual/cap-timeout episode was initially still
+    # earning `newly_succeeded` purely from post-recovery stability).
+    self._post_recovery_eligible = torch.where(
+      exiting_recovery, genuine_recovery_complete, self._post_recovery_eligible
+    )
+
+    # Only steps strictly AFTER the transition step count toward the
+    # window (the transition step itself starts the counter at 0).
+    still_post = (self._phase == PHASE_POST_RECOVERY) & ~exiting_recovery
+    gravity_b = self._entity.data.projected_gravity_b
+    upright_now = torch.abs(gravity_b[:, 2]) > math.cos(math.radians(70.0))
+    self._stable_since_post_recovery = torch.where(
+      still_post, self._stable_since_post_recovery & upright_now, self._stable_since_post_recovery
+    )
+    self._post_recovery_elapsed = torch.where(
+      still_post, self._post_recovery_elapsed + 1, self._post_recovery_elapsed
+    )
+    reached_stable_window = (
+      still_post & self._post_recovery_eligible & self._stable_since_post_recovery
+      & (self._post_recovery_elapsed >= self.cfg.post_recovery_stable_steps)
+    )
+    just_succeeded = reached_stable_window & ~self._already_succeeded_this_episode
+    self.newly_succeeded = just_succeeded
+    self._already_succeeded_this_episode = self._already_succeeded_this_episode | just_succeeded
 
   def _build_walk_obs(self) -> torch.Tensor:
     """Reconstructs the EXACT 48-dim observation vector the frozen
