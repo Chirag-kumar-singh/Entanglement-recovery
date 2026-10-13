@@ -34,5 +34,12 @@ dist/
 .env
 *.local
 
+# Experimental/diagnostic scripts and notes.
+scripts/_d*_driver*.sh
+scripts/d[0-9]_*.py
+scripts/d[0-9][0-9]_*.py
+*_IMPLEMENTATION_NOTES.md
+*_EXPERIMENT*.md
+
 # Allow kept directory placeholders.
 !**/.gitkeep

@@ -6,9 +6,13 @@ from .observations import (
   affected_leg_oracle,
   affected_foot_pos_rel_body,
   affected_foot_vel_rel_body,
+  calf_forward_dist_norm,
+  calf_height_above_wire_norm,
   previous_residual,
   recovery_elapsed_norm,
   recovery_phase_onehot,
+  toe_forward_dist_norm,
+  toe_height_above_wire_norm,
   walk_affected_action,
 )
 from .rewards import (
@@ -31,6 +35,7 @@ from .rewards import (
   wire_recovery_final_success_bonus,
   wire_recovery_progress_reward,
   wire_recovery_success_bonus,
+  wire_toe_crossing_progress_reward,
 )
 from .terminations import (
   fell_over,
@@ -57,9 +62,13 @@ __all__ = [
   "affected_leg_contact",
   "affected_foot_pos_rel_body",
   "affected_foot_vel_rel_body",
+  "calf_forward_dist_norm",
+  "calf_height_above_wire_norm",
   "previous_residual",
   "recovery_elapsed_norm",
   "recovery_phase_onehot",
+  "toe_forward_dist_norm",
+  "toe_height_above_wire_norm",
   "walk_affected_action",
   "affected_leg_clearance",
   "affected_leg_joint_vel_penalty",
@@ -80,6 +89,7 @@ __all__ = [
   "wire_recovery_final_success_bonus",
   "wire_recovery_progress_reward",
   "wire_recovery_success_bonus",
+  "wire_toe_crossing_progress_reward",
   "fell_over",
   "recovery_timeout",
   "recovery_success",

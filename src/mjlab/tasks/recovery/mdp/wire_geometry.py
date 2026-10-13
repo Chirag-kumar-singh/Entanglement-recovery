@@ -66,11 +66,21 @@ def local_wire_xz_at_y(
   """Interpolate the wire centerline's (x, z) at a given world y, from
   live (possibly-deformed) segment positions.
 
+  NOTE: this interpolates by world-Y position along the segment chain,
+  which is correct for the current wire placement (``anchor_start``/
+  ``anchor_end`` both lie along the Y axis -- see
+  ``DEFAULT_WIRE_CFG`` in ``env_cfg_residual.py``). If the wire's
+  anchors are ever reconfigured to run along a different axis, this
+  function's bracketing-by-Y logic would need to be generalized to
+  project onto the wire's own axis direction instead of raw Y -- not
+  done here per the "don't over-engineer" constraint, since the current
+  task's wire is Y-aligned.
+
   Args:
     seg_pos: [B, N, 3] world positions of wire segment midpoints (see
       ``wire_segment_world_pos``).
-    target_y: [B] world y-coordinate to interpolate at (typically the
-      affected foot's current world y).
+    target_y: [B] world y-coordinate to interpolate at (typically a
+      tracked body point's current world y).
 
   Returns:
     (local_x, local_z): each [B], the interpolated wire centerline
@@ -110,3 +120,34 @@ def local_wire_xz_at_y(
   local_x = _interp(0)
   local_z = _interp(2)
   return local_x, local_z
+
+
+def signed_forward_distance(
+  point_xy: torch.Tensor,
+  wire_local_xy: torch.Tensor,
+  forward_dir_xy: torch.Tensor,
+) -> torch.Tensor:
+  """Signed distance of a world point from the local wire reference point,
+  projected onto the ROBOT'S OWN intended forward direction (not blindly
+  world +X), so crossing detection stays correct even if the robot's yaw
+  drifts/is randomized at spawn.
+
+  Args:
+    point_xy: [B, 2] world (x, y) of the tracked point (e.g. calf or toe).
+    wire_local_xy: [B, 2] world (x, y) of the interpolated local wire
+      reference (see ``local_wire_xz_at_y``, using only the (x, y)
+      components here -- z is handled separately for height checks).
+    forward_dir_xy: [B, 2] unit vector, the robot's forward direction in
+      the world XY plane (see ``ResidualRecoveryAction`` -- latched from
+      ``entity.data.heading_w`` at the instant of entering RECOVERY, so a
+      later in-recovery yaw change from flailing doesn't redefine
+      "forward" mid-maneuver).
+
+  Returns:
+    Tensor of shape [B]: positive = point is on the far side (in the
+    robot's forward direction) of the wire's local reference, negative =
+    near side.
+  """
+  delta = point_xy - wire_local_xy  # [B, 2]
+  return torch.sum(delta * forward_dir_xy, dim=-1)
+

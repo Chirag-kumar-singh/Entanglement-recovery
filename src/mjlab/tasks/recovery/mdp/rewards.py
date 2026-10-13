@@ -360,6 +360,7 @@ def _get_action_term(env: ManagerBasedRlEnv, action_term_name: str):
 def forward_velocity_tracking_reward(
   env: ManagerBasedRlEnv,
   command_name: str = "twist",
+  action_term_name: str = "joint_pos",
   asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
 ) -> torch.Tensor:
   """Exponential tracking reward for base linear velocity (xy) vs. the
@@ -368,14 +369,25 @@ def forward_velocity_tracking_reward(
   still what drives locomotion; the recovery policy's residual should not
   come at the cost of forward progress whenever possible.
 
+  GATED TO ZERO DURING RECOVERY (post-audit, see chat history): this term
+  was found to contribute ~0.97/step UNCONDITIONALLY, dwarfing the
+  geometric progress signal by ~5-8x during the exact window where the
+  policy needs to learn the lift/advance maneuver (which may legitimately
+  require temporarily reducing forward speed). Active during NORMAL_WALK
+  and POST_RECOVERY (restoring the normal walking objective once the
+  maneuver concludes), zero during RECOVERY only.
+
   Returns:
-    Reward tensor of shape [B] in (0, 1].
+    Reward tensor of shape [B] in [0, 1] (0 during RECOVERY).
   """
   asset: Entity = env.scene[asset_cfg.name]
   command = env.command_manager.get_command(command_name)
   lin_vel_b = asset.data.root_link_lin_vel_b[:, :2]
   err = torch.sum((command[:, :2] - lin_vel_b) ** 2, dim=-1)
-  return torch.exp(-err / 0.25)
+  reward = torch.exp(-err / 0.25)
+  term = _get_action_term(env, action_term_name)
+  active = term.phase != PHASE_RECOVERY
+  return torch.where(active, reward, torch.zeros_like(reward))
 
 
 def residual_magnitude_penalty(
@@ -468,44 +480,74 @@ def recovery_phase_success_bonus(
 def wire_recovery_progress_reward(
   env: ManagerBasedRlEnv,
   action_term_name: str = "joint_pos",
-  height_scale: float = 0.05,
-  forward_scale: float = 0.1,
 ) -> torch.Tensor:
-  """Dense SHAPING reward active ONLY during RECOVERY, before genuine
-  crossing has been achieved. Rewards (a) lifting the affected foot
-  toward/above the wire's live local height, and (b) making forward
-  progress toward the crossing reference -- i.e. "lift" and "advance",
-  the early/middle stages of the target maneuver (RETRACT -> LIFT ->
-  ADVANCE). Zero outside RECOVERY and zero once `crossing_achieved` (at
-  that point `affected_leg_return_to_stance_reward` takes over as the
-  late-stage shaping term, see below) -- this prevents it from paying out
-  for "hover near the wire forever" once the real goal has been reached.
+  """Dense SHAPING reward active ONLY during RECOVERY, before calf
+  clearance has been achieved. POTENTIAL-DIFFERENCE (delta) shaping,
+  post-audit rework (see chat history): rather than the raw clamped
+  absolute position (which had a large, constant negative offset at the
+  start of every recovery episode, dwarfed by the always-on forward-
+  velocity/uprightness rewards), this reads
+  `ResidualRecoveryAction.stage1_progress_reward` -- the per-step
+  NONNEGATIVE increase in a monotonic running-best potential
+  Phi1 = norm(calf_height_above_wire) + norm(calf_forward_dist) (each
+  clamped to [-1, 1]; see `WIRE_HEIGHT_NORM_SCALE`/
+  `WIRE_FORWARD_NORM_SCALE` in actions.py). Monotonic tracking means
+  oscillating back toward the baseline or cycling between two states
+  earns exactly zero (never negative, never double-paid) -- see Part 5
+  "no wiggle for reward" requirement. Already computed/gated by the
+  action term itself (zero outside RECOVERY and zero once
+  `calf_clearance_achieved`, since the action term only updates the
+  stage-1 potential while that stage is active) -- this function does
+  not duplicate any geometry computation.
 
   Returns:
-    Reward tensor of shape [B], roughly in [-1, 1] per component (so
-    [-2, 2] combined before the term's own weight is applied).
+    Reward tensor of shape [B], >= 0.
   """
   term = _get_action_term(env, action_term_name)
-  active = (term.phase == PHASE_RECOVERY) & ~term.crossing_achieved
-  height_term = torch.clamp(term.foot_height_above_wire / height_scale, min=-1.0, max=1.0)
-  forward_term = torch.clamp(term.foot_forward_dist / forward_scale, min=-1.0, max=1.0)
-  reward = height_term + forward_term
-  return torch.where(active, reward, torch.zeros_like(reward))
+  return term.stage1_progress_reward
+
+
+def wire_toe_crossing_progress_reward(
+  env: ManagerBasedRlEnv,
+  action_term_name: str = "joint_pos",
+) -> torch.Tensor:
+  """Dense SHAPING reward active ONLY once `calf_clearance_achieved` is
+  True but `foot_crossed_achieved` is NOT yet True -- encourages the
+  SECONDARY toe/foot confirmation stage (advancing the toe to the far
+  side) once the primary calf-clearance condition has already been met.
+  POTENTIAL-DIFFERENCE (delta) shaping, same scheme as
+  `wire_recovery_progress_reward`: reads
+  `ResidualRecoveryAction.stage2_progress_reward`, the per-step
+  nonnegative increase in a monotonic running-best
+  Phi2 = norm(foot_forward_dist) (clamped to [-1, 1]), re-baselined to
+  the current value at the exact step calf-clearance latches (so stage 2
+  never inherits a spurious head start from wherever the toe happened to
+  already be). Zero before calf clearance (that's
+  `wire_recovery_progress_reward`'s job) and zero once the toe has
+  actually crossed (at that point `affected_leg_return_to_stance_reward_
+  gated` takes over).
+
+  Returns:
+    Reward tensor of shape [B], >= 0.
+  """
+  term = _get_action_term(env, action_term_name)
+  return term.stage2_progress_reward
 
 
 def wire_crossing_event_bonus(
   env: ManagerBasedRlEnv,
   action_term_name: str = "joint_pos",
 ) -> torch.Tensor:
-  """Sparse, ONE-TIME event bonus: 1.0 exactly on the step the affected
-  foot genuinely crosses from the near side to the far side of the wire
-  WHILE above it by `clearance_margin` (see `ResidualRecoveryAction
-  .crossing_event`). This is intentionally smaller than the final success
-  bonus, and exists purely to shorten the credit-assignment horizon for
-  PPO (the final success bonus can fire 15+ steps later, after the
-  post-recovery stability window) -- it does NOT by itself reward contact
-  release or idle waiting, since `crossing_event` can only latch true
-  given a real geometric crossing.
+  """Sparse, ONE-TIME event bonus: 1.0 exactly on the step the FULL
+  two-stage crossing condition completes -- calf clearance (above the
+  wire, near->far) AND subsequent toe/foot far-side confirmation (see
+  `ResidualRecoveryAction.crossing_event`). This is intentionally smaller
+  than the final success bonus, and exists purely to shorten the
+  credit-assignment horizon for PPO (the final success bonus can fire 15+
+  steps later, after the post-recovery stability window) -- it does NOT
+  by itself reward contact release or idle waiting, since `crossing_event`
+  can only latch true given a real geometric calf clearance AND a real
+  toe crossing.
 
   Returns:
     Reward tensor of shape [B] in {0.0, 1.0}.

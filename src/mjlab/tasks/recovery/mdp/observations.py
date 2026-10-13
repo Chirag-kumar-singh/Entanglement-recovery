@@ -149,3 +149,92 @@ def walk_affected_action(
     return torch.zeros(env.num_envs, 3, device=env.device)
   return term.last_a_walk_raw[:, term._affected_idx]
 
+
+# ---------------------------------------------------------------------------
+# Wire-relative geometric observations (post-audit addition, see chat
+# history): the FSM/reward already compute `calf_height_above_wire`,
+# `calf_forward_dist`, `foot_height_above_wire` (aliased here as "toe"
+# height, see `ResidualRecoveryAction` module docstring -- the `foot`
+# site IS the toe), and `foot_forward_dist` every step, but prior to this
+# change the actor observation vector never saw any of them -- an audit
+# found this as the PRIMARY learning bottleneck (the policy had no direct
+# signal for where the wire is relative to the affected leg). These four
+# terms read those SAME live-geometry values directly off the action
+# term (no duplicate wire-geometry computation) and normalize them to
+# bounded [-1, 1] ranges using the SAME scale constants
+# (`WIRE_HEIGHT_NORM_SCALE`, `WIRE_FORWARD_NORM_SCALE`) used by the
+# potential-shaping reward in rewards.py, so observation and reward stay
+# on an identical, already-audited scale.
+#
+# Outside RECOVERY these are zeroed -- NOT left at their last in-recovery
+# value -- so there is no ambiguity between "not currently in recovery"
+# and a valid recovery-geometry reading; `recovery_phase_onehot` already
+# tells the policy which phase it's in, so a consistent zero here cannot
+# be confused with a genuine zero-crossing reading taken DURING recovery
+# (phase one-hot disambiguates the two).
+# ---------------------------------------------------------------------------
+
+
+def calf_height_above_wire_norm(
+  env: ManagerBasedRlEnv,
+  action_term_name: str = "joint_pos",
+) -> torch.Tensor:
+  """Normalized calf height above the wire's live top surface, clamped to
+  [-1, 1] via `WIRE_HEIGHT_NORM_SCALE` (0.05 m). Negative = calf below
+  the wire (entangled/approaching), positive = calf above it (lifted
+  clear). Zero outside RECOVERY. Shape [B, 1]."""
+  from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY, WIRE_HEIGHT_NORM_SCALE
+
+  term = _get_recovery_action_term(env, action_term_name)
+  val = torch.clamp(term.calf_height_above_wire / WIRE_HEIGHT_NORM_SCALE, -1.0, 1.0)
+  active = term.phase == PHASE_RECOVERY
+  return torch.where(active, val, torch.zeros_like(val)).unsqueeze(-1)
+
+
+def calf_forward_dist_norm(
+  env: ManagerBasedRlEnv,
+  action_term_name: str = "joint_pos",
+) -> torch.Tensor:
+  """Normalized calf forward distance past the wire's local reference
+  (robot's own latched forward direction), clamped to [-1, 1] via
+  `WIRE_FORWARD_NORM_SCALE` (0.1 m). Negative = near side, positive = far
+  side. Zero outside RECOVERY. Shape [B, 1]."""
+  from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY, WIRE_FORWARD_NORM_SCALE
+
+  term = _get_recovery_action_term(env, action_term_name)
+  val = torch.clamp(term.calf_forward_dist / WIRE_FORWARD_NORM_SCALE, -1.0, 1.0)
+  active = term.phase == PHASE_RECOVERY
+  return torch.where(active, val, torch.zeros_like(val)).unsqueeze(-1)
+
+
+def toe_height_above_wire_norm(
+  env: ManagerBasedRlEnv,
+  action_term_name: str = "joint_pos",
+) -> torch.Tensor:
+  """Normalized toe/foot height above the wire's live top surface
+  (`ResidualRecoveryAction.foot_height_above_wire` -- the `foot` site IS
+  the toe, see module docstring), clamped to [-1, 1] via
+  `WIRE_HEIGHT_NORM_SCALE`. Zero outside RECOVERY. Shape [B, 1]."""
+  from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY, WIRE_HEIGHT_NORM_SCALE
+
+  term = _get_recovery_action_term(env, action_term_name)
+  val = torch.clamp(term.foot_height_above_wire / WIRE_HEIGHT_NORM_SCALE, -1.0, 1.0)
+  active = term.phase == PHASE_RECOVERY
+  return torch.where(active, val, torch.zeros_like(val)).unsqueeze(-1)
+
+
+def toe_forward_dist_norm(
+  env: ManagerBasedRlEnv,
+  action_term_name: str = "joint_pos",
+) -> torch.Tensor:
+  """Normalized toe/foot forward distance past the wire's local
+  reference (`ResidualRecoveryAction.foot_forward_dist`), clamped to
+  [-1, 1] via `WIRE_FORWARD_NORM_SCALE`. Zero outside RECOVERY.
+  Shape [B, 1]."""
+  from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY, WIRE_FORWARD_NORM_SCALE
+
+  term = _get_recovery_action_term(env, action_term_name)
+  val = torch.clamp(term.foot_forward_dist / WIRE_FORWARD_NORM_SCALE, -1.0, 1.0)
+  active = term.phase == PHASE_RECOVERY
+  return torch.where(active, val, torch.zeros_like(val)).unsqueeze(-1)
+

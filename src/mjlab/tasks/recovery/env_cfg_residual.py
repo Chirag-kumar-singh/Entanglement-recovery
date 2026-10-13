@@ -27,7 +27,13 @@ from __future__ import annotations
 import math
 from dataclasses import asdict
 
+import dataclasses
+
 from mjlab.asset_zoo.robots import get_go2_robot_cfg
+from mjlab.asset_zoo.robots.unitree_go2.go2_constants import (
+  GO2_ACTUATOR_CALF,
+  GO2_ACTUATOR_THIGH,
+)
 from mjlab.envs import ManagerBasedRlEnvCfg
 from mjlab.envs import mdp as envs_mdp
 from mjlab.managers.command_manager import CommandTermCfg
@@ -62,6 +68,32 @@ DEFAULT_WIRE_CFG = BallCableCfg(
   radius=0.006,
 )
 
+# Deconfounded, single-leg-isolated variant of DEFAULT_WIRE_CFG. Measured
+# (not guessed) from an actual dynamic hybrid-recovery run at seed=0,
+# affected_leg_idx=0 (FL), steps 0-69, world frame, robot walking toward
+# +X (FORWARD_CMD_VAL > 0 drives lin_vel_x):
+#   FL foot y range during swing/contact window (steps 33-55): ~0.36-0.40
+#   FR foot y range during the SAME window:                    ~0.11-0.17
+# i.e. roughly a 0.19 m gap between the two legs' lateral corridors,
+# straddled by DEFAULT_WIRE_CFG's full y in [0, 0.5] span -- which is why
+# FR was also contacting the wire (confound). This variant shortens the
+# wire so it only spans y in [0.30, 0.50]: comfortably covers FL's
+# corridor (0.36-0.40) with 0.06 m margin on the near side and 0.10 m on
+# the far side, while its nearest point (y=0.30) is a full 0.13-0.14 m
+# clear of FR's observed max y (~0.17) -- FR should not be able to reach
+# it even with some per-episode swing variance. Must be paired with
+# `spawn_y_override=0.25` (the ORIGINAL DEFAULT_WIRE_CFG's midpoint) so
+# the robot's spawn/body position -- and therefore both legs' absolute
+# corridors -- is UNCHANGED from the baseline; only the wire's own
+# physical extent is narrowed/shifted away from FR.
+ISOLATED_FL_WIRE_CFG = BallCableCfg(
+  anchor_start=(0.0, 0.30, 0.10),
+  anchor_end=(0.0, 0.50, 0.10),
+  radius=0.006,
+)
+# Spawn y-center to use alongside ISOLATED_FL_WIRE_CFG (see above).
+ISOLATED_FL_WIRE_SPAWN_Y = 0.25
+
 FORWARD_CMD_VAL = 0.3
 
 # Default checkpoint for the frozen walking policy. Override via
@@ -69,6 +101,67 @@ FORWARD_CMD_VAL = 0.3
 DEFAULT_WALK_CHECKPOINT = (
   "logs/rsl_rl/go2_velocity/2026-09-17_13-00-16/model_9900.pt"
 )
+
+
+def _build_recovery_robot_cfg(
+  affected_leg_idx: int,
+  recovery_mode: str,
+  recovery_thigh_velocity_kd: float,
+  recovery_calf_torque: float,
+):
+  """Build the recovery task's Go2 entity config.
+
+  For ``recovery_mode in ("ppo_residual", "deterministic")`` this is just
+  ``get_go2_robot_cfg()`` -- IDENTICAL to the normal walking task's robot,
+  unmodified.
+
+  For ``recovery_mode == "hybrid"`` (D3), TWO auxiliary actuators are
+  added to the affected leg's thigh/calf joints ONLY, on a COPY of the
+  base Go2 articulation (the normal walking task's entity, built
+  separately by velocity/config/go2, is never touched):
+    - a named velocity actuator on the thigh joint, used for the
+      Quad-SDK-inspired damped-velocity retract command. Its damping is
+      initialized to 0.0 (inert) -- it is turned on/off at runtime per
+      env by ResidualRecoveryAction._apply_hybrid_actuators, never active
+      during normal walking.
+    - a named motor (pure feedforward torque) actuator on the calf
+      joint, used for the Quad-SDK-inspired open-loop push torque.
+      Motor actuators are inert whenever ctrl=0 (no velocity feedback
+      term), so no additional on/off toggling is needed for this one.
+  Both auxiliary actuators' effort_limit reuses the SAME bound as the
+  existing walking actuator on that joint (GO2_ACTUATOR_THIGH/CALF's
+  effort_limit), i.e. the recovery controller can never exceed the
+  torque bound the joint's own normal-walking actuator already respects.
+  """
+  base = get_go2_robot_cfg()
+  if recovery_mode != "hybrid":
+    return base
+
+  from mjlab.tasks.recovery.mdp.hybrid_actuators import (
+    NamedMotorActuatorCfg,
+    NamedVelocityActuatorCfg,
+  )
+
+  leg = LEG_NAMES[affected_leg_idx]
+  thigh_joint = f"{leg}_thigh_joint"
+  calf_joint = f"{leg}_calf_joint"
+
+  aux_thigh_vel = NamedVelocityActuatorCfg(
+    target_names_expr=(thigh_joint,),
+    actuator_name=f"{thigh_joint}_recovery_vel",
+    damping=0.0,  # inert by default; toggled on only during RECOVERY.
+    effort_limit=GO2_ACTUATOR_THIGH.effort_limit,
+  )
+  aux_calf_motor = NamedMotorActuatorCfg(
+    target_names_expr=(calf_joint,),
+    actuator_name=f"{calf_joint}_recovery_motor",
+    effort_limit=GO2_ACTUATOR_CALF.effort_limit,
+  )
+
+  assert base.articulation is not None
+  new_actuators = base.articulation.actuators + (aux_thigh_vel, aux_calf_motor)
+  new_articulation = dataclasses.replace(base.articulation, actuators=new_actuators)
+  return dataclasses.replace(base, articulation=new_articulation)
 
 
 def go2_wire_recovery_residual_env_cfg(
@@ -83,6 +176,19 @@ def go2_wire_recovery_residual_env_cfg(
   clearance_margin: float = 0.02,
   post_recovery_stable_steps: int = 15,
   play: bool = False,
+  recovery_mode: str = "ppo_residual",
+  thigh_recovery_delta: float = 0.3,
+  calf_recovery_delta: float = -0.3,
+  recovery_thigh_velocity: float = -2.0,
+  recovery_thigh_velocity_kd: float = 2.0,
+  recovery_calf_torque: float = 5.0,
+  policy_device: str = "cuda:0",
+  spawn_y_override: float | None = None,
+  experimental_peak_triggered_thigh_stop: bool = False,
+  peak_detector_rise_threshold: float = 0.01,
+  peak_detector_decline_eps: float = 0.003,
+  peak_detector_confirm_steps: int = 2,
+  phase_aware_thresholds: bool = False,
 ) -> ManagerBasedRlEnvCfg:
   """Create the residual-action wire-entanglement recovery environment.
 
@@ -99,10 +205,49 @@ def go2_wire_recovery_residual_env_cfg(
       (x, y), lining up with the single wire fixed at that same local
       position in every world copy.
     max_residual: Clamp on |Delta_a| in raw policy-action-space units.
+      Only used when ``recovery_mode == "ppo_residual"``.
     max_recovery_steps: Hard cap on RECOVERY phase duration (steps).
     release_required_steps: Consecutive no-contact steps required to
       count as a genuine (non-cap-forced) release.
     play: If True, disable observation noise for clean playback.
+    recovery_mode: ``"ppo_residual"`` (default, UNCHANGED prior behavior
+      -- the env's own action input drives the affected leg's residual)
+      or ``"deterministic"`` (D1: the env's action input is ignored for
+      the affected leg; a fixed thigh/calf delta is applied instead, see
+      ``ResidualRecoveryActionCfg`` docstring).
+    thigh_recovery_delta: Constant thigh delta used only in
+      ``"deterministic"`` mode. See ``ResidualRecoveryActionCfg``.
+    calf_recovery_delta: Constant calf delta used only in
+      ``"deterministic"`` mode. See ``ResidualRecoveryActionCfg``.
+    policy_device: Device the frozen walking policy is loaded/run on.
+      Exposed (rather than hardcoded) so D1 smoke tests can run on CPU
+      without a GPU available.
+    spawn_y_override: If set, overrides the spawn pose's lateral (y)
+      centering, which otherwise defaults to the wire's own midpoint
+      (``0.5 * (wire.anchor_start[1] + wire.anchor_end[1])``). This
+      exists so a deliberately SHORT or laterally-OFFSET wire (e.g. one
+      designed to intersect only one leg's swing corridor) does not
+      also drag the robot's spawn position sideways with it -- the
+      robot's spawn/body position and the wire's physical placement are
+      independent degrees of freedom. Defaults to None, which preserves
+      the original, validated wire-midpoint-centered spawn behavior
+      exactly (no behavior change for any existing caller).
+    experimental_peak_triggered_thigh_stop: Opt-in (default False,
+      preserves baseline exactly) -- see `ResidualRecoveryActionCfg`
+      docstring. Zeros ONLY the thigh velocity command once a genuine
+      post-entry foot-height peak is detected; calf torque, ab/ad, and
+      the FSM are unaffected.
+    peak_detector_rise_threshold: See `ResidualRecoveryActionCfg`.
+    peak_detector_decline_eps: See `ResidualRecoveryActionCfg`.
+    peak_detector_confirm_steps: See `ResidualRecoveryActionCfg`.
+    phase_aware_thresholds: D5.29 opt-in (default False, preserves
+      baseline exactly) -- if True, enables leg-speed-dependent dynamic
+      adjustment of crossing-latch thresholds (clearance_margin,
+      foot_crossing_margin) based on affected leg velocity at recovery
+      entry. D5.31 corrected the tier-to-margin direction (faster entry
+      now gets smaller, not larger, margins, since both latch conditions
+      are strict `>` comparisons). See `ResidualRecoveryActionCfg`
+      docstring for the three-tier threshold logic.
   """
   affected_leg_name = LEG_NAMES[affected_leg_idx]
   wire = wire_cfg or DEFAULT_WIRE_CFG
@@ -118,7 +263,7 @@ def go2_wire_recovery_residual_env_cfg(
       affected_leg_idx=affected_leg_idx,
       max_residual=max_residual,
       command_name="twist",
-      device="cuda:0",
+      device=policy_device,
       wire_contact_sensor_name="wire_contact",
       wire_geom_names=wire.geom_names(),
       wire_radius=wire.radius,
@@ -126,6 +271,17 @@ def go2_wire_recovery_residual_env_cfg(
       max_recovery_steps=max_recovery_steps,
       release_required_steps=release_required_steps,
       post_recovery_stable_steps=post_recovery_stable_steps,
+      recovery_mode=recovery_mode,
+      thigh_recovery_delta=thigh_recovery_delta,
+      calf_recovery_delta=calf_recovery_delta,
+      recovery_thigh_velocity=recovery_thigh_velocity,
+      recovery_thigh_velocity_kd=recovery_thigh_velocity_kd,
+      recovery_calf_torque=recovery_calf_torque,
+      experimental_peak_triggered_thigh_stop=experimental_peak_triggered_thigh_stop,
+      peak_detector_rise_threshold=peak_detector_rise_threshold,
+      peak_detector_decline_eps=peak_detector_decline_eps,
+      peak_detector_confirm_steps=peak_detector_confirm_steps,
+      phase_aware_thresholds=phase_aware_thresholds,
     )
   }
 
@@ -133,6 +289,7 @@ def go2_wire_recovery_residual_env_cfg(
   # Commands: fixed forward velocity (no randomization for this first
   # experiment -- the FSM trigger/recovery dynamics are already
   # non-trivial; command randomization is deferred).
+
   ##
 
   commands = {
@@ -230,6 +387,22 @@ def go2_wire_recovery_residual_env_cfg(
       func=mdp.walk_affected_action,
       params={"action_term_name": "joint_pos"},
     ),
+    "calf_height_above_wire_norm": ObservationTermCfg(
+      func=mdp.calf_height_above_wire_norm,
+      params={"action_term_name": "joint_pos"},
+    ),
+    "calf_forward_dist_norm": ObservationTermCfg(
+      func=mdp.calf_forward_dist_norm,
+      params={"action_term_name": "joint_pos"},
+    ),
+    "toe_height_above_wire_norm": ObservationTermCfg(
+      func=mdp.toe_height_above_wire_norm,
+      params={"action_term_name": "joint_pos"},
+    ),
+    "toe_forward_dist_norm": ObservationTermCfg(
+      func=mdp.toe_forward_dist_norm,
+      params={"action_term_name": "joint_pos"},
+    ),
   }
 
   critic_terms = {
@@ -253,7 +426,11 @@ def go2_wire_recovery_residual_env_cfg(
   # jitter for diversity across envs/episodes.
   ##
 
-  wire_mid_y = 0.5 * (wire.anchor_start[1] + wire.anchor_end[1])
+  wire_mid_y = (
+    spawn_y_override
+    if spawn_y_override is not None
+    else 0.5 * (wire.anchor_start[1] + wire.anchor_end[1])
+  )
   spawn_x = wire.anchor_start[0] - 0.35
 
   events = {
@@ -291,10 +468,15 @@ def go2_wire_recovery_residual_env_cfg(
     "forward_velocity_tracking": RewardTermCfg(
       func=mdp.forward_velocity_tracking_reward,
       weight=1.0,
-      params={"command_name": "twist"},
+      params={"command_name": "twist", "action_term_name": "joint_pos"},
     ),
     "wire_recovery_progress": RewardTermCfg(
       func=mdp.wire_recovery_progress_reward,
+      weight=0.5,
+      params={"action_term_name": "joint_pos"},
+    ),
+    "wire_toe_crossing_progress": RewardTermCfg(
+      func=mdp.wire_toe_crossing_progress_reward,
       weight=0.5,
       params={"action_term_name": "joint_pos"},
     ),
@@ -441,9 +623,16 @@ def go2_wire_recovery_residual_env_cfg(
     num_slots=1,
   )
 
+  robot_cfg = _build_recovery_robot_cfg(
+    affected_leg_idx=affected_leg_idx,
+    recovery_mode=recovery_mode,
+    recovery_thigh_velocity_kd=recovery_thigh_velocity_kd,
+    recovery_calf_torque=recovery_calf_torque,
+  )
+
   return ManagerBasedRlEnvCfg(
     scene=SceneCfg(
-      entities={"robot": get_go2_robot_cfg()},
+      entities={"robot": robot_cfg},
       terrain=TerrainEntityCfg(terrain_type="plane"),
       num_envs=num_envs,
       env_spacing=env_spacing,
