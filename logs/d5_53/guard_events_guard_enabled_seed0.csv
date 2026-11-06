@@ -1,0 +1,4 @@
+step,event,state
+44,defer entry (h=0.0240 vz=-0.075),DEFER_TOUCHDOWN
+46,FL touchdown confirmed,DEFER_STANCE
+62,FL lift-off confirmed; guard re-armed,ARMED

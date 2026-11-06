@@ -1,0 +1,44 @@
+==============================================================================
+D5.35 SEED 11 FL CLEARANCE DIAGNOSTIC  run=seed0_baseline_reference
+==============================================================================
+
+--- ENTRY STATE AT NORMAL_WALK -> RECOVERY ---
+  entry step: 44  entry time: 0.880 s
+  entry leg speed: 0.000000 rad/s  tier: static_baseline
+  active margins: clearance=0.020000 m  crossing=0.020000 m
+  base pose: x=-0.1740 y=0.2545 z=0.3090
+  base attitude: roll=0.0088 rad  pitch=0.0076 rad  yaw=0.0146 rad
+  base vertical velocity: -0.0327 m/s
+  wire contact at entry: True
+  FL foot pose at entry: x=0.0074 y=0.3686 z=0.0258
+  FL joint state at entry: hip=-0.1186/0.1171  thigh=0.9037/1.9383  calf=-1.7472/-1.5678
+
+--- RECOVERY TRAJECTORY SUMMARY ---
+  recovery entry step: 44
+  stage1 latch step: 84
+  stage2 latch step: 84
+  recovery exit step: 88  reason: crossing_release
+  env_terminated=False  env_truncated=False
+  overall observation-window outcome: horizon_exhausted
+  first divergence from seed0 reference should be interpreted from this run's trace, not guessed
+
+--- STAGE-1 FAILURE DIAGNOSIS ---
+  stage1 never latched: False
+  recovered-step any calf_lifted=true: True
+  recovered-step any calf_side_far=true: True
+  diagnosed reason: stage1 latched
+
+--- PERIOD STATS (FL wire-relative signals) ---
+  recovery calf height above wire range: [-0.0267, 0.1579] m
+  recovery foot height above wire range: [-0.0803, 0.0933] m
+  recovery calf_forward_dist range: [-0.0522, 0.0830] m
+  recovery foot_forward_dist range: [-0.0419, 0.0967] m
+
+--- COMPARISON METRICS ---
+  mean FL foot height above wire during recovery: -0.0425 m
+  mean FL calf height above wire during recovery: 0.0152 m
+  seed0 reference stage1/stage2: True (see CSV row in this run file)
+
+Interpretation guidance: if seed11's calf never achieves both (1) a near->far transition and (2) height above the active clearance margin, stage1 cannot latch in the actual FSM. If the calf does lift but never crosses from near to far, the failure is geometric/trajectory-related rather than threshold-only. If both conditions occur yet stage1 still does not latch, that would indicate an FSM inconsistency (unexpected here).
+
+CSV: logs/d5_35/seed11_clearance_diagnostic/seed0_baseline_reference.csv

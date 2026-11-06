@@ -1,0 +1,56 @@
+
+==== seed 0 ====
+
+  -- FR --
+  Pre-recovery (steps 0-43) stance/swing runs (step range : state):
+    [  0-  1] SWING
+    [  2- 24] STANCE
+    [ 25- 31] SWING
+  Mean pre-recovery stance duration: 23.0 steps
+  Mean pre-recovery swing duration: 4.5 steps
+  Post-entry (>=step 44) runs:
+    [ 32- 46] STANCE
+    [ 47- 54] SWING
+    [ 55- 62] STANCE
+  Swing run covering step 47: [47-54] (len=8, typical pre-recovery swing=4.5 steps)
+
+  -- RL --
+  Pre-recovery (steps 0-43) stance/swing runs (step range : state):
+    [  0-  1] SWING
+    [  2- 23] STANCE
+    [ 24- 31] SWING
+  Mean pre-recovery stance duration: 22.0 steps
+  Mean pre-recovery swing duration: 5.0 steps
+  Post-entry (>=step 44) runs:
+    [ 32- 46] STANCE
+    [ 47- 52] SWING
+    [ 53- 62] STANCE
+  Swing run covering step 47: [47-52] (len=6, typical pre-recovery swing=5.0 steps)
+
+==== seed 1 ====
+
+  -- FR --
+  Pre-recovery (steps 0-43) stance/swing runs (step range : state):
+    [  0-  1] SWING
+    [  2- 24] STANCE
+    [ 25- 31] SWING
+  Mean pre-recovery stance duration: 23.0 steps
+  Mean pre-recovery swing duration: 4.5 steps
+  Post-entry (>=step 44) runs:
+    [ 32- 46] STANCE
+    [ 47- 53] SWING
+    [ 54- 62] STANCE
+  Swing run covering step 47: [47-53] (len=7, typical pre-recovery swing=4.5 steps)
+
+  -- RL --
+  Pre-recovery (steps 0-43) stance/swing runs (step range : state):
+    [  0-  1] SWING
+    [  2- 23] STANCE
+    [ 24- 31] SWING
+  Mean pre-recovery stance duration: 22.0 steps
+  Mean pre-recovery swing duration: 5.0 steps
+  Post-entry (>=step 44) runs:
+    [ 32- 46] STANCE
+    [ 47- 51] SWING
+    [ 52- 62] STANCE
+  Swing run covering step 47: [47-51] (len=5, typical pre-recovery swing=5.0 steps)

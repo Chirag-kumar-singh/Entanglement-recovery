@@ -1,0 +1,90 @@
+=== seed 10 ===
+[recovery] env0 EXIT RECOVERY (reason=cap_timeout, elapsed=48, wire_contact=yes)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed10/trajectory.csv
+  trigger_step=45
+  EXIT RECOVERY step=91 elapsed=48 timeout=True
+  stage1_first_latch_step=None
+  stage2_first_latch_step=None
+  first_actuator_restore_step=91
+  first_sustained_fl_ground_step=53
+=== seed 11 ===
+[recovery] env0 EXIT RECOVERY (reason=cap_timeout, elapsed=48, wire_contact=no)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed11/trajectory.csv
+  trigger_step=52
+  EXIT RECOVERY step=98 elapsed=48 timeout=True
+  stage1_first_latch_step=None
+  stage2_first_latch_step=None
+  first_actuator_restore_step=98
+  first_sustained_fl_ground_step=101
+=== seed 12 ===
+[recovery] env0 RECOVERY SUCCESS (post-recovery stability window reached)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed12/trajectory.csv
+  trigger_step=45
+  EXIT RECOVERY step=91 elapsed=48 timeout=False
+  stage1_first_latch_step=86
+  stage2_first_latch_step=87
+  first_actuator_restore_step=91
+  first_sustained_fl_ground_step=53
+=== seed 13 ===
+[recovery] env0 EXIT RECOVERY (reason=cap_timeout, elapsed=48, wire_contact=no)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed13/trajectory.csv
+  trigger_step=52
+  EXIT RECOVERY step=98 elapsed=48 timeout=True
+  stage1_first_latch_step=None
+  stage2_first_latch_step=None
+  first_actuator_restore_step=98
+  first_sustained_fl_ground_step=58
+=== seed 14 ===
+[recovery] env0 EXIT RECOVERY (reason=cap_timeout, elapsed=48, wire_contact=no)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed14/trajectory.csv
+  trigger_step=45
+  EXIT RECOVERY step=91 elapsed=48 timeout=True
+  stage1_first_latch_step=None
+  stage2_first_latch_step=None
+  first_actuator_restore_step=91
+  first_sustained_fl_ground_step=53
+=== seed 15 ===
+[recovery] env0 EXIT RECOVERY (reason=cap_timeout, elapsed=48, wire_contact=no)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed15/trajectory.csv
+  trigger_step=48
+  EXIT RECOVERY step=94 elapsed=48 timeout=True
+  stage1_first_latch_step=None
+  stage2_first_latch_step=None
+  first_actuator_restore_step=94
+  first_sustained_fl_ground_step=55
+=== seed 16 ===
+[recovery] env0 EXIT RECOVERY (reason=cap_timeout, elapsed=48, wire_contact=no)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed16/trajectory.csv
+  trigger_step=48
+  EXIT RECOVERY step=94 elapsed=48 timeout=True
+  stage1_first_latch_step=None
+  stage2_first_latch_step=None
+  first_actuator_restore_step=94
+  first_sustained_fl_ground_step=54
+=== seed 17 ===
+[recovery] env0 EXIT RECOVERY (reason=cap_timeout, elapsed=48, wire_contact=no)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed17/trajectory.csv
+  trigger_step=46
+  EXIT RECOVERY step=92 elapsed=48 timeout=True
+  stage1_first_latch_step=None
+  stage2_first_latch_step=None
+  first_actuator_restore_step=92
+  first_sustained_fl_ground_step=94
+=== seed 18 ===
+[recovery] env0 RECOVERY SUCCESS (post-recovery stability window reached)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed18/trajectory.csv
+  trigger_step=47
+  EXIT RECOVERY step=93 elapsed=48 timeout=False
+  stage1_first_latch_step=89
+  stage2_first_latch_step=89
+  first_actuator_restore_step=93
+  first_sustained_fl_ground_step=95
+=== seed 19 ===
+[recovery] env0 RECOVERY SUCCESS (post-recovery stability window reached)
+[D5.23] wrote logs/d5_25_extended_seed_anomaly_audit/seed19/trajectory.csv
+  trigger_step=44
+  EXIT RECOVERY step=79 elapsed=37 timeout=False
+  stage1_first_latch_step=74
+  stage2_first_latch_step=75
+  first_actuator_restore_step=79
+  first_sustained_fl_ground_step=53

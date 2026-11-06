@@ -1,0 +1,7 @@
+variant,seed,rows,hybrid_handoff_step,peak_abs_pitch_rate_k0_9_rps,min_total_support_k0_9_n,min_base_z_full_run_m,peak_abs_pitch_rate_full_run_rps,min_total_support_full_run_n,steps_min_total_support_lt10N,first_crossing_step,first_release_step,recovery_exit_step,recovery_exit_timeout,genuine_recovery_complete,fell_over_step
+bounded_retraction,0,250,62,0.35373222827911377,165.93948364257812,0.28179264068603516,0.6954534649848938,0.0,1,,,109,True,False,
+bounded_retraction,11,250,62,0.30582404136657715,86.38768768310547,0.2822161018848419,0.6393238306045532,0.0,1,,,109,True,False,
+baseline,0,250,44,1.8039826154708862,0.0,0.20402835309505463,1.8039826154708862,0.0,9,84,88,88,False,True,
+guard_enabled,0,250,62,0.23736891150474548,166.06902313232422,0.17056165635585785,3.4520246982574463,0.0,15,91,95,95,False,True,
+baseline,11,250,51,2.3822436332702637,0.0,0.19600766897201538,2.3822436332702637,0.0,7,,,98,True,False,
+guard_enabled,11,250,62,0.23624826967716217,165.7473907470703,0.17274564504623413,2.798652172088623,0.0,27,90,94,94,False,True,

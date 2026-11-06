@@ -1,0 +1,20 @@
+D5.29 Phase-aware FSM Comparison
+============================================================
+Seed: 0
+Variant: baseline
+Recovery mode: hybrid
+
+Entry State:
+  Entry leg speed: 0.0000 rad/s
+  Entry leg speed tier: SLOW
+
+Effective Thresholds:
+  Clearance margin: 0.0200 m
+  Foot crossing margin: 0.0200 m
+
+Recovery Outcome:
+  Genuinely recovered: False
+  Stage 1 reached: False
+  Stage 2 reached: False
+  Crossing achieved at step: -1
+  Exit reason: other

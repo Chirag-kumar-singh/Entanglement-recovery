@@ -1,5 +1,4 @@
 wandb/
-logs/
 onnx/
 videos/
 __pycache__/
@@ -34,10 +33,16 @@ dist/
 .env
 *.local
 
-# Experimental/diagnostic scripts and notes.
-scripts/_d*_driver*.sh
-scripts/d[0-9]_*.py
-scripts/d[0-9][0-9]_*.py
+# Training logs: keep diagnostic-experiment logs, but drop heavy RSL-RL
+# training artifacts except the single frozen walking-policy checkpoint
+# (DEFAULT_WALK_CHECKPOINT) needed to reproduce recovery experiments
+# without retraining the base walking policy.
+logs/rsl_rl/*
+!logs/rsl_rl/go2_velocity/
+logs/rsl_rl/go2_velocity/*
+!logs/rsl_rl/go2_velocity/2026-09-17_13-00-16/
+logs/rsl_rl/go2_velocity/2026-09-17_13-00-16/*.pt
+!logs/rsl_rl/go2_velocity/2026-09-17_13-00-16/model_9900.pt
 *_IMPLEMENTATION_NOTES.md
 *_EXPERIMENT*.md
 

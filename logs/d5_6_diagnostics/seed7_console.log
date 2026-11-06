@@ -1,0 +1,390 @@
+/home/arc01/mjlab/.venv/lib/python3.13/site-packages/mujoco_warp/_src/io.py:713: UserWarning: MULTICCD is enabled, but the scene contains CCD pairs without multicontact support: [('CAPSULE', 'CYLINDER')]. At most 1 contact will be generated for these pairs.
+  warnings.warn(
+Setting seed: 7
+Warp 1.14.0 initialized:
+   CUDA Toolkit 12.9, Driver 13.0
+   Devices:
+     "cpu"      : "x86_64"
+     "cuda:0"   : "NVIDIA RTX 5000 Ada Generation Laptop GPU" (16 GiB, sm_89, mempool enabled)
+   Kernel cache:
+     /home/arc01/.cache/warp/1.14.0
+
++---------------------------------+
+|         Base Environment        |
++------------------------+--------+
+| Property               | Value  |
++------------------------+--------+
+| Number of environments | 1      |
+| Environment device     | cpu    |
+| Environment seed       | 7      |
+| Physics step-size      | 0.0025 |
+| Environment step-size  | 0.02   |
++------------------------+--------+
+
+[INFO] <EventManager> contains 1 active terms.
++-------------------------------------+
+| Active Event Terms in Mode: 'reset' |
++--------+----------------------------+
+| Index  | Name                       |
++--------+----------------------------+
+|   0    | reset_base                 |
+|   1    | reset_robot_joints         |
++--------+----------------------------+
+
+[INFO] <CommandManager> contains 1 active terms.
++----------------------------------------+
+|          Active Command Terms          |
++-------+-------+------------------------+
+| Index | Name  |          Type          |
++-------+-------+------------------------+
+|   0   | twist | UniformVelocityCommand |
++-------+-------+------------------------+
+
+Module mujoco_warp._src.render_util d9a3176 load on device 'cpu' took 0.92 ms  (cached)
+Module mujoco_warp._src.bvh fb7c74a load on device 'cpu' took 0.22 ms  (cached)
+
++--------------------------------+
+|        Base Environment        |
++------------------------+-------+
+| Property               | Value |
++------------------------+-------+
+| Number of environments | 1     |
+| Environment device     | cpu   |
+| Environment seed       | None  |
+| Physics step-size      | 0.005 |
+| Environment step-size  | 0.02  |
++------------------------+-------+
+
+[INFO] <EventManager> contains 2 active terms.
++-------------------------------------+
+| Active Event Terms in Mode: 'reset' |
++--------+----------------------------+
+| Index  | Name                       |
++--------+----------------------------+
+|   0    | reset_base                 |
+|   1    | reset_robot_joints         |
+|   2    | randomize_terrain          |
++--------+----------------------------+
++---------------------------------------+
+| Active Event Terms in Mode: 'startup' |
++-----------+---------------------------+
+|   Index   | Name                      |
++-----------+---------------------------+
+|     0     | foot_friction             |
+|     1     | encoder_bias              |
+|     2     | base_com                  |
++-----------+---------------------------+
++-----------------------------+
+| Domain Randomization Fields |
++-------+---------------------+
+| Index | Field Name          |
++-------+---------------------+
+|   0   | geom_friction       |
+|   1   | body_ipos           |
+|   2   | body_subtreemass    |
+|   3   | dof_invweight0      |
+|   4   | body_invweight0     |
+|   5   | tendon_length0      |
+|   6   | tendon_invweight0   |
+|   7   | actuator_acc0       |
++-------+---------------------+
+
+[INFO] <CommandManager> contains 1 active terms.
++----------------------------------------+
+|          Active Command Terms          |
++-------+-------+------------------------+
+| Index | Name  |          Type          |
++-------+-------+------------------------+
+|   0   | twist | UniformVelocityCommand |
++-------+-------+------------------------+
+
+[INFO] <ActionManager> contains 1 active terms.
++---------------------------------+
+| Active Action Terms (shape: 12) |
++-------+-----------+-------------+
+| Index | Name      |   Dimension |
++-------+-----------+-------------+
+|   0   | joint_pos |          12 |
++-------+-----------+-------------+
+
+[INFO] <ObservationManager> contains 2 groups.
++-----------------------------------------------------------+
+| Active Observation Terms in Group: 'actor' (shape: (48,)) |
++-----------+----------------------------------+------------+
+|   Index   | Name                             |   Shape    |
++-----------+----------------------------------+------------+
+|     0     | base_lin_vel                     |    (3,)    |
+|     1     | base_ang_vel                     |    (3,)    |
+|     2     | projected_gravity                |    (3,)    |
+|     3     | joint_pos                        |   (12,)    |
+|     4     | joint_vel                        |   (12,)    |
+|     5     | actions                          |   (12,)    |
+|     6     | command                          |    (3,)    |
++-----------+----------------------------------+------------+
++------------------------------------------------------------+
+| Active Observation Terms in Group: 'critic' (shape: (72,)) |
++----------+------------------------------------+------------+
+|  Index   | Name                               |   Shape    |
++----------+------------------------------------+------------+
+|    0     | base_lin_vel                       |    (3,)    |
+|    1     | base_ang_vel                       |    (3,)    |
+|    2     | projected_gravity                  |    (3,)    |
+|    3     | joint_pos                          |   (12,)    |
+|    4     | joint_vel                          |   (12,)    |
+|    5     | actions                            |   (12,)    |
+|    6     | command                            |    (3,)    |
+|    7     | foot_height                        |    (4,)    |
+|    8     | foot_air_time                      |    (4,)    |
+|    9     | foot_contact                       |    (4,)    |
+|    10    | foot_contact_forces                |   (12,)    |
++----------+------------------------------------+------------+
+
+[INFO] <TerminationManager> contains 3 active terms.
++------------------------------------+
+|      Active Termination Terms      |
++-------+-----------------+----------+
+| Index | Name            | Time Out |
++-------+-----------------+----------+
+|   0   | time_out        |   True   |
+|   1   | fell_over       |  False   |
+|   2   | illegal_contact |  False   |
++-------+-----------------+----------+
+
+[INFO] <RewardManager> contains 13 active terms.
++-----------------------------------------+
+|           Active Reward Terms           |
++-------+------------------------+--------+
+| Index | Name                   | Weight |
++-------+------------------------+--------+
+|   0   | track_linear_velocity  |    2.0 |
+|   1   | track_angular_velocity |    2.0 |
+|   2   | upright                |    1.0 |
+|   3   | pose                   |    1.0 |
+|   4   | body_ang_vel           |    0.0 |
+|   5   | angular_momentum       |    0.0 |
+|   6   | dof_pos_limits         |   -1.0 |
+|   7   | action_rate_l2         |   -0.1 |
+|   8   | air_time               |    0.0 |
+|   9   | foot_clearance         |   -2.0 |
+|   10  | foot_swing_height      |  -0.25 |
+|   11  | foot_slip              |   -0.1 |
+|   12  | soft_landing           | -1e-05 |
++-------+------------------------+--------+
+
+[INFO] <NullCurriculumManager> (inactive)
+[INFO] <MetricsManager> contains 1 active terms.
++-------------------------+
+|   Active Metrics Terms  |
++-------+-----------------+
+| Index | Name            |
++-------+-----------------+
+|   0   | mean_action_acc |
++-------+-----------------+
+
+[INFO] <NullRecorderManager> (inactive)
+Module mujoco_warp._src.io 056e107 load on device 'cpu' took 0.35 ms  (cached)
+Module mujoco_warp._src.smooth 60df080 load on device 'cpu' took 0.33 ms  (cached)
+Module _tile_cholesky_factorize_block__locals__kernel_2efc24b8 92ba76d load on device 'cpu' took 0.16 ms  (cached)
+Module _tile_cholesky_solve_block__locals__kernel_8ea2ce58 caf905c load on device 'cpu' took 0.16 ms  (cached)
+Module reset_data__locals__reset_xfrc_applied_03030511 6442adb load on device 'cpu' took 0.19 ms  (cached)
+Module reset_data__locals__reset_M_631075dd 270a798 load on device 'cpu' took 0.12 ms  (cached)
+Module reset_data__locals__reset_mocap_6513201c ee8f7ba load on device 'cpu' took 0.12 ms  (cached)
+Module reset_data__locals__reset_contact_5c08f689 9d2cde1 load on device 'cpu' took 0.12 ms  (cached)
+Module reset_data__locals__reset_sleep_50b990da 5427725 load on device 'cpu' took 0.13 ms  (cached)
+Module reset_data__locals__reset_nworld_69a10925 c22681c load on device 'cpu' took 0.13 ms  (cached)
+Module _nxn_broadphase__locals__kernel_df6640ed 8a5d6ba load on device 'cpu' took 0.16 ms  (cached)
+Module _primitive_narrowphase__locals__primitive_narrowphase_cb9b6509 59dffc3 load on device 'cpu' took 0.24 ms  (cached)
+Module mujoco_warp._src.constraint 1055a87 load on device 'cpu' took 0.14 ms  (cached)
+Module _friction_dof__locals__kernel_3c14efda 128ddbb load on device 'cpu' took 0.22 ms  (cached)
+Module _limit_slide_hinge__locals__kernel_4d6c55ab 973480c load on device 'cpu' took 0.21 ms  (cached)
+Module _efc_contact_init__locals__kernel_07a590e0 183351b load on device 'cpu' took 0.18 ms  (cached)
+Module _efc_contact_jac_dense__locals__kernel_5e1af9f9 fc9257f load on device 'cpu' took 0.20 ms  (cached)
+Module _efc_contact_update__locals__kernel_8aad7bfd 2b56b7e load on device 'cpu' took 0.16 ms  (cached)
+Module mujoco_warp._src.forward 70f2f91 load on device 'cpu' took 0.19 ms  (cached)
+Module mujoco_warp._src.passive 9ef5a40 load on device 'cpu' took 0.26 ms  (cached)
+Module mujoco_warp._src.sensor 5b546e1 load on device 'cpu' took 0.28 ms  (cached)
+Module _qfrc_smooth__locals__kernel_6eb3d958 21660d5 load on device 'cpu' took 0.15 ms  (cached)
+Module mujoco_warp._src.support db2c7c5 load on device 'cpu' took 0.14 ms  (cached)
+Module _tile_cholesky_factorize_solve_block__locals__kernel_419fe7e0 24a0ec6 load on device 'cpu' took 0.14 ms  (cached)
+Module _solve_init_dof__locals__kernel_99a497d1 8d57fe1 load on device 'cpu' took 0.14 ms  (cached)
+Module mujoco_warp._src.solver e3858a2 load on device 'cpu' took 0.22 ms  (cached)
+Module _solve_init_jaref_kernel__locals__kernel_16fae688 3ee4410 load on device 'cpu' took 0.14 ms  (cached)
+Module mul_m_kernel__locals___mul_m_fd2186c4 026f940 load on device 'cpu' took 0.13 ms  (cached)
+Module _update_constraint_efc__locals__kernel_4af8f110 fc7fac2 load on device 'cpu' took 0.14 ms  (cached)
+Module _update_constraint_init_qfrc_constraint_dense__locals__kernel_391cb5b4 a12f83e load on device 'cpu' took 0.14 ms  (cached)
+Module _update_gradient_zero_grad_dot__locals__kernel_cb780630 407be49 load on device 'cpu' took 0.14 ms  (cached)
+Module _update_gradient_grad__locals__kernel_0cbf4927 992aea9 load on device 'cpu' took 0.14 ms  (cached)
+Module _update_gradient_JTDAJ_dense_tiled__locals__kernel_d367b9e1 220f402 load on device 'cpu' took 0.14 ms  (cached)
+Module _update_gradient_cholesky__locals__kernel_3502583c 488b023 load on device 'cpu' took 0.14 ms  (cached)
+Module _linesearch_iterative_kernel__locals__kernel_93e8b4f2 3e0ea3c load on device 'cpu' took 0.22 ms  (cached)
+Module _update_constraint_efc__locals__kernel_e30beb1f add8868 load on device 'cpu' took 0.17 ms  (cached)
+Module _update_constraint_init_qfrc_constraint_dense__locals__kernel_5ba72bac 8201f98 load on device 'cpu' took 0.15 ms  (cached)
+Module _update_gradient_zero_grad_dot__locals__kernel_f708ee5f f6af282 load on device 'cpu' took 0.14 ms  (cached)
+Module _update_gradient_grad__locals__kernel_cb93df65 99de580 load on device 'cpu' took 0.14 ms  (cached)
+Module _update_gradient_cholesky__locals__kernel_80d2025c 14df0d4 load on device 'cpu' took 0.14 ms  (cached)
+Module _contact_sort__locals__contact_sort_321f5f3e 5a98d63 load on device 'cpu' took 0.14 ms  (cached)
+Module mujoco_warp._src.ray 3e72851 load on device 'cpu' took 0.21 ms  (cached)
+--------------------------------------------------------------------------------
+Resolved observation sets: 
+	 actor :  ('actor',)
+	 critic :  ('critic',)
+--------------------------------------------------------------------------------
+Actor Model: MLPModel(
+  (obs_normalizer): EmpiricalNormalization()
+  (distribution): GaussianDistribution()
+  (mlp): MLP(
+    (0): Linear(in_features=48, out_features=512, bias=True)
+    (1): ELU(alpha=1.0)
+    (2): Linear(in_features=512, out_features=256, bias=True)
+    (3): ELU(alpha=1.0)
+    (4): Linear(in_features=256, out_features=128, bias=True)
+    (5): ELU(alpha=1.0)
+    (6): Linear(in_features=128, out_features=12, bias=True)
+  )
+)
+Critic Model: MLPModel(
+  (obs_normalizer): EmpiricalNormalization()
+  (mlp): MLP(
+    (0): Linear(in_features=72, out_features=512, bias=True)
+    (1): ELU(alpha=1.0)
+    (2): Linear(in_features=512, out_features=256, bias=True)
+    (3): ELU(alpha=1.0)
+    (4): Linear(in_features=256, out_features=128, bias=True)
+    (5): ELU(alpha=1.0)
+    (6): Linear(in_features=128, out_features=1, bias=True)
+  )
+)
+[INFO] <ActionManager> contains 1 active terms.
++--------------------------------+
+| Active Action Terms (shape: 3) |
++-------+-----------+------------+
+| Index | Name      |  Dimension |
++-------+-----------+------------+
+|   0   | joint_pos |          3 |
++-------+-----------+------------+
+
+[INFO] <ObservationManager> contains 2 groups.
++-----------------------------------------------------------+
+| Active Observation Terms in Group: 'actor' (shape: (40,)) |
++--------+---------------------------------------+----------+
+| Index  | Name                                  |  Shape   |
++--------+---------------------------------------+----------+
+|   0    | affected_leg_onehot                   |   (4,)   |
+|   1    | recovery_phase_onehot                 |   (3,)   |
+|   2    | recovery_elapsed_norm                 |   (1,)   |
+|   3    | affected_leg_contact                  |   (1,)   |
+|   4    | affected_leg_joint_pos                |   (3,)   |
+|   5    | affected_leg_joint_vel                |   (3,)   |
+|   6    | affected_foot_pos_rel_body            |   (3,)   |
+|   7    | affected_foot_vel_rel_body            |   (3,)   |
+|   8    | base_lin_vel                          |   (3,)   |
+|   9    | base_ang_vel                          |   (3,)   |
+|   10   | projected_gravity                     |   (3,)   |
+|   11   | previous_residual                     |   (3,)   |
+|   12   | walk_affected_action                  |   (3,)   |
+|   13   | calf_height_above_wire_norm           |   (1,)   |
+|   14   | calf_forward_dist_norm                |   (1,)   |
+|   15   | toe_height_above_wire_norm            |   (1,)   |
+|   16   | toe_forward_dist_norm                 |   (1,)   |
++--------+---------------------------------------+----------+
++------------------------------------------------------------+
+| Active Observation Terms in Group: 'critic' (shape: (64,)) |
++---------+---------------------------------------+----------+
+|  Index  | Name                                  |  Shape   |
++---------+---------------------------------------+----------+
+|    0    | affected_leg_onehot                   |   (4,)   |
+|    1    | recovery_phase_onehot                 |   (3,)   |
+|    2    | recovery_elapsed_norm                 |   (1,)   |
+|    3    | affected_leg_contact                  |   (1,)   |
+|    4    | affected_leg_joint_pos                |   (3,)   |
+|    5    | affected_leg_joint_vel                |   (3,)   |
+|    6    | affected_foot_pos_rel_body            |   (3,)   |
+|    7    | affected_foot_vel_rel_body            |   (3,)   |
+|    8    | base_lin_vel                          |   (3,)   |
+|    9    | base_ang_vel                          |   (3,)   |
+|    10   | projected_gravity                     |   (3,)   |
+|    11   | previous_residual                     |   (3,)   |
+|    12   | walk_affected_action                  |   (3,)   |
+|    13   | calf_height_above_wire_norm           |   (1,)   |
+|    14   | calf_forward_dist_norm                |   (1,)   |
+|    15   | toe_height_above_wire_norm            |   (1,)   |
+|    16   | toe_forward_dist_norm                 |   (1,)   |
+|    17   | joint_pos_full                        |  (12,)   |
+|    18   | joint_vel_full                        |  (12,)   |
++---------+---------------------------------------+----------+
+
+[INFO] <TerminationManager> contains 1 active terms.
++------------------------------+
+|   Active Termination Terms   |
++-------+-----------+----------+
+| Index | Name      | Time Out |
++-------+-----------+----------+
+|   0   | fell_over |  False   |
++-------+-----------+----------+
+
+[INFO] <RewardManager> contains 11 active terms.
++----------------------------------------------------+
+|                Active Reward Terms                 |
++-------+-----------------------------------+--------+
+| Index | Name                              | Weight |
++-------+-----------------------------------+--------+
+|   0   | forward_velocity_tracking         |    1.0 |
+|   1   | wire_recovery_progress            |    0.5 |
+|   2   | wire_toe_crossing_progress        |    0.5 |
+|   3   | affected_leg_return_to_stance     |    0.3 |
+|   4   | wire_crossing_event_bonus         |    1.0 |
+|   5   | wire_recovery_final_success_bonus |    5.0 |
+|   6   | uprightness                       |    1.0 |
+|   7   | body_stability                    |   -0.2 |
+|   8   | residual_magnitude                |  -0.02 |
+|   9   | affected_leg_joint_vel            | -0.003 |
+|   10  | residual_rate                     | -0.005 |
++-------+-----------------------------------+--------+
+
+[INFO] <NullCurriculumManager> (inactive)
+[INFO] <MetricsManager> contains 10 active terms.
++---------------------------------+
+|       Active Metrics Terms      |
++-------+-------------------------+
+| Index | Name                    |
++-------+-------------------------+
+|   0   | recovery_triggered      |
+|   1   | crossing_achieved       |
+|   2   | recovery_success        |
+|   3   | recovery_cap_hit        |
+|   4   | fell_over               |
+|   5   | residual_magnitude_mean |
+|   6   | residual_magnitude_peak |
+|   7   | forward_progress        |
+|   8   | post_recovery_tilt      |
+|   9   | recovery_duration_steps |
++-------+-------------------------+
+
+[INFO] <NullRecorderManager> (inactive)
+Setting seed: 7
+Module ccd_kernel_builder__locals__ccd_kernel_7913d4e1 b2d646c load on device 'cpu' took 0.26 ms  (cached)
+Module _primitive_narrowphase__locals__primitive_narrowphase_e67c3427 57d86c0 load on device 'cpu' took 0.26 ms  (cached)
+Module _equality_connect__locals__kernel_3c90db2a f4309da load on device 'cpu' took 0.21 ms  (cached)
+Module _friction_dof__locals__kernel_196c77d2 ed54ad1 load on device 'cpu' took 0.22 ms  (cached)
+Module _limit_slide_hinge__locals__kernel_6e38514e f43752c load on device 'cpu' took 0.21 ms  (cached)
+Module _efc_contact_init__locals__kernel_6eab31b8 98d11aa load on device 'cpu' took 0.18 ms  (cached)
+Module _efc_contact_jac_sparse__locals__kernel_f9099d1d 97893ca load on device 'cpu' took 0.17 ms  (cached)
+Module _solve_init_dof__locals__kernel_c6f567bf 9a52ad9 load on device 'cpu' took 0.15 ms  (cached)
+Module _solve_init_jaref_kernel__locals__kernel_9b7682d0 c071265 load on device 'cpu' took 0.14 ms  (cached)
+Module _update_constraint_init_qfrc_constraint_sparse__locals__kernel_16efb537 0d9a44e load on device 'cpu' took 0.14 ms  (cached)
+Module _update_gradient_init_h_sparse__locals__kernel_8d599502 c72ae5a load on device 'cpu' took 0.14 ms  (cached)
+Module _JTDAJ_sparse__locals__kernel_6fe61e97 a2b5fff load on device 'cpu' took 0.14 ms  (cached)
+Module _update_gradient_cholesky_blocked__locals__kernel_1f299177 a9030fa load on device 'cpu' took 0.24 ms  (cached)
+Module _linesearch_jv_fused_kernel__locals__kernel_2acc8429 70db8f9 load on device 'cpu' took 0.17 ms  (cached)
+Module _linesearch_iterative_kernel__locals__kernel_59bb1059 ad60e77 load on device 'cpu' took 0.21 ms  (cached)
+Module _update_gradient_h_incremental_sparse__locals__kernel_abf1f59a a136f23 load on device 'cpu' took 0.19 ms  (cached)
+Module _update_gradient_cholesky_blocked_skip_unchanged__locals__kernel_e51b3157 c2426d6 load on device 'cpu' took 0.22 ms  (cached)
+Module mujoco_warp._src.derivative 761668c load on device 'cpu' took 0.27 ms  (cached)
+Module _next_time_builder__locals___next_time_95ad6d7a e26b00c load on device 'cpu' took 0.16 ms  (cached)
+[recovery] env0 ENTER RECOVERY (mode=hybrid, affected_leg_idx=0, thigh_delta=0.3, calf_delta=-0.3, recovery_thigh_velocity=-2.0, recovery_thigh_velocity_kd=2.0, recovery_calf_torque=5.0)
+[recovery] env0 EXIT RECOVERY (reason=cap_timeout, elapsed=48, wire_contact=no)
+[D5.6] wrote logs/d5_6_diagnostics/seed7/trajectory.csv
+  ENTER RECOVERY step=45
+  EXIT RECOVERY step=91 elapsed=48 timeout=True
+  stage1_first_latch_step=None
+  stage2_first_latch_step=None

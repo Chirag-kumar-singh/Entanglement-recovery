@@ -1,0 +1,9 @@
+check,value,pass
+baseline_seed0_reproduces_d5_53,max_abs_diff=0.000e+00,True
+guard_enabled_seed0_reproduces_d5_53,max_abs_diff=0.000e+00,True
+baseline_seed11_reproduces_d5_53,max_abs_diff=0.000e+00,True
+guard_enabled_seed11_reproduces_d5_53,max_abs_diff=0.000e+00,True
+wire_collisions_enabled_bounded_retraction_seed0,nexclude=6 (baseline 6); robot-wire substep contacts=1937,True
+wire_collisions_enabled_bounded_retraction_seed11,nexclude=6 (baseline 6); robot-wire substep contacts=2125,True
+fl_released_to_walking_before_exit_seed0,released_at_least_once=True resumed_at_least_once=False,True
+fl_released_to_walking_before_exit_seed11,released_at_least_once=True resumed_at_least_once=False,True

@@ -1,0 +1,4 @@
+run,seed,variant,csv,summary,entry_step,entry_leg_speed,entry_tier,clearance_margin,crossing_margin,stage1_step,stage2_step,exit_step,exit_reason,failure_reason
+seed0_baseline_reference,0,baseline,logs/d5_35/seed11_clearance_diagnostic/seed0_baseline_reference.csv,logs/d5_35/seed11_clearance_diagnostic/seed0_baseline_reference_summary.txt,44,0.0,static_baseline,0.02,0.02,84,84,88,horizon_exhausted,
+seed11_baseline,11,baseline,logs/d5_35/seed11_clearance_diagnostic/seed11_baseline.csv,logs/d5_35/seed11_clearance_diagnostic/seed11_baseline_summary.txt,51,0.0,static_baseline,0.02,0.02,-1,-1,98,horizon_exhausted,missing near-to-far transition
+seed11_phase_aware,11,phase_aware,logs/d5_35/seed11_clearance_diagnostic/seed11_phase_aware.csv,logs/d5_35/seed11_clearance_diagnostic/seed11_phase_aware_summary.txt,51,0.8113184571266174,slow,0.03,0.04,-1,-1,98,horizon_exhausted,missing near-to-far transition

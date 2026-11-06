@@ -1,0 +1,4 @@
+Viewer verification (final script version, 2026-10-20). Each command ran 250 policy steps to completion, exit 0.
+baseline:         logs/d5_52/viewer_baseline/trace.csv         byte-identical to logs/d5_52/trace_baseline.csv (250 rows, 153 cols)
+wire_off_control: logs/d5_52/viewer_wire_off_control/trace.csv byte-identical to logs/d5_52/trace_wire_off_control.csv
+wire_off_forced:  logs/d5_52/viewer_wire_off_forced/trace.csv  byte-identical to logs/d5_52/trace_wire_off_forced.csv

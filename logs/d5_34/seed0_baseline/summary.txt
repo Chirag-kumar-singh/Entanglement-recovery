@@ -1,0 +1,41 @@
+======================================================================
+D5.34 FORWARD-STALL / RL-CONTACT DIAGNOSTIC  seed=0 variant=baseline
+======================================================================
+
+======================================================================
+D5.34 SENSOR GEOM COVERAGE (verified at build time)
+======================================================================
+wire geom segments (shared by all wire-contact sensors): ('wire_seg_0_geom', 'wire_seg_1_geom', 'wire_seg_2_geom', 'wire_seg_3_geom', 'wire_seg_4_geom', 'wire_seg_5_geom', 'wire_seg_6_geom')
+existing wire_contact (UNCHANGED) secondary pattern: torch.Size([7]) rows (FL calf2 vs wire; not re-defined by this script)
+d5_34_rl_wire_contact primary (RL collision geoms matched): ['wire_seg_0_geom', 'wire_seg_1_geom', 'wire_seg_2_geom', 'wire_seg_3_geom', 'wire_seg_4_geom', 'wire_seg_5_geom', 'wire_seg_6_geom']
+d5_34_rl_terrain_contact primary (RL collision geoms matched): ['RL_hip_collision', 'RL_thigh_collision', 'RL_calf1_collision', 'RL_calf2_collision', 'RL_foot_collision']
+d5_34_feet_ground_contact primary (all 4 feet, matched->leg): [('FL_foot_collision', 'FL'), ('FR_foot_collision', 'FR'), ('RL_foot_collision', 'RL'), ('RR_foot_collision', 'RR')]
+
+--- EVENT TIMELINE ---
+  recovery entry (NORMAL->RECOVERY): step 45
+  RECOVERY exit (-> POST_RECOVERY):  step 89
+  RECOVERY exit reason:              crossing_release
+  persistent (tail, never-recovers) fwd-vel stall onset (rolling-10-step mean actual < 50% of cmd=0.30, sustained through end of window): step 193 (detected)
+  end of observation window: step 299
+  env outcome: horizon_exhausted
+
+--- FORWARD VELOCITY: ACTUAL (body-frame) vs COMMANDED ---
+  commanded forward velocity (constant): 0.300 m/s
+  pre-recovery  [0,45): mean=0.192 min=-0.010
+  recovery      [45,89): mean=0.239 min=-0.078
+  post-recovery [89,300): mean=0.075 min=-0.213
+
+--- RL-WIRE CONTACT ---
+  RL-vs-wire contact ever observed: False
+  RL-vs-wire max force magnitude observed: 0.0000 N
+  CONCLUSION for this trajectory: RL-vs-wire contact sensor never fired (found=0 every step). RL-wire contact is RULED OUT as an explanation for this specific rollout's behavior.
+
+--- PER-LEG SUMMARY (full post-recovery window, if reached) ---
+  FL: mean_speed=0.2344 m/s  ground_contact_fraction=0.59  contact_transitions=18
+  FR: mean_speed=0.2395 m/s  ground_contact_fraction=0.62  contact_transitions=19
+  RL: mean_speed=0.1194 m/s  ground_contact_fraction=0.80  contact_transitions=23
+  RR: mean_speed=0.1773 m/s  ground_contact_fraction=0.69  contact_transitions=36
+
+NOTE: timing correlation between recovery exit and any forward-velocity breakdown does NOT by itself establish causation. The per-leg contact/velocity table above is reported as evidence, not as a verdict.
+
+CSV: logs/d5_34/seed0_baseline/telemetry.csv

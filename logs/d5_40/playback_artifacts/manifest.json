@@ -1,0 +1,286 @@
+[
+  {
+    "csv_path": "logs/d5_40/playback_artifacts/seed0_baseline_playback_rows.csv",
+    "entered_recovery": true,
+    "experimental_two_phase": false,
+    "frame_count": 301,
+    "label": "seed0_baseline",
+    "observation_outcome": "script_success",
+    "post_recovery_entered": true,
+    "recovery_exit_reason": "crossing_release",
+    "reference_csv_path": "logs/d5_40/gradual_thigh_transition_experiment/seed0_baseline.csv",
+    "sample_checks": [
+      {
+        "calf_forward_dist_m": -0.19686579704284668,
+        "calf_height_above_wire_m": -0.003225982189178467,
+        "foot_forward_dist_m": -0.1583101451396942,
+        "foot_height_above_wire_m": -0.05901705473661423,
+        "sample_index": 0,
+        "step": 0
+      },
+      {
+        "calf_forward_dist_m": -0.037022437900304794,
+        "calf_height_above_wire_m": -0.01758425682783127,
+        "foot_forward_dist_m": 0.004578299820423126,
+        "foot_height_above_wire_m": -0.0708744004368782,
+        "sample_index": 60,
+        "step": 60
+      },
+      {
+        "calf_forward_dist_m": 0.310019850730896,
+        "calf_height_above_wire_m": -0.019505396485328674,
+        "foot_forward_dist_m": 0.34788966178894043,
+        "foot_height_above_wire_m": -0.07592610269784927,
+        "sample_index": 120,
+        "step": 120
+      },
+      {
+        "calf_forward_dist_m": 0.3684556484222412,
+        "calf_height_above_wire_m": -0.03394431620836258,
+        "foot_forward_dist_m": 0.40424293279647827,
+        "foot_height_above_wire_m": -0.09157337248325348,
+        "sample_index": 179,
+        "step": 179
+      },
+      {
+        "calf_forward_dist_m": 0.378374308347702,
+        "calf_height_above_wire_m": -0.03785064071416855,
+        "foot_forward_dist_m": 0.41713273525238037,
+        "foot_height_above_wire_m": -0.09336381405591965,
+        "sample_index": 239,
+        "step": 239
+      },
+      {
+        "calf_forward_dist_m": 0.37826862931251526,
+        "calf_height_above_wire_m": -0.025630682706832886,
+        "foot_forward_dist_m": 0.4126671850681305,
+        "foot_height_above_wire_m": -0.08326184004545212,
+        "sample_index": 299,
+        "step": 299
+      }
+    ],
+    "seed": 0,
+    "variant": "baseline",
+    "video_info": {
+      "codec_name": "h264",
+      "duration": 6.02,
+      "height": 240,
+      "nb_frames": "301",
+      "width": 840
+    },
+    "video_path": "logs/d5_40/playback_artifacts/seed0_baseline_annotated.mp4"
+  },
+  {
+    "csv_path": "logs/d5_40/playback_artifacts/seed0_gradual_transition_playback_rows.csv",
+    "entered_recovery": true,
+    "experimental_two_phase": true,
+    "frame_count": 301,
+    "label": "seed0_gradual_transition",
+    "observation_outcome": "script_success",
+    "post_recovery_entered": true,
+    "recovery_exit_reason": "crossing_release",
+    "reference_csv_path": "logs/d5_40/gradual_thigh_transition_experiment/seed0_gradual_transition.csv",
+    "sample_checks": [
+      {
+        "calf_forward_dist_m": -0.19686579704284668,
+        "calf_height_above_wire_m": -0.003225982189178467,
+        "foot_forward_dist_m": -0.1583101451396942,
+        "foot_height_above_wire_m": -0.05901705473661423,
+        "sample_index": 0,
+        "step": 0
+      },
+      {
+        "calf_forward_dist_m": -0.037022437900304794,
+        "calf_height_above_wire_m": -0.01758425682783127,
+        "foot_forward_dist_m": 0.004578299820423126,
+        "foot_height_above_wire_m": -0.0708744004368782,
+        "sample_index": 60,
+        "step": 60
+      },
+      {
+        "calf_forward_dist_m": 0.2798529267311096,
+        "calf_height_above_wire_m": -0.01721775531768799,
+        "foot_forward_dist_m": 0.31685319542884827,
+        "foot_height_above_wire_m": -0.07427294552326202,
+        "sample_index": 120,
+        "step": 120
+      },
+      {
+        "calf_forward_dist_m": 0.40838107466697693,
+        "calf_height_above_wire_m": -0.03448644280433655,
+        "foot_forward_dist_m": 0.4442346692085266,
+        "foot_height_above_wire_m": -0.09216500073671341,
+        "sample_index": 179,
+        "step": 179
+      },
+      {
+        "calf_forward_dist_m": 0.39968356490135193,
+        "calf_height_above_wire_m": -0.02655642479658127,
+        "foot_forward_dist_m": 0.4376714825630188,
+        "foot_height_above_wire_m": -0.0822434350848198,
+        "sample_index": 239,
+        "step": 239
+      },
+      {
+        "calf_forward_dist_m": 0.3883199393749237,
+        "calf_height_above_wire_m": -0.025789394974708557,
+        "foot_forward_dist_m": 0.4257103502750397,
+        "foot_height_above_wire_m": -0.08146197348833084,
+        "sample_index": 299,
+        "step": 299
+      }
+    ],
+    "seed": 0,
+    "variant": "gradual_transition",
+    "video_info": {
+      "codec_name": "h264",
+      "duration": 6.02,
+      "height": 240,
+      "nb_frames": "301",
+      "width": 840
+    },
+    "video_path": "logs/d5_40/playback_artifacts/seed0_gradual_transition_annotated.mp4"
+  },
+  {
+    "csv_path": "logs/d5_40/playback_artifacts/seed11_baseline_playback_rows.csv",
+    "entered_recovery": true,
+    "experimental_two_phase": false,
+    "frame_count": 301,
+    "label": "seed11_baseline",
+    "observation_outcome": "horizon_exhausted",
+    "post_recovery_entered": true,
+    "recovery_exit_reason": "cap_timeout",
+    "reference_csv_path": "logs/d5_40/gradual_thigh_transition_experiment/seed11_baseline.csv",
+    "sample_checks": [
+      {
+        "calf_forward_dist_m": -0.21148769557476044,
+        "calf_height_above_wire_m": -0.00322597473859787,
+        "foot_forward_dist_m": -0.17290247976779938,
+        "foot_height_above_wire_m": -0.05901705473661423,
+        "sample_index": 0,
+        "step": 0
+      },
+      {
+        "calf_forward_dist_m": -0.02410096488893032,
+        "calf_height_above_wire_m": -0.027880176901817322,
+        "foot_forward_dist_m": 0.023291263729333878,
+        "foot_height_above_wire_m": -0.07816435396671295,
+        "sample_index": 60,
+        "step": 60
+      },
+      {
+        "calf_forward_dist_m": -0.02756682224571705,
+        "calf_height_above_wire_m": -0.025729738175868988,
+        "foot_forward_dist_m": 0.007345107384026051,
+        "foot_height_above_wire_m": -0.08400754630565643,
+        "sample_index": 120,
+        "step": 120
+      },
+      {
+        "calf_forward_dist_m": -0.02919614128768444,
+        "calf_height_above_wire_m": -0.020019181072711945,
+        "foot_forward_dist_m": -0.008869733661413193,
+        "foot_height_above_wire_m": -0.08458105474710464,
+        "sample_index": 179,
+        "step": 179
+      },
+      {
+        "calf_forward_dist_m": -0.023984035477042198,
+        "calf_height_above_wire_m": -0.03042697161436081,
+        "foot_forward_dist_m": 0.003985680639743805,
+        "foot_height_above_wire_m": -0.09252992272377014,
+        "sample_index": 239,
+        "step": 239
+      },
+      {
+        "calf_forward_dist_m": -0.017281996086239815,
+        "calf_height_above_wire_m": -0.03801930695772171,
+        "foot_forward_dist_m": 0.006309002637863159,
+        "foot_height_above_wire_m": -0.10181191563606262,
+        "sample_index": 299,
+        "step": 299
+      }
+    ],
+    "seed": 11,
+    "variant": "baseline",
+    "video_info": {
+      "codec_name": "h264",
+      "duration": 6.02,
+      "height": 240,
+      "nb_frames": "301",
+      "width": 840
+    },
+    "video_path": "logs/d5_40/playback_artifacts/seed11_baseline_annotated.mp4"
+  },
+  {
+    "csv_path": "logs/d5_40/playback_artifacts/seed11_gradual_transition_playback_rows.csv",
+    "entered_recovery": true,
+    "experimental_two_phase": true,
+    "frame_count": 301,
+    "label": "seed11_gradual_transition",
+    "observation_outcome": "horizon_exhausted",
+    "post_recovery_entered": true,
+    "recovery_exit_reason": "cap_timeout",
+    "reference_csv_path": "logs/d5_40/gradual_thigh_transition_experiment/seed11_gradual_transition.csv",
+    "sample_checks": [
+      {
+        "calf_forward_dist_m": -0.21148769557476044,
+        "calf_height_above_wire_m": -0.00322597473859787,
+        "foot_forward_dist_m": -0.17290247976779938,
+        "foot_height_above_wire_m": -0.05901705473661423,
+        "sample_index": 0,
+        "step": 0
+      },
+      {
+        "calf_forward_dist_m": -0.02410096488893032,
+        "calf_height_above_wire_m": -0.027880176901817322,
+        "foot_forward_dist_m": 0.023291263729333878,
+        "foot_height_above_wire_m": -0.07816435396671295,
+        "sample_index": 60,
+        "step": 60
+      },
+      {
+        "calf_forward_dist_m": -0.011247962713241577,
+        "calf_height_above_wire_m": -0.03947138041257858,
+        "foot_forward_dist_m": 0.023990102112293243,
+        "foot_height_above_wire_m": -0.09713871031999588,
+        "sample_index": 120,
+        "step": 120
+      },
+      {
+        "calf_forward_dist_m": -0.010914970189332962,
+        "calf_height_above_wire_m": -0.03859497606754303,
+        "foot_forward_dist_m": 0.019937701523303986,
+        "foot_height_above_wire_m": -0.09858641028404236,
+        "sample_index": 179,
+        "step": 179
+      },
+      {
+        "calf_forward_dist_m": -0.00786700751632452,
+        "calf_height_above_wire_m": -0.042883746325969696,
+        "foot_forward_dist_m": 0.027684634551405907,
+        "foot_height_above_wire_m": -0.09875534474849701,
+        "sample_index": 239,
+        "step": 239
+      },
+      {
+        "calf_forward_dist_m": -0.015741340816020966,
+        "calf_height_above_wire_m": -0.034777648746967316,
+        "foot_forward_dist_m": 0.016572363674640656,
+        "foot_height_above_wire_m": -0.0914275199174881,
+        "sample_index": 299,
+        "step": 299
+      }
+    ],
+    "seed": 11,
+    "variant": "gradual_transition",
+    "video_info": {
+      "codec_name": "h264",
+      "duration": 6.02,
+      "height": 240,
+      "nb_frames": "301",
+      "width": 840
+    },
+    "video_path": "logs/d5_40/playback_artifacts/seed11_gradual_transition_annotated.mp4"
+  }
+]

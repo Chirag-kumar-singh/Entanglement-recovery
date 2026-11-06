@@ -1,0 +1,115 @@
+--- git commit ---
+8ee51fbcf806a7419189f706d9e394cbeb7790fa
+
+
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   docs/source/changelog.rst
+	modified:   src/mjlab/asset_zoo/robots/__init__.py
+	modified:   src/mjlab/scripts/export_scene.py
+	modified:   src/mjlab/scripts/visualize_terrain.py
+	modified:   tests/test_asset_zoo.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	src/mjlab/asset_zoo/robots/unitree_go2/
+	src/mjlab/tasks/velocity/config/go2/
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/docs/source/changelog.rst b/docs/source/changelog.rst
+index 330968c9d..9cb2f627e 100644
+--- a/docs/source/changelog.rst
++++ b/docs/source/changelog.rst
+@@ -5,6 +5,13 @@ Changelog
+ Upcoming version (not yet released)
+ -----------------------------------
+ 
++Added
++^^^^^
++
++- Added upstream-style Unitree Go2 robot assets and flat/rough velocity task
++  configurations, including task registration under the ``Mjlab-Velocity-*``
++  naming scheme.
++
+ Changed
+ ^^^^^^^
+ 
+diff --git a/src/mjlab/asset_zoo/robots/__init__.py b/src/mjlab/asset_zoo/robots/__init__.py
+index f855d966c..1790845ac 100644
+--- a/src/mjlab/asset_zoo/robots/__init__.py
++++ b/src/mjlab/asset_zoo/robots/__init__.py
+@@ -16,3 +16,9 @@ from mjlab.asset_zoo.robots.unitree_go1.go1_constants import (
+ from mjlab.asset_zoo.robots.unitree_go1.go1_constants import (
+   get_go1_robot_cfg as get_go1_robot_cfg,
+ )
++from mjlab.asset_zoo.robots.unitree_go2.go2_constants import (
++  GO2_ACTION_SCALE as GO2_ACTION_SCALE,
++)
++from mjlab.asset_zoo.robots.unitree_go2.go2_constants import (
++  get_go2_robot_cfg as get_go2_robot_cfg,
++)
+diff --git a/src/mjlab/scripts/export_scene.py b/src/mjlab/scripts/export_scene.py
+index 941be6a5a..4a2ee6571 100644
+--- a/src/mjlab/scripts/export_scene.py
++++ b/src/mjlab/scripts/export_scene.py
+@@ -18,6 +18,7 @@ from mjlab.utils.lab_api.string import string_to_callable
+ ENTITY_ALIASES: dict[str, str] = {
+   "g1": "mjlab.asset_zoo.robots:get_g1_robot_cfg",
+   "go1": "mjlab.asset_zoo.robots:get_go1_robot_cfg",
++  "go2": "mjlab.asset_zoo.robots:get_go2_robot_cfg",
+   "yam": "mjlab.asset_zoo.robots:get_yam_robot_cfg",
+ }
+ 
+diff --git a/src/mjlab/scripts/visualize_terrain.py b/src/mjlab/scripts/visualize_terrain.py
+index 764d9686f..5171679f6 100644
+--- a/src/mjlab/scripts/visualize_terrain.py
++++ b/src/mjlab/scripts/visualize_terrain.py
+@@ -28,6 +28,7 @@ from mujoco import mjtGeom
+ from mjlab.asset_zoo.robots import (
+   get_g1_robot_cfg,
+   get_go1_robot_cfg,
++  get_go2_robot_cfg,
+   get_yam_robot_cfg,
+ )
+ from mjlab.terrains.config import ALL_TERRAINS_CFG
+@@ -40,6 +41,7 @@ from mjlab.terrains.terrain_generator import (
+ ROBOT_CFG_GETTERS = {
+   "None": None,
+   "Unitree Go1": get_go1_robot_cfg,
++  "Unitree Go2": get_go2_robot_cfg,
+   "Unitree G1": get_g1_robot_cfg,
+   "Yam": get_yam_robot_cfg,
+ }
+diff --git a/tests/test_asset_zoo.py b/tests/test_asset_zoo.py
+index 6be2647fd..d98cecaf6 100644
+--- a/tests/test_asset_zoo.py
++++ b/tests/test_asset_zoo.py
+@@ -1,7 +1,11 @@
+ import mujoco
+ import pytest
+ 
+-from mjlab.asset_zoo.robots import get_g1_robot_cfg, get_go1_robot_cfg
++from mjlab.asset_zoo.robots import (
++  get_g1_robot_cfg,
++  get_go1_robot_cfg,
++  get_go2_robot_cfg,
++)
+ from mjlab.entity import Entity
+ 
+ 
+@@ -10,6 +14,7 @@ from mjlab.entity import Entity
+   [
+     ("G1", get_g1_robot_cfg),
+     ("GO1", get_go1_robot_cfg),
++    ("GO2", get_go2_robot_cfg),
+   ],
+ )
+ def test_robot_compiles_parametrized(robot_name: str, robot_cfg_fn) -> None:

@@ -1,0 +1,22 @@
+D5.35 overlay: seed0 baseline reference vs seed11 baseline
+Aligned by recovery-step offset (offset 0 = first RECOVERY step in each run).
+
+Milestones
+- seed0: first calf_lifted=(31, 75), first foot_fd>0=(0, 44), first calf_fd>0=(40, 84), first stage1=(40, 84)
+  peak calf_h=(42, 86, 0.1578696072101593), peak calf_fd=(43, 87, 0.08299313485622406), peak foot_fd=(43, 87, 0.09670692682266235)
+- seed11: first calf_lifted=(26, 77), first foot_fd>0=(0, 51), first calf_fd>0=(None, None), first stage1=(None, None)
+  peak calf_h=(46, 97, 0.1805342733860016), peak calf_fd=(8, 59, -0.02008497342467308), peak foot_fd=(8, 59, 0.028675289824604988)
+
+Key divergence
+- Persistent calf-forward gap begins at recovery offset 39 (seed0 step 83, seed11 step 90).
+  At that offset: seed0 calf_fd=-0.0091 m, seed11 calf_fd=-0.0343 m.
+- Seed11 reaches comparable or greater calf height (peak 0.1805 m vs seed0 0.1579 m), but never gets calf_fd positive.
+- Seed11 toe/foot does move slightly ahead of the wire (peak foot_fd 0.0287 m), but the calf remains on the near side for the whole attempt.
+
+Late-recovery window (last 10 RECOVERY steps)
+- seed0 mean calf_fd=0.0005 m, mean thigh_pos=2.1473 rad, mean calf_pos=-2.5944 rad
+- seed11 mean calf_fd=-0.0353 m, mean thigh_pos=2.4473 rad, mean calf_pos=-2.7293 rad
+
+Interpretation
+- The successful seed differs primarily in horizontal calf advance during late recovery, not in peak lift.
+- This supports a trajectory/control mismatch: seed11 keeps retracting/lifting without carrying the calf past the wire plane.

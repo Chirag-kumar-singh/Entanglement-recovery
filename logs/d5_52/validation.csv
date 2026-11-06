@@ -1,0 +1,8 @@
+check,value,pass
+bitwise_equal_through_step42_wire_off_control,first_differing_step=43,True
+bitwise_equal_through_step42_wire_off_forced,first_differing_step=43,True
+baseline_reproduces_d5_49,max_abs_diff=0.000e+00 over 180 steps x 7 cols; tol=1e-05,True
+zero_robot_wire_contacts_wire_off_control,total=0,True
+zero_robot_wire_contacts_wire_off_forced,total=0,True
+forced_entry_at_44_with_hybrid_controls,phase=RECOVERY hybrid=True thigh_cmd=2.0 calf_cmd=-5.0,True
+control_stays_on_walking_actuator_path,all 250 rows NORMAL_WALK with position gains active,True

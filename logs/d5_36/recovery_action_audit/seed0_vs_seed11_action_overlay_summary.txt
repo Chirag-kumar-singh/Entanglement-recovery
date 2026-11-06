@@ -1,0 +1,28 @@
+D5.36 recovery action audit: seed0 baseline vs seed11 baseline
+Behavior unchanged; this audit only logs existing walk-policy outputs, targets, and hybrid actuator controls.
+
+Hybrid path (observed from actions.py)
+- FL hip keeps the frozen walking policy's normal position-action path.
+- FL thigh/calf still get walk-policy position targets computed, but their POSITION actuators are disabled during RECOVERY.
+- FL thigh is overridden by an auxiliary VELOCITY actuator; FL calf by an auxiliary MOTOR actuator.
+- In hybrid mode, final_raw == walk_raw for all joints; the recovery behavior is actuator-level, not residual-position composition.
+
+- Earliest persistent frozen-walk action difference: recovery offset 0 (seed0 step 44, seed11 step 51).
+  walk_raw_thigh seed0=-0.0468, seed11=-0.1716; walk_raw_calf seed0=0.3835, seed11=1.3142.
+- Earliest persistent position-target difference: recovery offset 0.
+  joint_pos_target_thigh seed0=0.8862, seed11=0.8496; joint_pos_target_calf seed0=-1.6921, seed11=-1.4304.
+- Persistent calf-forward-distance gap begins at recovery offset 39.
+  calf_fd seed0=-0.0091 m, seed11=-0.0343 m.
+
+Direct observations
+- `ctrl_thigh_aux_vel` is the same commanded value in both runs during RECOVERY (seed0=2.0000, seed11=2.0000).
+- `ctrl_calf_aux_motor` is the same commanded value in both runs during RECOVERY (seed0=-5.0000, seed11=-5.0000).
+- Therefore the hybrid override commands themselves do not differ across seeds; the difference must come from the robot state presented to those fixed commands and/or the frozen walking policy outputs riding alongside them.
+- The earliest actionable measured difference is in the frozen walking-policy thigh/calf outputs and derived position targets, not in the auxiliary hybrid command magnitudes.
+
+Hypothesis (not yet proven causation)
+- Seed11 enters recovery in a more downward / more retracted state, the frozen walking policy keeps the FL thigh/calf in a more retracted/flexed posture, and the fixed hybrid retract+push commands are not sufficient to carry the calf across the wire plane from that state.
+
+Specific next controller change to test
+- Keep the FSM/thresholds unchanged, but make the hybrid recovery command phase/state-dependent instead of constant: add an explicit forward-advance phase (or a state-triggered reduction/reversal of thigh retraction once sufficient lift is achieved) so the calf is driven across the wire plane after lift.
+- This is a proposed next experiment only; D5.36 changes no behavior.

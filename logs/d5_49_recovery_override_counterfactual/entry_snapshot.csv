@@ -1,0 +1,2 @@
+base_ang_vel_y_rps,base_lin_vel_x_mps,base_lin_vel_z_mps,base_z_m,fl_calf_pos_rad,fl_calf_vel_radps,fl_hip_pos_rad,fl_hip_vel_radps,fl_thigh_pos_rad,fl_thigh_vel_radps,pre_entry_step,recovery_entry_step,wire_contact,wire_contact_force_mag_n
+0.017972508445382118,0.3183254897594452,0.004778230097144842,0.3093673288822174,-1.7306950092315674,0.44004926085472107,-0.1210341528058052,0.01835324615240097,0.8753482103347778,0.26176148653030396,44,44,True,10.907515525817871

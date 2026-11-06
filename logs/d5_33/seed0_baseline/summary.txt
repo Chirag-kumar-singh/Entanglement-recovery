@@ -1,0 +1,35 @@
+======================================================================
+D5.33 WHOLE-ROBOT DIAGNOSTIC  seed=0 variant=baseline
+======================================================================
+
+--- EVENT TIMELINE (step, sim_time=step*step_dt) ---
+  recovery entry (NORMAL->RECOVERY): step 45
+  FL stage-1 (calf clearance) latch: step 85
+  FL stage-2 (foot crossing)  latch: step 85
+  RECOVERY exit (-> POST_RECOVERY):  step 89
+  RECOVERY exit reason:              crossing_release
+  end of observation window:         step 299
+  env outcome (this window):         horizon_exhausted
+  env_terminated=False  env_truncated=False
+
+--- A. FL WIRE-CROSSING OUTCOME ---
+  stage1 reached: True (step 85)
+  stage2 reached: True (step 85)
+  FL foot_height_above_wire range: [-0.1230, 0.0933] m
+  FSM exited RECOVERY: True  reason: crossing_release
+
+--- B. WHOLE-ROBOT POST-RECOVERY OUTCOME ---
+  entered POST_RECOVERY: True
+  env internal recovery-success latch fired: True
+  final base_z=0.3089 m  proj_grav_z=-0.9998 (<= -cos(70deg)=-0.342 => upright)
+  upright at end: True
+
+--- PER-LEG BEHAVIOR AFTER FL STAGE-2 (foot crossing) ---
+  FL: mean_foot_speed=0.2451 m/s  foot_z[min,max]=[-0.0173,0.2000]  ground_contact_fraction=0.58
+  FR: mean_foot_speed=0.2818 m/s  foot_z[min,max]=[-0.0015,0.1485]  ground_contact_fraction=0.60
+  RL: mean_foot_speed=0.1628 m/s  foot_z[min,max]=[0.0059,0.0922]  ground_contact_fraction=0.79
+  RR: mean_foot_speed=0.1942 m/s  foot_z[min,max]=[0.0141,0.0877]  ground_contact_fraction=0.68
+
+NOTE: whole-robot recovery success remains UNDEFINED in the task. FL stage-2 alone does NOT establish whole-robot recovery. Any per-leg anomaly above is reported as evidence for investigation, not as a pass/fail verdict.
+
+CSV: logs/d5_33/seed0_baseline/telemetry.csv

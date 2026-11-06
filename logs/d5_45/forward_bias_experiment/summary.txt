@@ -1,0 +1,71 @@
+D5.45 state-dependent forward-bias experiment summary
+
+seed0_baseline:
+  seed=0 variant=baseline confirm_steps=1 transition_steps=0 advance_fraction=1.0
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=crossing_release observation_outcome=script_success
+  two_phase_triggered=False switch_step=-1
+  stage1_achieved=True stage2_achieved=True full_crossing_achieved=True
+  first_positive_calf_forward_step=84
+  max_calf_height_above_wire_m=0.157870
+  max_calf_forward_dist_m=0.395906
+  max_foot_forward_dist_m=0.434441
+  final_base_forward_vel_body_x=0.118926
+  mean_post_recovery_forward_vel_body_x=0.075312
+
+seed0_forward_bias:
+  seed=0 variant=forward_bias confirm_steps=4 transition_steps=4 advance_fraction=0.5
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=crossing_release observation_outcome=script_success
+  two_phase_triggered=True switch_step=35
+  stage1_achieved=True stage2_achieved=True full_crossing_achieved=True
+  first_positive_calf_forward_step=85
+  max_calf_height_above_wire_m=0.133939
+  max_calf_forward_dist_m=0.417695
+  max_foot_forward_dist_m=0.455543
+  final_base_forward_vel_body_x=0.125186
+  mean_post_recovery_forward_vel_body_x=0.071451
+
+seed11_baseline:
+  seed=11 variant=baseline confirm_steps=1 transition_steps=0 advance_fraction=1.0
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=cap_timeout observation_outcome=horizon_exhausted
+  two_phase_triggered=False switch_step=-1
+  stage1_achieved=False stage2_achieved=False full_crossing_achieved=False
+  first_positive_calf_forward_step=-1
+  max_calf_height_above_wire_m=0.183215
+  max_calf_forward_dist_m=-0.014058
+  max_foot_forward_dist_m=0.028675
+  final_base_forward_vel_body_x=-0.015386
+  mean_post_recovery_forward_vel_body_x=0.035679
+
+seed11_forward_bias:
+  seed=11 variant=forward_bias confirm_steps=4 transition_steps=4 advance_fraction=0.5
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=cap_timeout observation_outcome=horizon_exhausted
+  two_phase_triggered=True switch_step=30
+  stage1_achieved=False stage2_achieved=False full_crossing_achieved=False
+  first_positive_calf_forward_step=-1
+  max_calf_height_above_wire_m=0.043722
+  max_calf_forward_dist_m=-0.007071
+  max_foot_forward_dist_m=0.030648
+  final_base_forward_vel_body_x=-0.069710
+  mean_post_recovery_forward_vel_body_x=0.025179
+
+seed 0 comparison:
+  exit baseline=crossing_release forward_bias=crossing_release
+  stage1 baseline=True forward_bias=True
+  stage2 baseline=True forward_bias=True
+  max_calf_forward baseline=0.395906 forward_bias=0.417695
+  max_calf_height baseline=0.157870 forward_bias=0.133939
+  post_recovery_forward_vel baseline=0.075312 forward_bias=0.071451
+  switch_step forward_bias=35
+
+seed 11 comparison:
+  exit baseline=cap_timeout forward_bias=cap_timeout
+  stage1 baseline=False forward_bias=False
+  stage2 baseline=False forward_bias=False
+  max_calf_forward baseline=-0.014058 forward_bias=-0.007071
+  max_calf_height baseline=0.183215 forward_bias=0.043722
+  post_recovery_forward_vel baseline=0.035679 forward_bias=0.025179
+  switch_step forward_bias=30

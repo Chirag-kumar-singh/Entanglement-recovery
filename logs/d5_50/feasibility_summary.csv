@@ -1,0 +1,18 @@
+metric,value
+baseline_seed,0
+first_raw_calf_wire_contact_step,43
+first_raw_calf_wire_contact_pair,wire_seg_2_geom<->robot/FL_calf2_collision
+first_raw_calf_wire_contact_force_norm_n,130.46534933774342
+baseline_recovery_entry_step,44
+baseline_snapshot_step_for_restore,44
+trigger_sensor_name,wire_contact
+trigger_sensor_primary,wire.geom_names()
+trigger_sensor_secondary,robot/FL_calf2_collision
+target_pair_specific_body_exclude_available,false
+body_exclude_confound,robot/FL_calf body contains both FL_calf1_collision and FL_calf2_collision
+runtime_geom_pair_contact_filter_available_in_python,true
+runtime_geom_pair_contact_filter_effective_in_mujoco_warp,false
+runtime_geom_pair_contact_filter_probe,before_filter=True_after_filter=True
+valid_pair_specific_counterfactual_available,false
+comparison_run_executed,false
+allowed_conclusion,The comparison is inconclusive or invalid because of trigger, contact, or state-restoration confounds.

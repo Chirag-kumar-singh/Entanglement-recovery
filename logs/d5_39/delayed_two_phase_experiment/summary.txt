@@ -1,0 +1,87 @@
+D5.39 delayed two-phase hybrid recovery summary
+
+seed0_baseline:
+  seed=0 experimental_two_phase=False confirm_steps=1
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=crossing_release observation_outcome=script_success
+  two_phase_triggered=False switch_step=-1
+  stage1_achieved=True stage2_achieved=True full_crossing_achieved=True
+  first_positive_calf_forward_step=84
+  max_calf_height_above_wire_m=0.157870
+  max_calf_forward_dist_m=0.395906
+  max_foot_forward_dist_m=0.434441
+  final_base_forward_vel_body_x=0.118926
+
+seed0_two_phase_immediate:
+  seed=0 experimental_two_phase=True confirm_steps=1
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=cap_timeout observation_outcome=horizon_exhausted
+  two_phase_triggered=True switch_step=32
+  stage1_achieved=False stage2_achieved=False full_crossing_achieved=False
+  first_positive_calf_forward_step=249
+  max_calf_height_above_wire_m=0.033252
+  max_calf_forward_dist_m=0.191828
+  max_foot_forward_dist_m=0.221301
+  final_base_forward_vel_body_x=0.297570
+
+seed0_two_phase_delayed4:
+  seed=0 experimental_two_phase=True confirm_steps=4
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=cap_timeout observation_outcome=horizon_exhausted
+  two_phase_triggered=True switch_step=35
+  stage1_achieved=False stage2_achieved=False full_crossing_achieved=False
+  first_positive_calf_forward_step=134
+  max_calf_height_above_wire_m=0.054752
+  max_calf_forward_dist_m=0.325260
+  max_foot_forward_dist_m=0.355528
+  final_base_forward_vel_body_x=0.080839
+
+seed11_baseline:
+  seed=11 experimental_two_phase=False confirm_steps=1
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=cap_timeout observation_outcome=horizon_exhausted
+  two_phase_triggered=False switch_step=-1
+  stage1_achieved=False stage2_achieved=False full_crossing_achieved=False
+  first_positive_calf_forward_step=-1
+  max_calf_height_above_wire_m=0.183215
+  max_calf_forward_dist_m=-0.014058
+  max_foot_forward_dist_m=0.028675
+  final_base_forward_vel_body_x=-0.015386
+
+seed11_two_phase_immediate:
+  seed=11 experimental_two_phase=True confirm_steps=1
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=cap_timeout observation_outcome=horizon_exhausted
+  two_phase_triggered=True switch_step=27
+  stage1_achieved=False stage2_achieved=False full_crossing_achieved=False
+  first_positive_calf_forward_step=-1
+  max_calf_height_above_wire_m=0.020689
+  max_calf_forward_dist_m=-0.005541
+  max_foot_forward_dist_m=0.030891
+  final_base_forward_vel_body_x=-0.018592
+
+seed11_two_phase_delayed4:
+  seed=11 experimental_two_phase=True confirm_steps=4
+  entered_recovery=True post_recovery_entered=True
+  recovery_exit_reason=cap_timeout observation_outcome=horizon_exhausted
+  two_phase_triggered=True switch_step=30
+  stage1_achieved=False stage2_achieved=False full_crossing_achieved=False
+  first_positive_calf_forward_step=-1
+  max_calf_height_above_wire_m=0.030871
+  max_calf_forward_dist_m=-0.005734
+  max_foot_forward_dist_m=0.033663
+  final_base_forward_vel_body_x=0.101470
+
+seed 0 comparison:
+  exit baseline=crossing_release immediate=cap_timeout delayed=cap_timeout
+  stage1 baseline=True immediate=False delayed=False
+  max_calf_forward baseline=0.395906 immediate=0.191828 delayed=0.325260
+  max_calf_height baseline=0.157870 immediate=0.033252 delayed=0.054752
+  switch_step immediate=32 delayed=35
+
+seed 11 comparison:
+  exit baseline=cap_timeout immediate=cap_timeout delayed=cap_timeout
+  stage1 baseline=False immediate=False delayed=False
+  max_calf_forward baseline=-0.014058 immediate=-0.005541 delayed=-0.005734
+  max_calf_height baseline=0.183215 immediate=0.020689 delayed=0.030871
+  switch_step immediate=27 delayed=30

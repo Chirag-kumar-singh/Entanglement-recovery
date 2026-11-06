@@ -1,0 +1,65 @@
+seed,metric,d5_56_wire_on_plateau,wire_off_bounded_retraction,wire_off_control_same_steps,note
+0,validation_entry_step,62,59.0,none,D5.55 wire-on entry = 62 (FL lift-off row 60)
+0,validation_release_step,70,67.0,none,entry + 8 in both
+0,validation_touchdown_step_T0,72,68.0,68.0,first FL contact at/after release; plateau = T0+12..T0+36
+0,validation_fsm_exit_step,109 (cap timeout),106.0,none,FSM exit; D5.55 wire-on timed out at the 48-step cap
+0,validation_robot_wire_substep_contacts,continuous,0.0,0.0,"all substeps, whole run"
+0,FL_foot_z_max_m_plateau,0.022,0.157,0.035,
+0,imu_lin_vel_x_mps_plateau_mean,-0.038,0.012,0.263,
+0,raw_action_p2p_mean_12_joints,0.36,2.15,0.976,
+0,FL_thigh_target_minus_actual_rad,-0.217,-0.383,-0.081,
+0,FL_thigh_pos_rel_default_rad,0.223,0.164,0.054,
+0,base_x_change_m_plateau,-0.015,-0.005,0.127,
+0,FL_foot_z_max_m_T0_to_T0+36,0.022 (plateau),0.171,0.035,swing reference threshold 0.03 m (reporting only)
+0,steps_after_touchdown_until_foot_z_above_0.03,never,5.0,14.0,within 60 steps of T0; none = no swing
+0,FL_contact_gaps_ge2_steps_in_plateau,0,1.0,2.0,2 consecutive no-contact steps = the D5.55 debounce
+11,validation_entry_step,62,59.0,none,D5.55 wire-on entry = 62 (FL lift-off row 60)
+11,validation_release_step,70,67.0,none,entry + 8 in both
+11,validation_touchdown_step_T0,72,68.0,68.0,first FL contact at/after release; plateau = T0+12..T0+36
+11,validation_fsm_exit_step,109 (cap timeout),106.0,none,FSM exit; D5.55 wire-on timed out at the 48-step cap
+11,validation_robot_wire_substep_contacts,continuous,0.0,0.0,"all substeps, whole run"
+11,FL_foot_z_max_m_plateau,0.022,0.157,0.035,
+11,imu_lin_vel_x_mps_plateau_mean,-0.026,0.014,0.263,
+11,raw_action_p2p_mean_12_joints,0.603,2.162,0.976,
+11,FL_thigh_target_minus_actual_rad,-0.196,-0.382,-0.081,
+11,FL_thigh_pos_rel_default_rad,0.2,0.162,0.054,
+11,base_x_change_m_plateau,-0.008,-0.004,0.127,
+11,FL_foot_z_max_m_T0_to_T0+36,0.022 (plateau),0.171,0.035,swing reference threshold 0.03 m (reporting only)
+11,steps_after_touchdown_until_foot_z_above_0.03,never,5.0,14.0,within 60 steps of T0; none = no swing
+11,FL_contact_gaps_ge2_steps_in_plateau,0,1.0,2.0,2 consecutive no-contact steps = the D5.55 debounce
+0,plateau_rows_with_hybrid_ACTIVE,0,6.0,none,literal T0+12..T0+36 window; >0 means resumed hybrid retract inside it
+0,fsm_exit_step_and_reason,109 cap timeout,106 cap timeout,none,crossing step bounded: None
+0,segA_policy_only_after_first_release_steps,37.0,7.0,7.0,"rows from first FL touchdown until hybrid resumes (wire-on: never resumed, T0..T0+36)"
+0,segA_FL_stance_steps_before_liftoff,no lift-off,5.0,none,first 2 consecutive no-contact rows (D5.55 debounce); normal stance in control = 13
+0,segA_FL_foot_z_max_m,0.022,0.037,0.021,policy-only rows (hybrid not active)
+0,segA_body_vx_mps_mean,-0.023,0.321,0.251,body-frame forward speed
+0,segA_raw_action_p2p_mean,0.36,1.769,0.641,wire-on value = D5.56 plateau (84-108)
+0,segA_FL_thigh_target_minus_actual_rad,-0.217,-0.301,-0.095,wire-on value = D5.56 plateau
+0,segB_after_fsm_exit_body_vx_mps_mean,-0.008,0.182,0.269,25 rows after exit; control = same absolute rows as bounded
+0,segB_after_fsm_exit_base_x_change_m,-0.003,0.088,0.129,
+0,segB_after_fsm_exit_FL_swings,0.0,2.0,1.0,FL leaves ground for >=2 consecutive rows
+0,segB_after_fsm_exit_FL_foot_z_max_m,n/a,0.023,0.035,
+0,segB_hybrid_ACTIVE_rows,0,0.0,none,must be 0: policy only
+0,segC_rows_140_249_body_vx_mps_mean,0.013,0.267,0.268,late window after every FSM exit; wire-on from the existing D5.55 trace
+0,segC_rows_140_249_base_x_change_m,0.02,0.584,0.587,
+0,segC_rows_140_249_FL_swings_by_contact_gap,0.0,4.0,5.0,FL off the ground >=2 consecutive rows
+0,segC_rows_140_249_FL_z_above_0.03_episodes,n/a,5.0,5.0,foot-height swings (threshold is reporting only)
+0,segC_rows_140_249_FL_foot_z_max_m,n/a,0.036,0.035,
+11,plateau_rows_with_hybrid_ACTIVE,0,6.0,none,literal T0+12..T0+36 window; >0 means resumed hybrid retract inside it
+11,fsm_exit_step_and_reason,109 cap timeout,106 cap timeout,none,crossing step bounded: None
+11,segA_policy_only_after_first_release_steps,37.0,7.0,7.0,"rows from first FL touchdown until hybrid resumes (wire-on: never resumed, T0..T0+36)"
+11,segA_FL_stance_steps_before_liftoff,no lift-off,5.0,none,first 2 consecutive no-contact rows (D5.55 debounce); normal stance in control = 13
+11,segA_FL_foot_z_max_m,0.022,0.037,0.021,policy-only rows (hybrid not active)
+11,segA_body_vx_mps_mean,-0.003,0.319,0.251,body-frame forward speed
+11,segA_raw_action_p2p_mean,0.603,1.777,0.641,wire-on value = D5.56 plateau (84-108)
+11,segA_FL_thigh_target_minus_actual_rad,-0.196,-0.306,-0.095,wire-on value = D5.56 plateau
+11,segB_after_fsm_exit_body_vx_mps_mean,-0.032,0.185,0.269,25 rows after exit; control = same absolute rows as bounded
+11,segB_after_fsm_exit_base_x_change_m,-0.016,0.09,0.129,
+11,segB_after_fsm_exit_FL_swings,0.0,2.0,1.0,FL leaves ground for >=2 consecutive rows
+11,segB_after_fsm_exit_FL_foot_z_max_m,n/a,0.023,0.035,
+11,segB_hybrid_ACTIVE_rows,0,0.0,none,must be 0: policy only
+11,segC_rows_140_249_body_vx_mps_mean,0.027,0.267,0.268,late window after every FSM exit; wire-on from the existing D5.55 trace
+11,segC_rows_140_249_base_x_change_m,0.052,0.585,0.587,
+11,segC_rows_140_249_FL_swings_by_contact_gap,0.0,4.0,5.0,FL off the ground >=2 consecutive rows
+11,segC_rows_140_249_FL_z_above_0.03_episodes,n/a,5.0,5.0,foot-height swings (threshold is reporting only)
+11,segC_rows_140_249_FL_foot_z_max_m,n/a,0.036,0.035,

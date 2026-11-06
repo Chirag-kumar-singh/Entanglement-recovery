@@ -1,0 +1,167 @@
+D4.6c -- Corrected gait-periodicity baseline (strict pre-entry only)
+========================================================================
+Fixes D4.6b: the previously reported 'stance [32-46]' interval ILLEGITIMATELY crossed recovery entry (step 44). This report re-derives pre-entry baseline cycles using ONLY runs whose end step is strictly < 44.
+
+==== seed 0 ====
+
+  -- FR --
+  ALL runs (step range : state) [* = excluded, crosses step 44]:
+    [  0-  1] SWING
+    [  2- 24] STANCE
+    [ 25- 31] SWING
+    [ 32- 46] STANCE *CONTAMINATED/EXCLUDED*
+    [ 47- 54] SWING
+    [ 55- 62] STANCE
+
+  Strictly pre-entry (end < step 44) COMPLETE runs only:
+    [  0-  1] SWING  duration=2 steps
+    [  2- 24] STANCE  duration=23 steps
+    [ 25- 31] SWING  duration=7 steps
+  Pre-entry COMPLETE stance cycles: 1  durations=[23]
+  Pre-entry COMPLETE swing cycles: 2  durations=[2, 7]
+  Mean pre-entry swing duration: 4.50 steps (n=2 cycles)
+
+  Post-entry (includes step >= 44) runs:
+    [ 32- 46] STANCE
+    [ 47- 54] SWING
+    [ 55- 62] STANCE
+
+  Swing run covering step 47: [47-54] (length=8 steps)
+  Compared to pre-entry mean swing duration 4.50 steps (n=2): LONGER by 3.5 steps
+
+  Touchdown prediction feasibility: 2 complete pre-entry swing cycles available (mean=4.50 steps); a gait-phase-based touchdown prediction COULD be attempted but with low confidence given the small sample.
+
+  -- RL --
+  ALL runs (step range : state) [* = excluded, crosses step 44]:
+    [  0-  1] SWING
+    [  2- 23] STANCE
+    [ 24- 31] SWING
+    [ 32- 46] STANCE *CONTAMINATED/EXCLUDED*
+    [ 47- 52] SWING
+    [ 53- 62] STANCE
+
+  Strictly pre-entry (end < step 44) COMPLETE runs only:
+    [  0-  1] SWING  duration=2 steps
+    [  2- 23] STANCE  duration=22 steps
+    [ 24- 31] SWING  duration=8 steps
+  Pre-entry COMPLETE stance cycles: 1  durations=[22]
+  Pre-entry COMPLETE swing cycles: 2  durations=[2, 8]
+  Mean pre-entry swing duration: 5.00 steps (n=2 cycles)
+
+  Post-entry (includes step >= 44) runs:
+    [ 32- 46] STANCE
+    [ 47- 52] SWING
+    [ 53- 62] STANCE
+
+  Swing run covering step 47: [47-52] (length=6 steps)
+  Compared to pre-entry mean swing duration 5.00 steps (n=2): LONGER by 1.0 steps
+
+  -- Full FR/RL/hip-wire contact states, steps 38-62 --
+   step     FR     RL  hip_wire
+     38   True   True     False
+     39   True   True     False
+     40   True   True     False
+     41   True   True     False
+     42   True   True     False
+     43   True   True     False
+     44   True   True     False  <- recovery entry
+     45   True   True     False
+     46   True   True     False
+     47  False  False     False  <- base descent onset (D4.6)
+     48  False  False     False
+     49  False  False     False
+     50  False  False     False
+     51  False  False      True  <- hip-wire contact (D4.2-D4.6)
+     52  False  False      True  <- FL foot collapse (D4.2-D4.6)
+     53  False   True     False
+     54  False   True      True
+     55   True   True      True
+     56   True   True      True
+     57   True   True      True
+     58   True   True      True
+     59   True   True     False
+     60   True   True     False
+     61   True   True     False
+     62   True   True     False
+
+==== seed 1 ====
+
+  -- FR --
+  ALL runs (step range : state) [* = excluded, crosses step 44]:
+    [  0-  1] SWING
+    [  2- 24] STANCE
+    [ 25- 31] SWING
+    [ 32- 46] STANCE *CONTAMINATED/EXCLUDED*
+    [ 47- 53] SWING
+    [ 54- 62] STANCE
+
+  Strictly pre-entry (end < step 44) COMPLETE runs only:
+    [  0-  1] SWING  duration=2 steps
+    [  2- 24] STANCE  duration=23 steps
+    [ 25- 31] SWING  duration=7 steps
+  Pre-entry COMPLETE stance cycles: 1  durations=[23]
+  Pre-entry COMPLETE swing cycles: 2  durations=[2, 7]
+  Mean pre-entry swing duration: 4.50 steps (n=2 cycles)
+
+  Post-entry (includes step >= 44) runs:
+    [ 32- 46] STANCE
+    [ 47- 53] SWING
+    [ 54- 62] STANCE
+
+  Swing run covering step 47: [47-53] (length=7 steps)
+  Compared to pre-entry mean swing duration 4.50 steps (n=2): LONGER by 2.5 steps
+
+  Touchdown prediction feasibility: 2 complete pre-entry swing cycles available (mean=4.50 steps); a gait-phase-based touchdown prediction COULD be attempted but with low confidence given the small sample.
+
+  -- RL --
+  ALL runs (step range : state) [* = excluded, crosses step 44]:
+    [  0-  1] SWING
+    [  2- 23] STANCE
+    [ 24- 31] SWING
+    [ 32- 46] STANCE *CONTAMINATED/EXCLUDED*
+    [ 47- 51] SWING
+    [ 52- 62] STANCE
+
+  Strictly pre-entry (end < step 44) COMPLETE runs only:
+    [  0-  1] SWING  duration=2 steps
+    [  2- 23] STANCE  duration=22 steps
+    [ 24- 31] SWING  duration=8 steps
+  Pre-entry COMPLETE stance cycles: 1  durations=[22]
+  Pre-entry COMPLETE swing cycles: 2  durations=[2, 8]
+  Mean pre-entry swing duration: 5.00 steps (n=2 cycles)
+
+  Post-entry (includes step >= 44) runs:
+    [ 32- 46] STANCE
+    [ 47- 51] SWING
+    [ 52- 62] STANCE
+
+  Swing run covering step 47: [47-51] (length=5 steps)
+  Compared to pre-entry mean swing duration 5.00 steps (n=2): not longer
+
+  -- Full FR/RL/hip-wire contact states, steps 38-62 --
+   step     FR     RL  hip_wire
+     38   True   True     False
+     39   True   True     False
+     40   True   True     False
+     41   True   True     False
+     42   True   True     False
+     43   True   True     False
+     44   True   True     False  <- recovery entry
+     45   True   True     False
+     46   True   True     False
+     47  False  False     False  <- base descent onset (D4.6)
+     48  False  False     False
+     49  False  False     False
+     50  False  False     False
+     51  False  False      True  <- hip-wire contact (D4.2-D4.6)
+     52  False   True     False  <- FL foot collapse (D4.2-D4.6)
+     53  False   True      True
+     54   True   True      True
+     55   True   True      True
+     56   True   True      True
+     57   True   True      True
+     58   True   True     False
+     59   True   True     False
+     60   True   True     False
+     61   True   True     False
+     62   True   True     False

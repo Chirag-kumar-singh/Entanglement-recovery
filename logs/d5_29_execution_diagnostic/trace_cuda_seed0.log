@@ -1,0 +1,37 @@
+
+======================================================================
+Running BASELINE variant
+======================================================================
+  Seed  0... Warp CUDA error 999: unknown error (in function init_cuda_driver, /builds/omniverse/warp/warp/native/cuda_util.cpp:309)
+Traceback (most recent call last):
+  File "/home/arc01/mjlab/scripts/d5_29_phase_aware_comparison.py", line 255, in main
+    outcome = run_single_trial(cfg, seed, variant)
+  File "/home/arc01/mjlab/scripts/d5_29_phase_aware_comparison.py", line 99, in run_single_trial
+    env = ManagerBasedRlEnv(cfg=env_cfg, device=cfg.device)
+  File "/home/arc01/mjlab/src/mjlab/envs/manager_based_rl_env.py", line 191, in __init__
+    self._manual_reset_pending = torch.zeros(
+                                 ~~~~~~~~~~~^
+      self.cfg.scene.num_envs, dtype=torch.bool, device=device
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/arc01/mjlab/.venv/lib/python3.13/site-packages/torch/cuda/__init__.py", line 410, in _lazy_init
+    torch._C._cuda_init()
+    ~~~~~~~~~~~~~~~~~~~^^
+RuntimeError: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero.
+Setting seed: 0
+Warp 1.14.0 initialized:
+   CUDA Toolkit 12.9, CUDA driver not available (NVRTC compilation available)
+   Devices:
+     "cpu"      : "x86_64"
+   Kernel cache:
+     /home/arc01/.cache/warp/1.14.0
+ERROR: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero.
+
+======================================================================
+RESULTS SUMMARY
+======================================================================
+
+Summary written to: logs/d5_29_execution_diagnostic/run_cuda/summary.csv
+======================================================================
+

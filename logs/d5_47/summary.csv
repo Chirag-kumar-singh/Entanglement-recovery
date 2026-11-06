@@ -1,0 +1,3 @@
+entry_step,exit_step,first_cross_step,first_post_step,first_stage1_step,first_stage2_step,label,max_calf_forward_dist_m,max_calf_height_above_wire_m,max_foot_forward_dist_m,max_foot_height_above_wire_m,outcome,seed,trace_csv
+44,88,84,88,84,84,seed0,0.3959057033061981,0.1578696072101593,0.43444138765335083,0.09328685700893402,horizon_exhausted,0,logs/d5_47/seed0_trace.csv
+51,98,-1,98,-1,-1,seed11,-0.012447858229279518,0.18321499228477478,0.028675289824604988,0.11984727531671524,horizon_exhausted,11,logs/d5_47/seed11_trace.csv

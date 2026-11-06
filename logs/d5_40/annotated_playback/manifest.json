@@ -1,0 +1,78 @@
+[
+  {
+    "entered_recovery": true,
+    "experimental_two_phase": false,
+    "frame_count": 301,
+    "label": "seed0_baseline",
+    "observation_outcome": "script_success",
+    "post_recovery_entered": true,
+    "recovery_exit_reason": "crossing_release",
+    "seed": 0,
+    "variant": "baseline",
+    "video_info": {
+      "codec_name": "h264",
+      "duration": 6.02,
+      "height": 240,
+      "nb_frames": "301",
+      "width": 840
+    },
+    "video_path": "logs/d5_40/annotated_playback/seed0_baseline_annotated.mp4"
+  },
+  {
+    "entered_recovery": true,
+    "experimental_two_phase": true,
+    "frame_count": 301,
+    "label": "seed0_gradual_transition",
+    "observation_outcome": "script_success",
+    "post_recovery_entered": true,
+    "recovery_exit_reason": "crossing_release",
+    "seed": 0,
+    "variant": "gradual_transition",
+    "video_info": {
+      "codec_name": "h264",
+      "duration": 6.02,
+      "height": 240,
+      "nb_frames": "301",
+      "width": 840
+    },
+    "video_path": "logs/d5_40/annotated_playback/seed0_gradual_transition_annotated.mp4"
+  },
+  {
+    "entered_recovery": true,
+    "experimental_two_phase": false,
+    "frame_count": 301,
+    "label": "seed11_baseline",
+    "observation_outcome": "horizon_exhausted",
+    "post_recovery_entered": true,
+    "recovery_exit_reason": "cap_timeout",
+    "seed": 11,
+    "variant": "baseline",
+    "video_info": {
+      "codec_name": "h264",
+      "duration": 6.02,
+      "height": 240,
+      "nb_frames": "301",
+      "width": 840
+    },
+    "video_path": "logs/d5_40/annotated_playback/seed11_baseline_annotated.mp4"
+  },
+  {
+    "entered_recovery": true,
+    "experimental_two_phase": true,
+    "frame_count": 301,
+    "label": "seed11_gradual_transition",
+    "observation_outcome": "horizon_exhausted",
+    "post_recovery_entered": true,
+    "recovery_exit_reason": "cap_timeout",
+    "seed": 11,
+    "variant": "gradual_transition",
+    "video_info": {
+      "codec_name": "h264",
+      "duration": 6.02,
+      "height": 240,
+      "nb_frames": "301",
+      "width": 840
+    },
+    "video_path": "logs/d5_40/annotated_playback/seed11_gradual_transition_annotated.mp4"
+  }
+]

@@ -1,0 +1,15 @@
+check,value,pass
+seed0_baseline_reproduces_d5_52,max_abs_diff=0.000e+00 tol=1e-5,True
+guard_disabled_equals_baseline_seed0,max_abs_numeric_diff=0.000e+00 nonnumeric_mismatches=0,True
+guard_disabled_equals_baseline_seed11,max_abs_numeric_diff=0.000e+00 nonnumeric_mismatches=0,True
+wire_collisions_enabled_baseline_seed0,nexclude=6 (baseline 6); robot-wire substep contacts=1793,True
+wire_collisions_enabled_guard_disabled_seed0,nexclude=6 (baseline 6); robot-wire substep contacts=1793,True
+wire_collisions_enabled_guard_enabled_seed0,nexclude=6 (baseline 6); robot-wire substep contacts=1818,True
+wire_collisions_enabled_baseline_seed11,nexclude=6 (baseline 6); robot-wire substep contacts=1579,True
+wire_collisions_enabled_guard_disabled_seed11,nexclude=6 (baseline 6); robot-wire substep contacts=1579,True
+wire_collisions_enabled_guard_enabled_seed11,nexclude=6 (baseline 6); robot-wire substep contacts=1455,True
+no_hybrid_during_deferral_seed0,deferred_steps=18 violations=[],True
+no_hybrid_during_deferral_seed11,deferred_steps=11 violations=[],True
+guard_sequence_touchdown_stance_liftoff_seed0,defer entry > FL touchdown confirmed > FL lift-off confirmed; guard re-armed,True
+guard_sequence_touchdown_stance_liftoff_seed11,defer entry > FL touchdown confirmed > FL lift-off confirmed; guard re-armed,True
+seed11_natural_contact_trigger,first_contact_step=50,True

@@ -1,0 +1,29 @@
+seed,metric,stall_plateau_84_108,reference_normal_walking,note
+0,obs_nearest_neighbour_distance_normalized_median,3.06,0.114,stall->ref (140 ref steps incl. start from rest) vs ref->ref excluding +-6 steps
+0,obs_max_abs_z_over_48_dims,1.679,1.33,policy normalizer units
+0,imu_lin_vel_x_mps_mean,-0.038,0.269,command vx = 0.3 in both
+0,raw_action_p2p_mean_over_12_joints,0.36,0.981,25-step windows
+0,FL_raw_calf_mean,-0.315,-0.169,ref = swing-onset steps (k=14..16 after touchdown)
+0,FL_raw_thigh_mean,0.02,0.01,ref = swing-onset steps (k=14..16 after touchdown)
+0,FL_foot_z_max_m,0.022,0.035,resting z=0.022 (sphere radius); ref = swing apex
+0,FL_thigh_target_minus_actual_rad_mean,-0.217,-0.097,ref = FL stance
+0,FL_thigh_joint_pos_rel_default_rad,0.223,0.045,ref = FL stance
+0,applied_ctrl_minus_policy_target_max_all_joints,0.0,0.0,12 position actuators
+0,wire_force_on_robot_x_mean_N,-20.293,no wire,substep probe; command is +x
+0,wire_force_on_robot_z_mean_N,-13.423,no wire,substep probe
+0,wire_contact_fraction_of_steps,1.0,no wire,robot-wire contact in the plateau steps (FL_calf2 only)
+0,base_x_change_84_to_108_m,-0.015,0.129,negative = drifting backward; command is forward
+11,obs_nearest_neighbour_distance_normalized_median,2.751,0.116,stall->ref (140 ref steps incl. start from rest) vs ref->ref excluding +-6 steps
+11,obs_max_abs_z_over_48_dims,2.13,1.329,policy normalizer units
+11,imu_lin_vel_x_mps_mean,-0.026,0.269,command vx = 0.3 in both
+11,raw_action_p2p_mean_over_12_joints,0.603,0.981,25-step windows
+11,FL_raw_calf_mean,-0.283,-0.169,ref = swing-onset steps (k=14..16 after touchdown)
+11,FL_raw_thigh_mean,0.012,0.01,ref = swing-onset steps (k=14..16 after touchdown)
+11,FL_foot_z_max_m,0.022,0.035,resting z=0.022 (sphere radius); ref = swing apex
+11,FL_thigh_target_minus_actual_rad_mean,-0.196,-0.097,ref = FL stance
+11,FL_thigh_joint_pos_rel_default_rad,0.2,0.045,ref = FL stance
+11,applied_ctrl_minus_policy_target_max_all_joints,0.0,0.0,12 position actuators
+11,wire_force_on_robot_x_mean_N,-20.401,no wire,substep probe; command is +x
+11,wire_force_on_robot_z_mean_N,-13.306,no wire,substep probe
+11,wire_contact_fraction_of_steps,1.0,no wire,robot-wire contact in the plateau steps (FL_calf2 only)
+11,base_x_change_84_to_108_m,-0.008,0.129,negative = drifting backward; command is forward

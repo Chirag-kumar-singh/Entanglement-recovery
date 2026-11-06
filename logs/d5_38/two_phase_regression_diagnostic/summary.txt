@@ -1,0 +1,31 @@
+D5.38 two-phase regression diagnostic
+
+Reference artifacts consulted
+- D5.37 summary: logs/d5_37/two_phase_experiment/summary.csv
+- D5.35 overlay summary: logs/d5_35/seed11_clearance_diagnostic/seed0_vs_seed11_recovery_overlay_summary.txt
+- D5.36 action overlay summary: logs/d5_36/recovery_action_audit/seed0_vs_seed11_action_overlay_summary.txt
+
+Confirmed measurements
+- Seed 0: D5.37 logged the two-phase switch at recovery step 32; this diagnostic reproduced the switch at recovery step 32.
+  At the switch, thigh aux ctrl flips from baseline retract 2.0000 to two-phase advance -2.0000, while calf aux ctrl stays unchanged at -5.0000.
+  Immediate post-switch mean thigh qvel changes from baseline 1.6195 rad/s to two-phase -1.7523 rad/s.
+  Immediate post-switch calf-forward mean changes from baseline -0.0516 m to two-phase -0.0523 m; calf-height mean changes from 0.0349 m to 0.0248 m.
+- Seed 11: D5.37 logged the two-phase switch at recovery step 27; this diagnostic reproduced the switch at recovery step 27.
+  At the switch, thigh aux ctrl flips from baseline retract 2.0000 to two-phase advance -2.0000, while calf aux ctrl stays unchanged at -5.0000.
+  Immediate post-switch mean thigh qvel changes from baseline 1.9289 rad/s to two-phase -1.2604 rad/s.
+  Immediate post-switch calf-forward mean changes from baseline -0.0426 m to two-phase -0.0462 m; calf-height mean changes from 0.0279 m to 0.0160 m.
+
+Interpretation
+- The switch does produce the intended actuator-level change: thigh auxiliary velocity reverses sign while calf auxiliary torque stays fixed.
+- Seed 0 regresses because the switch happens during a trajectory that still relies on continued retract-driven lift. After the sign flip, calf height drops sharply and the calf never reaches the late positive-forward stage that baseline achieves.
+- Seed 11 gains only a small amount of horizontal progress because the same sign flip slightly reduces the near-side horizontal deficit, but it also collapses lift early; the calf remains on the near side and never satisfies the stage-1 near-to-far crossing event.
+- This is consistent with D5.35/D5.36: seed 11's blocker is horizontal calf advance, but D5.38 shows that flipping thigh direction as soon as `calf_lifted` becomes true removes too much lift reserve and hurts the known-good seed before meaningful forward carry is established.
+
+Confirmed vs possible
+- Confirmed: the two-phase command reverses thigh aux ctrl at the logged switch step, keeps calf aux ctrl unchanged, changes measured thigh velocity direction/magnitude, and reduces post-switch calf height in both seeds.
+- Confirmed: seed 0's post-switch calf-forward trajectory is worse than its baseline at the same recovery offsets, and seed 11's improvement is too small to make calf_forward_dist positive.
+- Possible explanation: the controller needs an intermediate hold/continue-lift interval or a different state trigger before forward advance. D5.38 does not prove the exact best trigger yet; it only rules out the current immediate-on-`calf_lifted` flip as a good choice.
+
+Specific next control experiment
+- Keep the calf auxiliary torque unchanged, but replace the immediate sign flip with a delayed forward-advance trigger that requires BOTH `calf_lifted` and a minimum sustained lift/forward-readiness condition, e.g. `calf_lifted` for N consecutive recovery steps or `calf_lifted` plus `foot_forward_dist > 0` before reversing thigh aux velocity.
+- Rationale: D5.38 shows the current trigger fires too early; it removes lift in seed 0 and only marginally helps seed 11. The next experiment should delay the advance phase until the leg has more vertical clearance and some forward carry already established.

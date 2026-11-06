@@ -1,0 +1,3 @@
+seed,recovery_entry,first_sustained_base_descent,first_sustained_base_tilt,first_fl_ground_loss,first_fr_ground_loss,first_rl_ground_loss,first_rr_ground_loss,first_hip_wire_contact,first_foot_collapse
+0,44,47,51,not in contact pre-recovery (N/A),47,47,not in contact pre-recovery (N/A),51,52
+1,44,47,50,not in contact pre-recovery (N/A),47,47,not in contact pre-recovery (N/A),51,52

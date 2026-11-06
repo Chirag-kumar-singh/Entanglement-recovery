@@ -1,0 +1,3 @@
+seed,variant,genuinely_recovered,stage1_reached,stage2_reached,exit_reason,entry_leg_speed,effective_clearance_margin,effective_foot_crossing_margin,crossing_achieved_at_step
+0,baseline,False,False,False,other,0.0000,0.0200,0.0200,-1
+0,phase_aware,False,False,False,other,1.0374,0.0200,0.0300,-1
