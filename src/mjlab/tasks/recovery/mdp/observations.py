@@ -237,4 +237,3 @@ def toe_forward_dist_norm(
   val = torch.clamp(term.foot_forward_dist / WIRE_FORWARD_NORM_SCALE, -1.0, 1.0)
   active = term.phase == PHASE_RECOVERY
   return torch.where(active, val, torch.zeros_like(val)).unsqueeze(-1)
-

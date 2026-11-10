@@ -48,12 +48,13 @@ Instead of building from scratch, inherit from an existing template:
 ```python
 from mjlab.tasks.velocity.velocity_env_cfg import make_velocity_env_cfg
 
+
 def my_robot_velocity_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
-    # Start with the base velocity task
-    cfg = make_velocity_env_cfg()
-    
-    # Customize below...
-    return cfg
+  # Start with the base velocity task
+  cfg = make_velocity_env_cfg()
+
+  # Customize below...
+  return cfg
 ```
 
 The `make_velocity_env_cfg()` already has:
@@ -67,13 +68,14 @@ The `make_velocity_env_cfg()` already has:
 
 ```python
 def my_robot_velocity_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
-    cfg = make_velocity_env_cfg()
-    
-    # Replace the default robot with yours
-    from mjlab.asset_zoo.robots import get_my_robot_cfg
-    cfg.scene.entities = {"robot": get_my_robot_cfg()}
-    
-    return cfg
+  cfg = make_velocity_env_cfg()
+
+  # Replace the default robot with yours
+  from mjlab.asset_zoo.robots import get_my_robot_cfg
+
+  cfg.scene.entities = {"robot": get_my_robot_cfg()}
+
+  return cfg
 ```
 
 The robot config specifies:
@@ -89,33 +91,33 @@ Observations are what the neural network sees. The **actor** network gets noisy 
 **For the actor** (what the policy network sees):
 ```python
 actor_terms = {
-    "base_lin_vel": ObservationTermCfg(
-        func=mdp.builtin_sensor,
-        params={"sensor_name": "robot/imu_lin_vel"},
-        noise=Unoise(n_min=-0.5, n_max=0.5),  # Add realistic sensor noise
-    ),
-    "joint_pos": ObservationTermCfg(
-        func=mdp.joint_pos_rel,
-        params={"biased": True},  # Misaligned sensors in training
-        noise=Unoise(n_min=-0.01, n_max=0.01),
-    ),
-    "command": ObservationTermCfg(
-        func=mdp.generated_commands,
-        params={"command_name": "twist"},
-    ),
+  "base_lin_vel": ObservationTermCfg(
+    func=mdp.builtin_sensor,
+    params={"sensor_name": "robot/imu_lin_vel"},
+    noise=Unoise(n_min=-0.5, n_max=0.5),  # Add realistic sensor noise
+  ),
+  "joint_pos": ObservationTermCfg(
+    func=mdp.joint_pos_rel,
+    params={"biased": True},  # Misaligned sensors in training
+    noise=Unoise(n_min=-0.01, n_max=0.01),
+  ),
+  "command": ObservationTermCfg(
+    func=mdp.generated_commands,
+    params={"command_name": "twist"},
+  ),
 }
 ```
 
 **For the critic** (what the value function sees—truth for stability):
 ```python
 critic_terms = {
-    **actor_terms,
-    # Critic also gets privileged information:
-    "joint_pos": ObservationTermCfg(func=mdp.joint_pos_rel),  # No noise
-    "foot_contact": ObservationTermCfg(
-        func=mdp.foot_contact,
-        params={"sensor_name": "feet_ground_contact"},
-    ),
+  **actor_terms,
+  # Critic also gets privileged information:
+  "joint_pos": ObservationTermCfg(func=mdp.joint_pos_rel),  # No noise
+  "foot_contact": ObservationTermCfg(
+    func=mdp.foot_contact,
+    params={"sensor_name": "feet_ground_contact"},
+  ),
 }
 ```
 
@@ -136,12 +138,12 @@ Actions are what the agent controls. Typically joint position targets:
 
 ```python
 actions: dict[str, ActionTermCfg] = {
-    "joint_pos": JointPositionActionCfg(
-        entity_name="robot",
-        actuator_names=(".*",),  # Control all actuators
-        scale=0.5,  # Action range: [-0.5*limit, +0.5*limit] rad
-        use_default_offset=True,  # Add default pose offset
-    )
+  "joint_pos": JointPositionActionCfg(
+    entity_name="robot",
+    actuator_names=(".*",),  # Control all actuators
+    scale=0.5,  # Action range: [-0.5*limit, +0.5*limit] rad
+    use_default_offset=True,  # Add default pose offset
+  )
 }
 ```
 
@@ -160,28 +162,28 @@ Rewards shape the behavior. The agent learns to maximize cumulative reward.
 
 ```python
 rewards: dict[str, RewardTermCfg] = {
-    "tracking_lin_vel_x": RewardTermCfg(
-        func=mdp.tracking_lin_vel_xy,
-        weight=1.0,
-        params={"axis": "x"},  # Track x-velocity
-    ),
-    "tracking_lin_vel_y": RewardTermCfg(
-        func=mdp.tracking_lin_vel_xy,
-        weight=0.5,  # Less important than x
-        params={"axis": "y"},
-    ),
-    "tracking_ang_vel_z": RewardTermCfg(
-        func=mdp.tracking_ang_vel_z,
-        weight=0.8,
-    ),
-    "action_smoothness": RewardTermCfg(
-        func=mdp.action_rate_l2,
-        weight=-0.005,  # Penalty (negative weight)
-    ),
-    "joint_acc": RewardTermCfg(
-        func=mdp.joint_acc_l2,
-        weight=-1e-5,  # Small penalty
-    ),
+  "tracking_lin_vel_x": RewardTermCfg(
+    func=mdp.tracking_lin_vel_xy,
+    weight=1.0,
+    params={"axis": "x"},  # Track x-velocity
+  ),
+  "tracking_lin_vel_y": RewardTermCfg(
+    func=mdp.tracking_lin_vel_xy,
+    weight=0.5,  # Less important than x
+    params={"axis": "y"},
+  ),
+  "tracking_ang_vel_z": RewardTermCfg(
+    func=mdp.tracking_ang_vel_z,
+    weight=0.8,
+  ),
+  "action_smoothness": RewardTermCfg(
+    func=mdp.action_rate_l2,
+    weight=-0.005,  # Penalty (negative weight)
+  ),
+  "joint_acc": RewardTermCfg(
+    func=mdp.joint_acc_l2,
+    weight=-1e-5,  # Small penalty
+  ),
 }
 ```
 
@@ -205,21 +207,21 @@ When does the episode end?
 
 ```python
 terminations: dict[str, TerminationTermCfg] = {
-    "is_falling": TerminationTermCfg(
-        func=mdp.falling,
-        params={"velocity_threshold": 3.0},  # If body drops too fast
-    ),
-    "illegal_contact": TerminationTermCfg(
-        func=mdp.illegal_contact,
-        params={
-            "sensor_name": "nonfoot_ground_touch",
-            "force_threshold": 10.0,  # Body hit ground too hard
-        },
-    ),
-    "out_of_terrain_bounds": TerminationTermCfg(
-        func=mdp.out_of_terrain_bounds,
-        params={"distance_threshold": 3.0},
-    ),
+  "is_falling": TerminationTermCfg(
+    func=mdp.falling,
+    params={"velocity_threshold": 3.0},  # If body drops too fast
+  ),
+  "illegal_contact": TerminationTermCfg(
+    func=mdp.illegal_contact,
+    params={
+      "sensor_name": "nonfoot_ground_touch",
+      "force_threshold": 10.0,  # Body hit ground too hard
+    },
+  ),
+  "out_of_terrain_bounds": TerminationTermCfg(
+    func=mdp.out_of_terrain_bounds,
+    params={"distance_threshold": 3.0},
+  ),
 }
 ```
 
@@ -229,15 +231,15 @@ What targets should the agent track?
 
 ```python
 commands: dict[str, CommandTermCfg] = {
-    "twist": UniformVelocityCommandCfg(
-        entity_name="robot",
-        resampling_time_range=(3.0, 8.0),  # Change command every 3-8 sec
-        ranges=UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-1.0, 1.0),   # Random x velocity in [-1, 1] m/s
-            lin_vel_y=(-1.0, 1.0),   # Random y velocity in [-1, 1] m/s
-            ang_vel_z=(-0.5, 0.5),   # Random yaw rate in [-0.5, 0.5] rad/s
-        ),
-    )
+  "twist": UniformVelocityCommandCfg(
+    entity_name="robot",
+    resampling_time_range=(3.0, 8.0),  # Change command every 3-8 sec
+    ranges=UniformVelocityCommandCfg.Ranges(
+      lin_vel_x=(-1.0, 1.0),  # Random x velocity in [-1, 1] m/s
+      lin_vel_y=(-1.0, 1.0),  # Random y velocity in [-1, 1] m/s
+      ang_vel_z=(-0.5, 0.5),  # Random yaw rate in [-0.5, 0.5] rad/s
+    ),
+  )
 }
 ```
 
@@ -251,37 +253,37 @@ Events are triggered at reset or during episode for domain randomization:
 
 ```python
 events: dict[str, EventTermCfg] = {
-    "reset_base": EventTermCfg(
-        func=mdp.reset_root_state_uniform,
-        mode="reset",  # Happens at episode start
-        params={
-            "pose_range": {
-                "x": (-0.5, 0.5),  # Random spawn position
-                "y": (-0.5, 0.5),
-                "z": (0.01, 0.05),
-            },
-        },
-    ),
-    "push_robot": EventTermCfg(
-        func=mdp.push_by_setting_velocity,
-        mode="interval",
-        interval_range_s=(1.0, 3.0),  # Push every 1-3 seconds
-        params={
-            "velocity_range": {
-                "x": (-0.5, 0.5),  # Random push direction/magnitude
-                "y": (-0.5, 0.5),
-            },
-        },
-    ),
-    "foot_friction": EventTermCfg(
-        mode="startup",
-        func=dr.geom_friction,
-        params={
-            "asset_cfg": SceneEntityCfg("robot", geom_names=foot_geoms),
-            "ranges": (0.3, 1.2),  # Random friction coefficient
-            "shared_random": True,  # All foot geoms get same friction
-        },
-    ),
+  "reset_base": EventTermCfg(
+    func=mdp.reset_root_state_uniform,
+    mode="reset",  # Happens at episode start
+    params={
+      "pose_range": {
+        "x": (-0.5, 0.5),  # Random spawn position
+        "y": (-0.5, 0.5),
+        "z": (0.01, 0.05),
+      },
+    },
+  ),
+  "push_robot": EventTermCfg(
+    func=mdp.push_by_setting_velocity,
+    mode="interval",
+    interval_range_s=(1.0, 3.0),  # Push every 1-3 seconds
+    params={
+      "velocity_range": {
+        "x": (-0.5, 0.5),  # Random push direction/magnitude
+        "y": (-0.5, 0.5),
+      },
+    },
+  ),
+  "foot_friction": EventTermCfg(
+    mode="startup",
+    func=dr.geom_friction,
+    params={
+      "asset_cfg": SceneEntityCfg("robot", geom_names=foot_geoms),
+      "ranges": (0.3, 1.2),  # Random friction coefficient
+      "shared_random": True,  # All foot geoms get same friction
+    },
+  ),
 }
 ```
 
@@ -291,33 +293,33 @@ Here's what we did for Go2:
 
 ```python
 def unitree_go2_rough_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
-    cfg = make_velocity_env_cfg()
-    
-    # 1. Set the robot
-    cfg.scene.entities = {"robot": get_go2_robot_cfg()}
-    
-    # 2. Add Go2-specific sensors (terrain scan, foot height)
-    # 3. Tune action scale for Go2's joint ranges
-    cfg.actions["joint_pos"].scale = GO2_ACTION_SCALE
-    
-    # 4. Customize rewards for Go2's morphology
-    cfg.rewards["pose"].params["std_standing"] = {
-        r".*(FR|FL|RR|RL)_hip_joint.*": 0.05,    # Hip: small penalty
-        r".*(FR|FL|RR|RL)_thigh_joint.*": 0.1,   # Thigh: medium
-        r".*(FR|FL|RR|RL)_calf_joint.*": 0.15,   # Calf: larger
-    }
-    
-    # 5. Customize terminations
-    cfg.terminations["illegal_contact"] = TerminationTermCfg(
-        func=mdp.illegal_contact,
-        params={"sensor_name": "nonfoot_ground_touch", "force_threshold": 10.0},
-    )
-    
-    # 6. Set viewer camera
-    cfg.viewer.body_name = "base_link"
-    cfg.viewer.distance = 1.5
-    
-    return cfg
+  cfg = make_velocity_env_cfg()
+
+  # 1. Set the robot
+  cfg.scene.entities = {"robot": get_go2_robot_cfg()}
+
+  # 2. Add Go2-specific sensors (terrain scan, foot height)
+  # 3. Tune action scale for Go2's joint ranges
+  cfg.actions["joint_pos"].scale = GO2_ACTION_SCALE
+
+  # 4. Customize rewards for Go2's morphology
+  cfg.rewards["pose"].params["std_standing"] = {
+    r".*(FR|FL|RR|RL)_hip_joint.*": 0.05,  # Hip: small penalty
+    r".*(FR|FL|RR|RL)_thigh_joint.*": 0.1,  # Thigh: medium
+    r".*(FR|FL|RR|RL)_calf_joint.*": 0.15,  # Calf: larger
+  }
+
+  # 5. Customize terminations
+  cfg.terminations["illegal_contact"] = TerminationTermCfg(
+    func=mdp.illegal_contact,
+    params={"sensor_name": "nonfoot_ground_touch", "force_threshold": 10.0},
+  )
+
+  # 6. Set viewer camera
+  cfg.viewer.body_name = "base_link"
+  cfg.viewer.distance = 1.5
+
+  return cfg
 ```
 
 ---
@@ -331,16 +333,18 @@ This defines the PPO algorithm and neural network architecture.
 Both actor and critic are MLPs (multi-layer perceptrons):
 
 ```python
-actor=RslRlModelCfg(
+actor = (
+  RslRlModelCfg(
     hidden_dims=(512, 256, 128),  # 3 hidden layers
-    activation="elu",              # ELU activation (vs. ReLU, tanh, etc.)
-    obs_normalization=True,        # Normalize input observations
+    activation="elu",  # ELU activation (vs. ReLU, tanh, etc.)
+    obs_normalization=True,  # Normalize input observations
     distribution_cfg={
-        "class_name": "GaussianDistribution",
-        "init_std": 1.0,           # Action std dev (how exploratory)
-        "std_type": "scalar",      # One std dev for all actions
+      "class_name": "GaussianDistribution",
+      "init_std": 1.0,  # Action std dev (how exploratory)
+      "std_type": "scalar",  # One std dev for all actions
     },
-),
+  ),
+)
 ```
 
 **What this means:**
@@ -362,20 +366,22 @@ actor=RslRlModelCfg(
 ### 2.2 PPO Algorithm Settings
 
 ```python
-algorithm=RslRlPpoAlgorithmCfg(
-    value_loss_coef=1.0,            # Weight of critic loss
-    use_clipped_value_loss=True,    # Prevent value from changing too fast
-    clip_param=0.2,                 # PPO clipping: prevent large policy updates
-    entropy_coef=0.01,              # Encourage exploration
-    num_learning_epochs=5,          # How many times to iterate over batch
-    num_mini_batches=4,             # Divide batch into N smaller batches
-    learning_rate=1.0e-3,           # How fast to update weights
-    schedule="adaptive",            # Adapt LR based on KL divergence
-    gamma=0.99,                     # Discount factor (value of future rewards)
-    lam=0.95,                       # GAE lambda (balance bias/variance)
-    desired_kl=0.01,                # Stop if KL divergence gets too high
-    max_grad_norm=1.0,              # Gradient clipping for stability
-),
+algorithm = (
+  RslRlPpoAlgorithmCfg(
+    value_loss_coef=1.0,  # Weight of critic loss
+    use_clipped_value_loss=True,  # Prevent value from changing too fast
+    clip_param=0.2,  # PPO clipping: prevent large policy updates
+    entropy_coef=0.01,  # Encourage exploration
+    num_learning_epochs=5,  # How many times to iterate over batch
+    num_mini_batches=4,  # Divide batch into N smaller batches
+    learning_rate=1.0e-3,  # How fast to update weights
+    schedule="adaptive",  # Adapt LR based on KL divergence
+    gamma=0.99,  # Discount factor (value of future rewards)
+    lam=0.95,  # GAE lambda (balance bias/variance)
+    desired_kl=0.01,  # Stop if KL divergence gets too high
+    max_grad_norm=1.0,  # Gradient clipping for stability
+  ),
+)
 ```
 
 **Key hyperparameters:**
@@ -400,10 +406,10 @@ algorithm=RslRlPpoAlgorithmCfg(
 ### 2.3 Training Loop Parameters
 
 ```python
-experiment_name="go2_velocity",     # Checkpoint folder name
-save_interval=100,                  # Save checkpoint every 100 iterations
-num_steps_per_env=24,               # Collect 24 steps per env per update
-max_iterations=10_001,              # Total training iterations
+experiment_name = ("go2_velocity",)  # Checkpoint folder name
+save_interval = (100,)  # Save checkpoint every 100 iterations
+num_steps_per_env = (24,)  # Collect 24 steps per env per update
+max_iterations = (10_001,)  # Total training iterations
 ```
 
 **What these mean:**
@@ -426,11 +432,13 @@ from .env_cfgs import unitree_go2_flat_env_cfg
 from .rl_cfg import unitree_go2_ppo_runner_cfg
 
 register_mjlab_task(
-    task_id="Mjlab-Velocity-Flat-Unitree-Go2",  # Unique name
-    env_cfg=unitree_go2_flat_env_cfg(),          # Training environment
-    play_env_cfg=unitree_go2_flat_env_cfg(play=True),  # Evaluation (no noise, longer episodes)
-    rl_cfg=unitree_go2_ppo_runner_cfg(),         # PPO settings
-    runner_cls=VelocityOnPolicyRunner,           # Which runner to use
+  task_id="Mjlab-Velocity-Flat-Unitree-Go2",  # Unique name
+  env_cfg=unitree_go2_flat_env_cfg(),  # Training environment
+  play_env_cfg=unitree_go2_flat_env_cfg(
+    play=True
+  ),  # Evaluation (no noise, longer episodes)
+  rl_cfg=unitree_go2_ppo_runner_cfg(),  # PPO settings
+  runner_cls=VelocityOnPolicyRunner,  # Which runner to use
 )
 ```
 
@@ -471,28 +479,29 @@ def get_my_robot_cfg() -> RigidBodyPropertiesCfg:
 from mjlab.asset_zoo.robots import get_my_robot_cfg, MY_ROBOT_ACTION_SCALE
 from mjlab.tasks.velocity.velocity_env_cfg import make_velocity_env_cfg
 
+
 def my_robot_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
-    cfg = make_velocity_env_cfg()
-    
-    # 1. Set robot
-    cfg.scene.entities = {"robot": get_my_robot_cfg()}
-    
-    # 2. Customize action scale
-    cfg.actions["joint_pos"].scale = MY_ROBOT_ACTION_SCALE
-    
-    # 3. Customize rewards (adjust weights based on morphology)
-    cfg.rewards["tracking_lin_vel_x"].weight = 1.0
-    cfg.rewards["tracking_ang_vel_z"].weight = 0.8
-    cfg.rewards["action_smoothness"].weight = -0.01
-    
-    # 4. Customize observations if needed
-    # (Usually the base config is fine)
-    
-    # 5. Customize commands if needed
-    if play:
-        cfg.commands["twist"].ranges.lin_vel_x = (-0.5, 1.0)
-    
-    return cfg
+  cfg = make_velocity_env_cfg()
+
+  # 1. Set robot
+  cfg.scene.entities = {"robot": get_my_robot_cfg()}
+
+  # 2. Customize action scale
+  cfg.actions["joint_pos"].scale = MY_ROBOT_ACTION_SCALE
+
+  # 3. Customize rewards (adjust weights based on morphology)
+  cfg.rewards["tracking_lin_vel_x"].weight = 1.0
+  cfg.rewards["tracking_ang_vel_z"].weight = 0.8
+  cfg.rewards["action_smoothness"].weight = -0.01
+
+  # 4. Customize observations if needed
+  # (Usually the base config is fine)
+
+  # 5. Customize commands if needed
+  if play:
+    cfg.commands["twist"].ranges.lin_vel_x = (-0.5, 1.0)
+
+  return cfg
 ```
 
 ### Step 3: RL Config
@@ -502,30 +511,31 @@ def my_robot_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
 
 from mjlab.rl import RslRlOnPolicyRunnerCfg, RslRlModelCfg, RslRlPpoAlgorithmCfg
 
+
 def my_robot_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
-    return RslRlOnPolicyRunnerCfg(
-        actor=RslRlModelCfg(
-            hidden_dims=(512, 256, 128),
-            activation="elu",
-            obs_normalization=True,
-        ),
-        critic=RslRlModelCfg(
-            hidden_dims=(512, 256, 128),
-            activation="elu",
-            obs_normalization=True,
-        ),
-        algorithm=RslRlPpoAlgorithmCfg(
-            learning_rate=1.0e-3,
-            gamma=0.99,
-            lam=0.95,
-            clip_param=0.2,
-            entropy_coef=0.01,
-        ),
-        experiment_name="my_robot_velocity",
-        save_interval=100,
-        num_steps_per_env=24,
-        max_iterations=5000,  # Adjust based on complexity
-    )
+  return RslRlOnPolicyRunnerCfg(
+    actor=RslRlModelCfg(
+      hidden_dims=(512, 256, 128),
+      activation="elu",
+      obs_normalization=True,
+    ),
+    critic=RslRlModelCfg(
+      hidden_dims=(512, 256, 128),
+      activation="elu",
+      obs_normalization=True,
+    ),
+    algorithm=RslRlPpoAlgorithmCfg(
+      learning_rate=1.0e-3,
+      gamma=0.99,
+      lam=0.95,
+      clip_param=0.2,
+      entropy_coef=0.01,
+    ),
+    experiment_name="my_robot_velocity",
+    save_interval=100,
+    num_steps_per_env=24,
+    max_iterations=5000,  # Adjust based on complexity
+  )
 ```
 
 ### Step 4: Register Task
@@ -539,11 +549,11 @@ from .env_cfgs import my_robot_env_cfg
 from .rl_cfg import my_robot_ppo_runner_cfg
 
 register_mjlab_task(
-    task_id="Mjlab-Velocity-Flat-MyRobot",
-    env_cfg=my_robot_env_cfg(),
-    play_env_cfg=my_robot_env_cfg(play=True),
-    rl_cfg=my_robot_ppo_runner_cfg(),
-    runner_cls=VelocityOnPolicyRunner,
+  task_id="Mjlab-Velocity-Flat-MyRobot",
+  env_cfg=my_robot_env_cfg(),
+  play_env_cfg=my_robot_env_cfg(play=True),
+  rl_cfg=my_robot_ppo_runner_cfg(),
+  runner_cls=VelocityOnPolicyRunner,
 )
 ```
 

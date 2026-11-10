@@ -103,13 +103,17 @@ def run(cfg: D518Config) -> Path:
 
   fl_ground_cfg = ContactSensorCfg(
     name="fl_ground_contact_diag",
-    primary=ContactMatch(mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"),
+    primary=ContactMatch(
+      mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"
+    ),
     secondary=ContactMatch(mode="body", pattern="terrain"),
     fields=("found", "force"),
     reduce="netforce",
     num_slots=1,
   )
-  existing_wire_sensor = next(s for s in env_cfg.scene.sensors if s.name == "wire_contact")
+  existing_wire_sensor = next(
+    s for s in env_cfg.scene.sensors if s.name == "wire_contact"
+  )
   fr_wire_cfg = ContactSensorCfg(
     name="fr_wire_contact_diag",
     primary=existing_wire_sensor.primary,
@@ -188,7 +192,9 @@ def run(cfg: D518Config) -> Path:
 
     foot_rel_w = (foot_pos_w - base_pos_w).unsqueeze(0)
     foot_pos_b = quat_apply_inverse(base_quat_w.unsqueeze(0), foot_rel_w)[0]
-    foot_vel_b = quat_apply_inverse(base_quat_w.unsqueeze(0), foot_vel_w.unsqueeze(0))[0]
+    foot_vel_b = quat_apply_inverse(base_quat_w.unsqueeze(0), foot_vel_w.unsqueeze(0))[
+      0
+    ]
 
     wire_sensor = env.scene.sensors[act.cfg.wire_contact_sensor_name]
     wire_in_contact = bool((wire_sensor.data.found[0] > 0).any())
@@ -242,7 +248,9 @@ def run(cfg: D518Config) -> Path:
         state["_fl_ground_run"] += 1
       else:
         state["_fl_ground_run"] = 0
-      if state["_fl_ground_run"] >= 3 and state["first_sustained_fl_ground_step"] is None:
+      if (
+        state["_fl_ground_run"] >= 3 and state["first_sustained_fl_ground_step"] is None
+      ):
         state["first_sustained_fl_ground_step"] = step - 2
 
     sim_ctrl = env.sim.data.ctrl[0]
@@ -250,71 +258,71 @@ def run(cfg: D518Config) -> Path:
     pos_calf_ctrl_target = float(sim_ctrl[act._pos_calf_ctrl_id])
 
     return {
-        "step": step,
-        "phase": new_phase,
-        "recovery_elapsed": int(act.recovery_elapsed[0]),
-        "pos_actuators_active": pos_actuators_active,
-        "foot_z": float(foot_pos_w[2]),
-        "foot_vz": float(foot_vel_w[2]),
-        "foot_height_above_wire": foot_height_above_wire,
-        "foot_x_base": float(foot_pos_b[0]),
-        "foot_y_base": float(foot_pos_b[1]),
-        "foot_z_base": float(foot_pos_b[2]),
-        "foot_vx_base": float(foot_vel_b[0]),
-        "foot_vy_base": float(foot_vel_b[1]),
-        "foot_vz_base": float(foot_vel_b[2]),
-        "hip_pos": float(qpos[hip_i]),
-        "hip_vel": float(qvel[hip_i]),
-        "thigh_pos": float(qpos[thigh_i]),
-        "thigh_vel": float(qvel[thigh_i]),
-        "calf_pos": float(qpos[calf_i]),
-        "calf_vel": float(qvel[calf_i]),
-        "pos_thigh_ctrl_target": pos_thigh_ctrl_target,
-        "pos_calf_ctrl_target": pos_calf_ctrl_target,
-        "base_x": float(base_pos_w[0]),
-        "base_y": float(base_pos_w[1]),
-        "base_z": float(base_pos_w[2]),
-        "base_quat_w": float(base_quat_w[0]),
-        "base_quat_x": float(base_quat_w[1]),
-        "base_quat_y": float(base_quat_w[2]),
-        "base_quat_z": float(base_quat_w[3]),
-        "base_lin_vel_x": float(base_lin_vel_b[0]),
-        "base_lin_vel_y": float(base_lin_vel_b[1]),
-        "base_lin_vel_z": float(base_lin_vel_b[2]),
-        "base_ang_vel_x": float(base_ang_vel_b[0]),
-        "base_ang_vel_y": float(base_ang_vel_b[1]),
-        "base_ang_vel_z": float(base_ang_vel_b[2]),
-        "wire_in_contact": wire_in_contact,
-        "fl_ground_contact": ground_contacts["FL"],
-        "fr_ground_contact": ground_contacts["FR"],
-        "rl_ground_contact": ground_contacts["RL"],
-        "rr_ground_contact": ground_contacts["RR"],
-        "fr_wire_contact": fr_wire_found,
-        "pos_thigh_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._pos_thigh_ctrl_id]
-        ),
-        "aux_thigh_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._aux_thigh_ctrl_id]
-        ),
-        "pos_calf_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._pos_calf_ctrl_id]
-        ),
-        "aux_calf_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._aux_calf_ctrl_id]
-        ),
-        "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
-        "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
-        "calf_forward_dist": calf_forward_dist,
-        "calf_height_above_wire": calf_height_above_wire,
-        "calf_side_far": calf_side_far,
-        "foot_forward_dist": foot_forward_dist,
-        "calf_clearance_achieved": calf_clearance_achieved,
-        "foot_crossed_achieved": foot_crossed_achieved,
-        "crossing_achieved": crossing_achieved,
-        "release_counter": release_counter,
-        "recovery_failed_timeout_flag": recovery_failed_timeout_flag,
-        "released_sustained": released_sustained,
-        "genuine_recovery_complete": genuine_recovery_complete,
+      "step": step,
+      "phase": new_phase,
+      "recovery_elapsed": int(act.recovery_elapsed[0]),
+      "pos_actuators_active": pos_actuators_active,
+      "foot_z": float(foot_pos_w[2]),
+      "foot_vz": float(foot_vel_w[2]),
+      "foot_height_above_wire": foot_height_above_wire,
+      "foot_x_base": float(foot_pos_b[0]),
+      "foot_y_base": float(foot_pos_b[1]),
+      "foot_z_base": float(foot_pos_b[2]),
+      "foot_vx_base": float(foot_vel_b[0]),
+      "foot_vy_base": float(foot_vel_b[1]),
+      "foot_vz_base": float(foot_vel_b[2]),
+      "hip_pos": float(qpos[hip_i]),
+      "hip_vel": float(qvel[hip_i]),
+      "thigh_pos": float(qpos[thigh_i]),
+      "thigh_vel": float(qvel[thigh_i]),
+      "calf_pos": float(qpos[calf_i]),
+      "calf_vel": float(qvel[calf_i]),
+      "pos_thigh_ctrl_target": pos_thigh_ctrl_target,
+      "pos_calf_ctrl_target": pos_calf_ctrl_target,
+      "base_x": float(base_pos_w[0]),
+      "base_y": float(base_pos_w[1]),
+      "base_z": float(base_pos_w[2]),
+      "base_quat_w": float(base_quat_w[0]),
+      "base_quat_x": float(base_quat_w[1]),
+      "base_quat_y": float(base_quat_w[2]),
+      "base_quat_z": float(base_quat_w[3]),
+      "base_lin_vel_x": float(base_lin_vel_b[0]),
+      "base_lin_vel_y": float(base_lin_vel_b[1]),
+      "base_lin_vel_z": float(base_lin_vel_b[2]),
+      "base_ang_vel_x": float(base_ang_vel_b[0]),
+      "base_ang_vel_y": float(base_ang_vel_b[1]),
+      "base_ang_vel_z": float(base_ang_vel_b[2]),
+      "wire_in_contact": wire_in_contact,
+      "fl_ground_contact": ground_contacts["FL"],
+      "fr_ground_contact": ground_contacts["FR"],
+      "rl_ground_contact": ground_contacts["RL"],
+      "rr_ground_contact": ground_contacts["RR"],
+      "fr_wire_contact": fr_wire_found,
+      "pos_thigh_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._pos_thigh_ctrl_id]
+      ),
+      "aux_thigh_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._aux_thigh_ctrl_id]
+      ),
+      "pos_calf_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._pos_calf_ctrl_id]
+      ),
+      "aux_calf_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._aux_calf_ctrl_id]
+      ),
+      "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
+      "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
+      "calf_forward_dist": calf_forward_dist,
+      "calf_height_above_wire": calf_height_above_wire,
+      "calf_side_far": calf_side_far,
+      "foot_forward_dist": foot_forward_dist,
+      "calf_clearance_achieved": calf_clearance_achieved,
+      "foot_crossed_achieved": foot_crossed_achieved,
+      "crossing_achieved": crossing_achieved,
+      "release_counter": release_counter,
+      "recovery_failed_timeout_flag": recovery_failed_timeout_flag,
+      "released_sustained": released_sustained,
+      "genuine_recovery_complete": genuine_recovery_complete,
     }
 
   def do_step(step: int, action: torch.Tensor) -> dict:
@@ -332,7 +340,11 @@ def run(cfg: D518Config) -> Path:
       if pending["step"] is not None:
         row = do_step_post(pending["step"], pending["prev_phase"])
         rows.append(row)
-        if pending["step"] % 10 == 0 or row["calf_clearance_achieved"] or row["crossing_achieved"]:
+        if (
+          pending["step"] % 10 == 0
+          or row["calf_clearance_achieved"]
+          or row["crossing_achieved"]
+        ):
           print(
             f"[D5.18] step={pending['step']} phase={row['phase']} "
             f"pos_act={row['pos_actuators_active']} fl_ground={row['fl_ground_contact']} "
@@ -347,7 +359,9 @@ def run(cfg: D518Config) -> Path:
       pending["prev_phase"] = prev_phase
       return torch.zeros(env.action_manager.action.shape, device=device)
 
-    print("[INFO] Debug mode: native viewer (DYNAMIC, real physics). Close window to end run.")
+    print(
+      "[INFO] Debug mode: native viewer (DYNAMIC, real physics). Close window to end run."
+    )
     try:
       NativeMujocoViewer(env, viewer_policy).run()
     except SystemExit:
@@ -373,7 +387,9 @@ def run(cfg: D518Config) -> Path:
     f.write(f"stage1_first_latch_step={state['stage1_first_step']}\n")
     f.write(f"stage2_first_latch_step={state['stage2_first_step']}\n")
     f.write(f"first_actuator_restore_step={state['first_actuator_restore_step']}\n")
-    f.write(f"first_sustained_fl_ground_step={state['first_sustained_fl_ground_step']}\n")
+    f.write(
+      f"first_sustained_fl_ground_step={state['first_sustained_fl_ground_step']}\n"
+    )
   print(f"[D5.18] wrote {csv_path}")
   print(f"  trigger_step={state['trigger_step']}")
   print(f"  {state['exit_line']}")

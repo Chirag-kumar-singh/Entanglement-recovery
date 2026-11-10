@@ -262,9 +262,7 @@ def go2_entanglement_recovery_env_cfg(
       params={
         "position_range": (0.0, 0.0),
         "velocity_range": (0.0, 0.0),
-        "asset_cfg": SceneEntityCfg(
-          "robot", joint_names=("(?!FL_).*",)
-        ),
+        "asset_cfg": SceneEntityCfg("robot", joint_names=("(?!FL_).*",)),
       },
     ),
     # FL joints: biased toward the empirically-measured mid-swing
@@ -276,7 +274,10 @@ def go2_entanglement_recovery_env_cfg(
       func=envs_mdp.reset_joints_by_offset,
       mode="reset",
       params={
-        "position_range": (FL_HIP_CONTACT_OFFSET - 0.008, FL_HIP_CONTACT_OFFSET + 0.008),
+        "position_range": (
+          FL_HIP_CONTACT_OFFSET - 0.008,
+          FL_HIP_CONTACT_OFFSET + 0.008,
+        ),
         "velocity_range": (0.0, 0.0),
         "asset_cfg": SceneEntityCfg("robot", joint_names=("FL_hip_joint",)),
       },
@@ -389,9 +390,7 @@ def go2_entanglement_recovery_env_cfg(
   rod_geom_names = tuple(f"recovery_rod_{i}" for i in range(num_envs))
   rod_anchor_end = (obstacle_pos[0], obstacle_pos[1] + 0.5, obstacle_pos[2])
 
-  def _compute_grid_env_origins_xy(
-    n: int, spacing: float
-  ) -> list[tuple[float, float]]:
+  def _compute_grid_env_origins_xy(n: int, spacing: float) -> list[tuple[float, float]]:
     """Pure-Python reimplementation of
     ``TerrainEntity._compute_env_origins_grid``'s (x, y) layout for
     ``terrain_type="plane"``, so the rod copies land exactly on the same
@@ -433,8 +432,12 @@ def go2_entanglement_recovery_env_cfg(
     half_vec = tuple((rod_anchor_end[k] - obstacle_pos[k]) / 2.0 for k in range(3))
     base_center = tuple(obstacle_pos[k] + half_vec[k] for k in range(3))
     fromto = (
-      -half_vec[0], -half_vec[1], -half_vec[2],
-      half_vec[0], half_vec[1], half_vec[2],
+      -half_vec[0],
+      -half_vec[1],
+      -half_vec[2],
+      half_vec[0],
+      half_vec[1],
+      half_vec[2],
     )
     grid_origins = _compute_grid_env_origins_xy(num_envs, env_spacing)
     for env_id, (ox, oy) in enumerate(grid_origins):

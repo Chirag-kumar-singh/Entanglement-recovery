@@ -162,9 +162,13 @@ def run(cfg: D56Config) -> Path:
         continue
       n0, n1 = geom_name(int(contact.geom[ci][0])), geom_name(int(contact.geom[ci][1]))
       pair = (n0, n1)
-      if any("FL_hip_collision" in n for n in pair) and any("wire_seg" in n for n in pair):
+      if any("FL_hip_collision" in n for n in pair) and any(
+        "wire_seg" in n for n in pair
+      ):
         hip_wire_contact_now = True
-      if any("FL_calf2_collision" in n for n in pair) and any("wire_seg" in n for n in pair):
+      if any("FL_calf2_collision" in n for n in pair) and any(
+        "wire_seg" in n for n in pair
+      ):
         calf_wire_contact_now = True
 
     calf_forward_dist = float(act.calf_forward_dist[0])
@@ -201,69 +205,69 @@ def run(cfg: D56Config) -> Path:
       state["stage2_first_step"] = step
 
     return {
-        "step": step,
-        "phase": new_phase,
-        "recovery_elapsed": int(act.recovery_elapsed[0]),
-        "foot_z": float(foot_pos[2]),
-        "foot_vz": float(entity.data.site_lin_vel_w[0, act._foot_site_idx, 2]),
-        "foot_height_above_wire": float(act.foot_height_above_wire[0]),
-        "hip_pos": float(qpos[hip_i]),
-        "thigh_pos": float(qpos[thigh_i]),
-        "thigh_vel": float(qvel[thigh_i]),
-        "calf_pos": float(qpos[calf_i]),
-        "calf_vel": float(qvel[calf_i]),
-        "base_z": float(base_pos[2]),
-        "base_quat_w": float(base_quat[0]),
-        "wire_in_contact": wire_in_contact,
-        "fl_ground_contact": fl_ground_found,
-        "fr_wire_contact": fr_wire_found,
-        "fl_hip_wire_contact_raw": hip_wire_contact_now,
-        "fl_calf_wire_contact_raw": calf_wire_contact_now,
-        "pos_thigh_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._pos_thigh_ctrl_id]
-        ),
-        "aux_thigh_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._aux_thigh_ctrl_id]
-        ),
-        "pos_calf_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._pos_calf_ctrl_id]
-        ),
-        "aux_calf_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._aux_calf_ctrl_id]
-        ),
-        "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
-        "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
-        "calf_forward_dist": calf_forward_dist,
-        "calf_height_above_wire": calf_height_above_wire,
-        "calf_side_far": calf_side_far,
-        "foot_forward_dist": foot_forward_dist,
-        "calf_clearance_achieved": calf_clearance_achieved,
-        "foot_crossed_achieved": foot_crossed_achieved,
-        "crossing_achieved": crossing_achieved,
-        "release_counter": release_counter,
-        "recovery_failed_timeout_flag": recovery_failed_timeout_flag,
-        "released_sustained": released_sustained,
-        "genuine_recovery_complete": genuine_recovery_complete,
-        # D5.6 additions:
-        "base_x": float(base_pos[0]),
-        "base_y": float(base_pos[1]),
-        "base_heading": current_heading,
-        "calf_geom_x": float(calf_geom_xy[0]),
-        "calf_geom_y": float(calf_geom_xy[1]),
-        "fwd_dir_x": float(fwd_dir_xy[0]),
-        "fwd_dir_y": float(fwd_dir_xy[1]),
-        "imu_lin_vel_x": float(imu_lin_vel[0]),
-        "imu_lin_vel_y": float(imu_lin_vel[1]),
-        "imu_lin_vel_z": float(imu_lin_vel[2]),
-        "imu_ang_vel_x": float(imu_ang_vel[0]),
-        "imu_ang_vel_y": float(imu_ang_vel[1]),
-        "imu_ang_vel_z": float(imu_ang_vel[2]),
-        "projected_gravity_x": float(projected_gravity_b[0]),
-        "projected_gravity_y": float(projected_gravity_b[1]),
-        "projected_gravity_z": float(projected_gravity_b[2]),
-        "vel_cmd_x": float(vel_command[0]),
-        "vel_cmd_y": float(vel_command[1]),
-        "vel_cmd_yaw": float(vel_command[2]),
+      "step": step,
+      "phase": new_phase,
+      "recovery_elapsed": int(act.recovery_elapsed[0]),
+      "foot_z": float(foot_pos[2]),
+      "foot_vz": float(entity.data.site_lin_vel_w[0, act._foot_site_idx, 2]),
+      "foot_height_above_wire": float(act.foot_height_above_wire[0]),
+      "hip_pos": float(qpos[hip_i]),
+      "thigh_pos": float(qpos[thigh_i]),
+      "thigh_vel": float(qvel[thigh_i]),
+      "calf_pos": float(qpos[calf_i]),
+      "calf_vel": float(qvel[calf_i]),
+      "base_z": float(base_pos[2]),
+      "base_quat_w": float(base_quat[0]),
+      "wire_in_contact": wire_in_contact,
+      "fl_ground_contact": fl_ground_found,
+      "fr_wire_contact": fr_wire_found,
+      "fl_hip_wire_contact_raw": hip_wire_contact_now,
+      "fl_calf_wire_contact_raw": calf_wire_contact_now,
+      "pos_thigh_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._pos_thigh_ctrl_id]
+      ),
+      "aux_thigh_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._aux_thigh_ctrl_id]
+      ),
+      "pos_calf_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._pos_calf_ctrl_id]
+      ),
+      "aux_calf_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._aux_calf_ctrl_id]
+      ),
+      "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
+      "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
+      "calf_forward_dist": calf_forward_dist,
+      "calf_height_above_wire": calf_height_above_wire,
+      "calf_side_far": calf_side_far,
+      "foot_forward_dist": foot_forward_dist,
+      "calf_clearance_achieved": calf_clearance_achieved,
+      "foot_crossed_achieved": foot_crossed_achieved,
+      "crossing_achieved": crossing_achieved,
+      "release_counter": release_counter,
+      "recovery_failed_timeout_flag": recovery_failed_timeout_flag,
+      "released_sustained": released_sustained,
+      "genuine_recovery_complete": genuine_recovery_complete,
+      # D5.6 additions:
+      "base_x": float(base_pos[0]),
+      "base_y": float(base_pos[1]),
+      "base_heading": current_heading,
+      "calf_geom_x": float(calf_geom_xy[0]),
+      "calf_geom_y": float(calf_geom_xy[1]),
+      "fwd_dir_x": float(fwd_dir_xy[0]),
+      "fwd_dir_y": float(fwd_dir_xy[1]),
+      "imu_lin_vel_x": float(imu_lin_vel[0]),
+      "imu_lin_vel_y": float(imu_lin_vel[1]),
+      "imu_lin_vel_z": float(imu_lin_vel[2]),
+      "imu_ang_vel_x": float(imu_ang_vel[0]),
+      "imu_ang_vel_y": float(imu_ang_vel[1]),
+      "imu_ang_vel_z": float(imu_ang_vel[2]),
+      "projected_gravity_x": float(projected_gravity_b[0]),
+      "projected_gravity_y": float(projected_gravity_b[1]),
+      "projected_gravity_z": float(projected_gravity_b[2]),
+      "vel_cmd_x": float(vel_command[0]),
+      "vel_cmd_y": float(vel_command[1]),
+      "vel_cmd_yaw": float(vel_command[2]),
     }
 
   for step in range(cfg.max_steps):

@@ -54,9 +54,7 @@ def visualize_recovery(
     spawn_y_override=ISOLATED_FL_WIRE_SPAWN_Y,
     phase_aware_thresholds=use_phase_aware,
     max_recovery_steps=48,
-    experimental_two_phase_hybrid_recovery=(
-      use_gradual_transition or use_forward_bias
-    ),
+    experimental_two_phase_hybrid_recovery=(use_gradual_transition or use_forward_bias),
     experimental_two_phase_lift_confirm_steps=(
       GRADUAL_CONFIRM_STEPS
       if use_gradual_transition

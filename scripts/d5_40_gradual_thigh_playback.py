@@ -33,7 +33,9 @@ def main() -> None:
   out_dir = Path(cfg.out_dir)
   out_dir.mkdir(parents=True, exist_ok=True)
 
-  summaries = [_record_run(run, cfg.device, cfg.max_steps, cfg.fps, out_dir) for run in cfg.runs]
+  summaries = [
+    _record_run(run, cfg.device, cfg.max_steps, cfg.fps, out_dir) for run in cfg.runs
+  ]
 
   manifest = out_dir / "manifest.json"
   manifest.write_text(json.dumps(summaries, indent=2, sort_keys=True))
@@ -148,12 +150,16 @@ def _verify_video(path: Path) -> dict[str, Any]:
     "codec_name": stream.get("codec_name"),
     "width": int(stream.get("width", 0)),
     "height": int(stream.get("height", 0)),
-    "duration": float(stream.get("duration", payload.get("format", {}).get("duration", 0.0))),
+    "duration": float(
+      stream.get("duration", payload.get("format", {}).get("duration", 0.0))
+    ),
     "nb_frames": stream.get("nb_frames"),
   }
 
 
-def _record_run(run: RunSpec, device: str, max_steps: int, fps: float, out_dir: Path) -> dict[str, Any]:
+def _record_run(
+  run: RunSpec, device: str, max_steps: int, fps: float, out_dir: Path
+) -> dict[str, Any]:
   env = _build_env(run, device)
   act = cast(ResidualRecoveryAction, env.action_manager.get_term("joint_pos"))
   env.reset(seed=run.seed)
@@ -175,7 +181,9 @@ def _record_run(run: RunSpec, device: str, max_steps: int, fps: float, out_dir: 
 
       phase = int(act.phase[0].item())
       entered_recovery = (
-        entered_recovery or phase == PHASE_RECOVERY or bool(act.newly_entangled[0].item())
+        entered_recovery
+        or phase == PHASE_RECOVERY
+        or bool(act.newly_entangled[0].item())
       )
       post_recovery_entered = (
         post_recovery_entered
@@ -185,7 +193,8 @@ def _record_run(run: RunSpec, device: str, max_steps: int, fps: float, out_dir: 
       if bool(act.newly_recovered[0].item()):
         recovery_exit_reason = (
           "crossing_release"
-          if bool(act.crossing_achieved[0].item()) and bool(act.release_achieved[0].item())
+          if bool(act.crossing_achieved[0].item())
+          and bool(act.release_achieved[0].item())
           else "cap_timeout"
         )
 
@@ -230,7 +239,9 @@ def main() -> None:
   out_dir = Path(cfg.out_dir)
   out_dir.mkdir(parents=True, exist_ok=True)
 
-  summaries = [_record_run(run, cfg.device, cfg.max_steps, cfg.fps, out_dir) for run in cfg.runs]
+  summaries = [
+    _record_run(run, cfg.device, cfg.max_steps, cfg.fps, out_dir) for run in cfg.runs
+  ]
 
   manifest = out_dir / "manifest.json"
   manifest.write_text(json.dumps(summaries, indent=2, sort_keys=True))

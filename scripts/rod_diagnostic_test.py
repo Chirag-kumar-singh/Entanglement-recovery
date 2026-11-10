@@ -93,7 +93,9 @@ def collect_row(env: ManagerBasedRlEnv, env_idx: int = 0) -> dict:
   force_i = force[env_idx].detach().cpu() if force is not None else None
 
   contact_mask = found_i > 0
-  contacting_geoms = [primary_names[i] for i in torch.nonzero(contact_mask).flatten().tolist()]
+  contacting_geoms = [
+    primary_names[i] for i in torch.nonzero(contact_mask).flatten().tolist()
+  ]
   contact_forces = {}
   if force_i is not None:
     for i in torch.nonzero(contact_mask).flatten().tolist():
@@ -150,7 +152,11 @@ def _classify_behavior(rows: list[dict]) -> str:
       f"FALL: root height dropped {z_before - z_min_during:.3f} m during "
       f"contact (vx before={vx_before}, during={vx_during}, after={vx_after})"
     )
-  if vx_during is not None and vx_before is not None and vx_during < 0.15 * (vx_before or 1e-6):
+  if (
+    vx_during is not None
+    and vx_before is not None
+    and vx_during < 0.15 * (vx_before or 1e-6)
+  ):
     if vx_after is not None and vx_after > 0.5 * (vx_before or 1e-6):
       return (
         f"STEPS OVER / BRIEF STOP: vx dropped during contact then recovered "
@@ -273,7 +279,9 @@ def run(cfg: RodDiagnosticConfig) -> None:
   print("\n===== ROD DIAGNOSTIC SUMMARY =====")
   print(f"Total steps recorded: {len(rows)}")
   print(f"First contact step: {first_contact_step}")
-  print(f"NaN/Inf detected: {'YES at step ' + str(nan_step) if nan_step is not None else 'no'}")
+  print(
+    f"NaN/Inf detected: {'YES at step ' + str(nan_step) if nan_step is not None else 'no'}"
+  )
   if rows:
     print(f"Behavior: {_classify_behavior(rows)}")
   print("===================================\n")

@@ -104,21 +104,27 @@ def build_d510_env(cfg: D3GroundConfig, device: str, max_recovery_steps_override
   )
   env_cfg.seed = cfg.seed
   env_cfg.sim.device = device
-  env_cfg.auto_reset = False  # existing, documented flag -- never silently reset past a fall
+  env_cfg.auto_reset = (
+    False  # existing, documented flag -- never silently reset past a fall
+  )
 
   extra_sensors = []
   for leg in ("FL", "FR", "RL", "RR"):
     extra_sensors.append(
       ContactSensorCfg(
         name=f"{leg.lower()}_ground_contact_diag",
-        primary=ContactMatch(mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"),
+        primary=ContactMatch(
+          mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"
+        ),
         secondary=ContactMatch(mode="body", pattern="terrain"),
         fields=("found", "force"),
         reduce="netforce",
         num_slots=1,
       )
     )
-  existing_wire_sensor = next(s for s in env_cfg.scene.sensors if s.name == "wire_contact")
+  existing_wire_sensor = next(
+    s for s in env_cfg.scene.sensors if s.name == "wire_contact"
+  )
   fr_wire_cfg = ContactSensorCfg(
     name="fr_wire_contact_diag",
     primary=existing_wire_sensor.primary,
@@ -127,7 +133,9 @@ def build_d510_env(cfg: D3GroundConfig, device: str, max_recovery_steps_override
     reduce="netforce",
     num_slots=1,
   )
-  env_cfg.scene.sensors = tuple(env_cfg.scene.sensors) + tuple(extra_sensors) + (fr_wire_cfg,)
+  env_cfg.scene.sensors = (
+    tuple(env_cfg.scene.sensors) + tuple(extra_sensors) + (fr_wire_cfg,)
+  )
 
   env = ManagerBasedRlEnv(cfg=env_cfg, device=device)
   return env
@@ -222,42 +230,46 @@ def run(cfg: D510Config) -> Path:
         continue
       n0, n1 = geom_name(int(contact.geom[ci][0])), geom_name(int(contact.geom[ci][1]))
       pair = (n0, n1)
-      if any("FL_hip_collision" in n for n in pair) and any("wire_seg" in n for n in pair):
+      if any("FL_hip_collision" in n for n in pair) and any(
+        "wire_seg" in n for n in pair
+      ):
         hip_wire_contact_now = True
-      if any("FL_calf2_collision" in n for n in pair) and any("wire_seg" in n for n in pair):
+      if any("FL_calf2_collision" in n for n in pair) and any(
+        "wire_seg" in n for n in pair
+      ):
         calf_wire_contact_now = True
 
     return {
-        "step": step,
-        "phase": new_phase,
-        "recovery_elapsed": int(act.recovery_elapsed[0]),
-        "hip_pos": float(qpos[hip_i]),
-        "thigh_pos": float(qpos[thigh_i]),
-        "thigh_vel": float(qvel[thigh_i]),
-        "calf_pos": float(qpos[calf_i]),
-        "calf_vel": float(qvel[calf_i]),
-        "foot_z": float(foot_pos[2]),
-        "foot_height_above_wire": float(act.foot_height_above_wire[0]),
-        "base_x": float(base_pos[0]),
-        "base_y": float(base_pos[1]),
-        "base_z": float(base_pos[2]),
-        "base_quat_w": float(base_quat[0]),
-        "wire_in_contact": wire_in_contact,
-        "fl_ground_contact": fl_ground_found,
-        "fr_ground_contact": fr_ground_found,
-        "rl_ground_contact": rl_ground_found,
-        "rr_ground_contact": rr_ground_found,
-        "fr_wire_contact": fr_wire_found,
-        "fl_hip_wire_contact_raw": hip_wire_contact_now,
-        "fl_calf_wire_contact_raw": calf_wire_contact_now,
-        "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
-        "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
-        "calf_forward_dist": float(act.calf_forward_dist[0]),
-        "calf_height_above_wire": float(act.calf_height_above_wire[0]),
-        "calf_clearance_achieved": bool(act._calf_clearance_achieved[0]),
-        "foot_crossed_achieved": bool(act._foot_crossed_achieved[0]),
-        "crossing_achieved": bool(act._crossing_achieved[0]),
-        "recovery_failed_timeout_flag": bool(act._recovery_failed_timeout[0]),
+      "step": step,
+      "phase": new_phase,
+      "recovery_elapsed": int(act.recovery_elapsed[0]),
+      "hip_pos": float(qpos[hip_i]),
+      "thigh_pos": float(qpos[thigh_i]),
+      "thigh_vel": float(qvel[thigh_i]),
+      "calf_pos": float(qpos[calf_i]),
+      "calf_vel": float(qvel[calf_i]),
+      "foot_z": float(foot_pos[2]),
+      "foot_height_above_wire": float(act.foot_height_above_wire[0]),
+      "base_x": float(base_pos[0]),
+      "base_y": float(base_pos[1]),
+      "base_z": float(base_pos[2]),
+      "base_quat_w": float(base_quat[0]),
+      "wire_in_contact": wire_in_contact,
+      "fl_ground_contact": fl_ground_found,
+      "fr_ground_contact": fr_ground_found,
+      "rl_ground_contact": rl_ground_found,
+      "rr_ground_contact": rr_ground_found,
+      "fr_wire_contact": fr_wire_found,
+      "fl_hip_wire_contact_raw": hip_wire_contact_now,
+      "fl_calf_wire_contact_raw": calf_wire_contact_now,
+      "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
+      "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
+      "calf_forward_dist": float(act.calf_forward_dist[0]),
+      "calf_height_above_wire": float(act.calf_height_above_wire[0]),
+      "calf_clearance_achieved": bool(act._calf_clearance_achieved[0]),
+      "foot_crossed_achieved": bool(act._foot_crossed_achieved[0]),
+      "crossing_achieved": bool(act._crossing_achieved[0]),
+      "recovery_failed_timeout_flag": bool(act._recovery_failed_timeout[0]),
     }
 
   for step in range(cfg.max_steps):
@@ -312,7 +324,9 @@ def run(cfg: D510Config) -> Path:
   print(f"  {state['exit_line']}")
   print(f"  stage1_first_latch_step={state['stage1_first_step']}")
   print(f"  stage2_first_latch_step={state['stage2_first_step']}")
-  print(f"  terminated_step={state['terminated_step']} reason={state['terminated_reason']}")
+  print(
+    f"  terminated_step={state['terminated_step']} reason={state['terminated_reason']}"
+  )
   return csv_path
 
 

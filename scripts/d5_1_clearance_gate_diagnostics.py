@@ -100,7 +100,9 @@ def build_ablation_env(cfg: D3GroundConfig, device: str, ablate_hip_wire: bool):
 
   fl_ground_cfg = ContactSensorCfg(
     name="fl_ground_contact_diag",
-    primary=ContactMatch(mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"),
+    primary=ContactMatch(
+      mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"
+    ),
     secondary=ContactMatch(mode="body", pattern="terrain"),
     fields=("found", "force"),
     reduce="netforce",
@@ -108,13 +110,17 @@ def build_ablation_env(cfg: D3GroundConfig, device: str, ablate_hip_wire: bool):
   )
   fl_ground_pergeom_cfg = ContactSensorCfg(
     name="fl_ground_pergeom_diag",
-    primary=ContactMatch(mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"),
+    primary=ContactMatch(
+      mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"
+    ),
     secondary=ContactMatch(mode="body", pattern="terrain"),
     fields=("found", "force"),
     reduce="none",
     num_slots=1,
   )
-  existing_wire_sensor = next(s for s in env_cfg.scene.sensors if s.name == "wire_contact")
+  existing_wire_sensor = next(
+    s for s in env_cfg.scene.sensors if s.name == "wire_contact"
+  )
   fr_wire_cfg = ContactSensorCfg(
     name="fr_wire_contact_diag",
     primary=existing_wire_sensor.primary,
@@ -227,9 +233,13 @@ def run(cfg: D51Config) -> Path:
         continue
       n0, n1 = geom_name(int(contact.geom[ci][0])), geom_name(int(contact.geom[ci][1]))
       pair = (n0, n1)
-      if any("FL_hip_collision" in n for n in pair) and any("wire_seg" in n for n in pair):
+      if any("FL_hip_collision" in n for n in pair) and any(
+        "wire_seg" in n for n in pair
+      ):
         hip_wire_contact_now = True
-      if any("FL_calf2_collision" in n for n in pair) and any("wire_seg" in n for n in pair):
+      if any("FL_calf2_collision" in n for n in pair) and any(
+        "wire_seg" in n for n in pair
+      ):
         calf_wire_contact_now = True
 
     # --- D5.1 new: read the FSM's own clearance-gate state directly,

@@ -81,8 +81,12 @@ def run(cfg: D4ContactConfig) -> Path:
 
   # Raw mujoco.MjModel names are entity-qualified (e.g. "robot/FL_thigh_joint"),
   # unlike `entity.joint_names` which are bare. Confirmed empirically.
-  thigh_jid = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_JOINT, f"robot/{thigh_name}")
-  calf_jid = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_JOINT, f"robot/{calf_name}")
+  thigh_jid = mujoco.mj_name2id(
+    mj_model, mujoco.mjtObj.mjOBJ_JOINT, f"robot/{thigh_name}"
+  )
+  calf_jid = mujoco.mj_name2id(
+    mj_model, mujoco.mjtObj.mjOBJ_JOINT, f"robot/{calf_name}"
+  )
   assert thigh_jid >= 0 and calf_jid >= 0, "joint name lookup failed"
   thigh_dof = int(mj_model.jnt_dofadr[thigh_jid])
   calf_dof = int(mj_model.jnt_dofadr[calf_jid])
@@ -135,12 +139,14 @@ def run(cfg: D4ContactConfig) -> Path:
         pos = [float(x) for x in contact.pos[ci]]
         step_contacts.append((n0, n1, dist, pos))
 
-    involves_fl = [
-      c for c in step_contacts if "FL_" in c[0] or "FL_" in c[1]
-    ]
+    involves_fl = [c for c in step_contacts if "FL_" in c[0] or "FL_" in c[1]]
     involves_wire = [
-      c for c in step_contacts if "wire" in c[0].lower() or "wire" in c[1].lower()
-      or "cable" in c[0].lower() or "cable" in c[1].lower()
+      c
+      for c in step_contacts
+      if "wire" in c[0].lower()
+      or "wire" in c[1].lower()
+      or "cable" in c[0].lower()
+      or "cable" in c[1].lower()
     ]
 
     if cfg.window_start <= step <= cfg.window_end:
@@ -176,8 +182,12 @@ def run(cfg: D4ContactConfig) -> Path:
         "n_contacts_world0": len(step_contacts),
         "n_contacts_fl": len(involves_fl),
         "n_contacts_wire": len(involves_wire),
-        "fl_contact_pairs": "|".join(f"{n0}<->{n1}:{d:.4f}" for n0, n1, d, _ in involves_fl),
-        "wire_contact_pairs": "|".join(f"{n0}<->{n1}:{d:.4f}" for n0, n1, d, _ in involves_wire),
+        "fl_contact_pairs": "|".join(
+          f"{n0}<->{n1}:{d:.4f}" for n0, n1, d, _ in involves_fl
+        ),
+        "wire_contact_pairs": "|".join(
+          f"{n0}<->{n1}:{d:.4f}" for n0, n1, d, _ in involves_wire
+        ),
         "pos_thigh_actuator_force_global": float(
           env.sim.data.actuator_force[0, act._pos_thigh_ctrl_id]
         ),

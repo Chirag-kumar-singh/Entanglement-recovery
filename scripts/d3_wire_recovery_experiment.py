@@ -100,7 +100,9 @@ def build_row(
 
   exit_reason = ""
   if phase == PHASE_POST_RECOVERY:
-    exit_reason = "cap_timeout" if bool(act.recovery_failed_timeout[0]) else "crossing+release"
+    exit_reason = (
+      "cap_timeout" if bool(act.recovery_failed_timeout[0]) else "crossing+release"
+    )
 
   row = {
     "step": step,
@@ -117,8 +119,12 @@ def build_row(
     "thigh_vel": float(qvel[thigh_i]),
     "calf_pos": float(qpos[calf_i]),
     "calf_vel": float(qvel[calf_i]),
-    "walk_raw_thigh": float(act._raw_actions[0, thigh_i]) if act._raw_actions is not None else 0.0,
-    "walk_raw_calf": float(act._raw_actions[0, calf_i]) if act._raw_actions is not None else 0.0,
+    "walk_raw_thigh": float(act._raw_actions[0, thigh_i])
+    if act._raw_actions is not None
+    else 0.0,
+    "walk_raw_calf": float(act._raw_actions[0, calf_i])
+    if act._raw_actions is not None
+    else 0.0,
     "recovery_thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
     "recovery_calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
     "pos_thigh_actuator_enabled": pos_thigh_gain != 0.0,
@@ -217,7 +223,9 @@ def run(cfg: D3Config) -> Path:
       rows.append(row)
       if row["phase"] == "POST_RECOVERY" and reached_post_recovery_at is None:
         reached_post_recovery_at = i
-        print(f"[D3] Reached POST_RECOVERY at step {i} (reason={row['recovery_exit_reason']})")
+        print(
+          f"[D3] Reached POST_RECOVERY at step {i} (reason={row['recovery_exit_reason']})"
+        )
       if (
         reached_post_recovery_at is not None
         and i - reached_post_recovery_at >= cfg.stop_steps_after_post_recovery
@@ -240,19 +248,27 @@ def run(cfg: D3Config) -> Path:
   max_foot_h = max(r["foot_z"] for r in rows)
   recovery_rows = [r for r in rows if r["phase"] == "RECOVERY"]
   max_clearance_during_recovery = (
-    max(r["foot_height_above_wire"] for r in recovery_rows) if recovery_rows else float("nan")
+    max(r["foot_height_above_wire"] for r in recovery_rows)
+    if recovery_rows
+    else float("nan")
   )
   crossed = any(r["crossing_achieved"] for r in rows)
   final_phase = rows[-1]["phase"]
-  exit_reason = next((r["recovery_exit_reason"] for r in reversed(rows) if r["recovery_exit_reason"]), "")
+  exit_reason = next(
+    (r["recovery_exit_reason"] for r in reversed(rows) if r["recovery_exit_reason"]), ""
+  )
   resumed_walking = final_phase == "POST_RECOVERY"
 
   print("\n==== D3 WIRE EXPERIMENT SUMMARY ====")
   print(f"A. FL contacted wire: {contacted_wire}")
   print(f"B. Hybrid recovery activated: {recovery_activated}")
   print(f"C. Max FL foot height (world Z): {max_foot_h:.4f}")
-  print(f"   Max clearance above wire DURING recovery: {max_clearance_during_recovery:.4f}")
-  print(f"D. Crossing achieved (foot passed wire horiz+vert per env's own def): {crossed}")
+  print(
+    f"   Max clearance above wire DURING recovery: {max_clearance_during_recovery:.4f}"
+  )
+  print(
+    f"D. Crossing achieved (foot passed wire horiz+vert per env's own def): {crossed}"
+  )
   print(f"E. Wire cleared: {crossed}")
   print(f"F. Final phase reached: {final_phase}")
   print(f"G. Resumed walking (reached POST_RECOVERY): {resumed_walking}")
@@ -314,8 +330,15 @@ def _make_plots(rows: list[dict], out_dir: Path) -> None:
   plt.close(fig)
 
   fig, ax = plt.subplots(figsize=(8, 4))
-  ax.plot(t, [r["foot_height_above_wire"] for r in rows], label="foot_height_above_wire")
-  ax.plot(t, [r["foot_forward_dist_to_wire"] for r in rows], label="foot_forward_dist_to_wire", linestyle="--")
+  ax.plot(
+    t, [r["foot_height_above_wire"] for r in rows], label="foot_height_above_wire"
+  )
+  ax.plot(
+    t,
+    [r["foot_forward_dist_to_wire"] for r in rows],
+    label="foot_forward_dist_to_wire",
+    linestyle="--",
+  )
   ax.axhline(0.0, color="black", linewidth=0.8)
   if span:
     ax.axvspan(span[0], span[1], color="red", alpha=0.15, label="RECOVERY")
@@ -329,8 +352,12 @@ def _make_plots(rows: list[dict], out_dir: Path) -> None:
   plt.close(fig)
 
   fig, ax = plt.subplots(figsize=(8, 4))
-  ax.plot(t, [r["recovery_thigh_vel_cmd"] for r in rows], label="recovery_thigh_vel_cmd")
-  ax.plot(t, [r["recovery_calf_torque_cmd"] for r in rows], label="recovery_calf_torque_cmd")
+  ax.plot(
+    t, [r["recovery_thigh_vel_cmd"] for r in rows], label="recovery_thigh_vel_cmd"
+  )
+  ax.plot(
+    t, [r["recovery_calf_torque_cmd"] for r in rows], label="recovery_calf_torque_cmd"
+  )
   if span:
     ax.axvspan(span[0], span[1], color="red", alpha=0.15, label="RECOVERY")
   ax.legend()

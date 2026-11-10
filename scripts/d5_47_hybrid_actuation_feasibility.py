@@ -116,7 +116,9 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     writer.writerows(rows)
 
 
-def _collect_run(run: RunSpec, device: str, max_steps: int, out_dir: Path) -> dict[str, Any]:
+def _collect_run(
+  run: RunSpec, device: str, max_steps: int, out_dir: Path
+) -> dict[str, Any]:
   env = _build_env(run.seed, device)
   act = cast(ResidualRecoveryAction, env.action_manager.get_term("joint_pos"))
   entity = act._entity
@@ -136,7 +138,9 @@ def _collect_run(run: RunSpec, device: str, max_steps: int, out_dir: Path) -> di
   fl_site_idx = site_names.index(fl_leg)
 
   hip_pos_ctrl_id = act._find_actuator_ctrl_id(fl_hip_joint, BuiltinPositionActuator)
-  thigh_pos_ctrl_id = act._find_actuator_ctrl_id(fl_thigh_joint, BuiltinPositionActuator)
+  thigh_pos_ctrl_id = act._find_actuator_ctrl_id(
+    fl_thigh_joint, BuiltinPositionActuator
+  )
   calf_pos_ctrl_id = act._find_actuator_ctrl_id(fl_calf_joint, BuiltinPositionActuator)
   thigh_vel_ctrl_id = act._aux_thigh_ctrl_id
   calf_motor_ctrl_id = act._aux_calf_ctrl_id
@@ -232,7 +236,9 @@ def _collect_run(run: RunSpec, device: str, max_steps: int, out_dir: Path) -> di
       "fl_foot_vx_mps": float(entity.data.site_lin_vel_w[0, fl_site_idx, 0].item()),
       "fl_foot_vy_mps": float(entity.data.site_lin_vel_w[0, fl_site_idx, 1].item()),
       "fl_foot_vz_mps": float(entity.data.site_lin_vel_w[0, fl_site_idx, 2].item()),
-      "fl_foot_speed_mps": float(torch.linalg.norm(entity.data.site_lin_vel_w[0, fl_site_idx]).item()),
+      "fl_foot_speed_mps": float(
+        torch.linalg.norm(entity.data.site_lin_vel_w[0, fl_site_idx]).item()
+      ),
       "fl_foot_forward_dist_m": float(act.foot_forward_dist[0].item()),
       "fl_foot_height_above_wire_m": float(act.foot_height_above_wire[0].item()),
       "fl_calf_forward_dist_m": float(act.calf_forward_dist[0].item()),
@@ -256,33 +262,87 @@ def _collect_run(run: RunSpec, device: str, max_steps: int, out_dir: Path) -> di
       "fl_calf_pos_actuator_force": float(actuator_force[calf_pos_ctrl_id].item()),
       "fl_thigh_vel_actuator_force": float(actuator_force[thigh_vel_ctrl_id].item()),
       "fl_calf_motor_actuator_force": float(actuator_force[calf_motor_ctrl_id].item()),
-      "fl_hip_pos_gain": float(env.sim.model.actuator_gainprm[0, hip_pos_ctrl_id, 0].item()),
-      "fl_thigh_pos_gain": float(env.sim.model.actuator_gainprm[0, thigh_pos_ctrl_id, 0].item()),
-      "fl_calf_pos_gain": float(env.sim.model.actuator_gainprm[0, calf_pos_ctrl_id, 0].item()),
-      "fl_thigh_vel_gain": float(env.sim.model.actuator_gainprm[0, thigh_vel_ctrl_id, 0].item()),
-      "fl_thigh_vel_bias_d": float(env.sim.model.actuator_biasprm[0, thigh_vel_ctrl_id, 2].item()),
-      "fl_thigh_pos_bias_p": float(env.sim.model.actuator_biasprm[0, thigh_pos_ctrl_id, 1].item()),
-      "fl_thigh_pos_bias_d": float(env.sim.model.actuator_biasprm[0, thigh_pos_ctrl_id, 2].item()),
-      "fl_calf_pos_bias_p": float(env.sim.model.actuator_biasprm[0, calf_pos_ctrl_id, 1].item()),
-      "fl_calf_pos_bias_d": float(env.sim.model.actuator_biasprm[0, calf_pos_ctrl_id, 2].item()),
-      "fl_hip_pos_ctrlrange_lo": float(env.sim.model.actuator_ctrlrange[0, hip_pos_ctrl_id, 0].item()),
-      "fl_hip_pos_ctrlrange_hi": float(env.sim.model.actuator_ctrlrange[0, hip_pos_ctrl_id, 1].item()),
-      "fl_thigh_pos_ctrlrange_lo": float(env.sim.model.actuator_ctrlrange[0, thigh_pos_ctrl_id, 0].item()),
-      "fl_thigh_pos_ctrlrange_hi": float(env.sim.model.actuator_ctrlrange[0, thigh_pos_ctrl_id, 1].item()),
-      "fl_calf_pos_ctrlrange_lo": float(env.sim.model.actuator_ctrlrange[0, calf_pos_ctrl_id, 0].item()),
-      "fl_calf_pos_ctrlrange_hi": float(env.sim.model.actuator_ctrlrange[0, calf_pos_ctrl_id, 1].item()),
-      "fl_thigh_vel_ctrlrange_lo": float(env.sim.model.actuator_ctrlrange[0, thigh_vel_ctrl_id, 0].item()),
-      "fl_thigh_vel_ctrlrange_hi": float(env.sim.model.actuator_ctrlrange[0, thigh_vel_ctrl_id, 1].item()),
-      "fl_calf_motor_ctrlrange_lo": float(env.sim.model.actuator_ctrlrange[0, calf_motor_ctrl_id, 0].item()),
-      "fl_calf_motor_ctrlrange_hi": float(env.sim.model.actuator_ctrlrange[0, calf_motor_ctrl_id, 1].item()),
-      "fl_thigh_pos_forcerange_lo": float(env.sim.model.actuator_forcerange[0, thigh_pos_ctrl_id, 0].item()),
-      "fl_thigh_pos_forcerange_hi": float(env.sim.model.actuator_forcerange[0, thigh_pos_ctrl_id, 1].item()),
-      "fl_calf_pos_forcerange_lo": float(env.sim.model.actuator_forcerange[0, calf_pos_ctrl_id, 0].item()),
-      "fl_calf_pos_forcerange_hi": float(env.sim.model.actuator_forcerange[0, calf_pos_ctrl_id, 1].item()),
-      "fl_thigh_vel_forcerange_lo": float(env.sim.model.actuator_forcerange[0, thigh_vel_ctrl_id, 0].item()),
-      "fl_thigh_vel_forcerange_hi": float(env.sim.model.actuator_forcerange[0, thigh_vel_ctrl_id, 1].item()),
-      "fl_calf_motor_forcerange_lo": float(env.sim.model.actuator_forcerange[0, calf_motor_ctrl_id, 0].item()),
-      "fl_calf_motor_forcerange_hi": float(env.sim.model.actuator_forcerange[0, calf_motor_ctrl_id, 1].item()),
+      "fl_hip_pos_gain": float(
+        env.sim.model.actuator_gainprm[0, hip_pos_ctrl_id, 0].item()
+      ),
+      "fl_thigh_pos_gain": float(
+        env.sim.model.actuator_gainprm[0, thigh_pos_ctrl_id, 0].item()
+      ),
+      "fl_calf_pos_gain": float(
+        env.sim.model.actuator_gainprm[0, calf_pos_ctrl_id, 0].item()
+      ),
+      "fl_thigh_vel_gain": float(
+        env.sim.model.actuator_gainprm[0, thigh_vel_ctrl_id, 0].item()
+      ),
+      "fl_thigh_vel_bias_d": float(
+        env.sim.model.actuator_biasprm[0, thigh_vel_ctrl_id, 2].item()
+      ),
+      "fl_thigh_pos_bias_p": float(
+        env.sim.model.actuator_biasprm[0, thigh_pos_ctrl_id, 1].item()
+      ),
+      "fl_thigh_pos_bias_d": float(
+        env.sim.model.actuator_biasprm[0, thigh_pos_ctrl_id, 2].item()
+      ),
+      "fl_calf_pos_bias_p": float(
+        env.sim.model.actuator_biasprm[0, calf_pos_ctrl_id, 1].item()
+      ),
+      "fl_calf_pos_bias_d": float(
+        env.sim.model.actuator_biasprm[0, calf_pos_ctrl_id, 2].item()
+      ),
+      "fl_hip_pos_ctrlrange_lo": float(
+        env.sim.model.actuator_ctrlrange[0, hip_pos_ctrl_id, 0].item()
+      ),
+      "fl_hip_pos_ctrlrange_hi": float(
+        env.sim.model.actuator_ctrlrange[0, hip_pos_ctrl_id, 1].item()
+      ),
+      "fl_thigh_pos_ctrlrange_lo": float(
+        env.sim.model.actuator_ctrlrange[0, thigh_pos_ctrl_id, 0].item()
+      ),
+      "fl_thigh_pos_ctrlrange_hi": float(
+        env.sim.model.actuator_ctrlrange[0, thigh_pos_ctrl_id, 1].item()
+      ),
+      "fl_calf_pos_ctrlrange_lo": float(
+        env.sim.model.actuator_ctrlrange[0, calf_pos_ctrl_id, 0].item()
+      ),
+      "fl_calf_pos_ctrlrange_hi": float(
+        env.sim.model.actuator_ctrlrange[0, calf_pos_ctrl_id, 1].item()
+      ),
+      "fl_thigh_vel_ctrlrange_lo": float(
+        env.sim.model.actuator_ctrlrange[0, thigh_vel_ctrl_id, 0].item()
+      ),
+      "fl_thigh_vel_ctrlrange_hi": float(
+        env.sim.model.actuator_ctrlrange[0, thigh_vel_ctrl_id, 1].item()
+      ),
+      "fl_calf_motor_ctrlrange_lo": float(
+        env.sim.model.actuator_ctrlrange[0, calf_motor_ctrl_id, 0].item()
+      ),
+      "fl_calf_motor_ctrlrange_hi": float(
+        env.sim.model.actuator_ctrlrange[0, calf_motor_ctrl_id, 1].item()
+      ),
+      "fl_thigh_pos_forcerange_lo": float(
+        env.sim.model.actuator_forcerange[0, thigh_pos_ctrl_id, 0].item()
+      ),
+      "fl_thigh_pos_forcerange_hi": float(
+        env.sim.model.actuator_forcerange[0, thigh_pos_ctrl_id, 1].item()
+      ),
+      "fl_calf_pos_forcerange_lo": float(
+        env.sim.model.actuator_forcerange[0, calf_pos_ctrl_id, 0].item()
+      ),
+      "fl_calf_pos_forcerange_hi": float(
+        env.sim.model.actuator_forcerange[0, calf_pos_ctrl_id, 1].item()
+      ),
+      "fl_thigh_vel_forcerange_lo": float(
+        env.sim.model.actuator_forcerange[0, thigh_vel_ctrl_id, 0].item()
+      ),
+      "fl_thigh_vel_forcerange_hi": float(
+        env.sim.model.actuator_forcerange[0, thigh_vel_ctrl_id, 1].item()
+      ),
+      "fl_calf_motor_forcerange_lo": float(
+        env.sim.model.actuator_forcerange[0, calf_motor_ctrl_id, 0].item()
+      ),
+      "fl_calf_motor_forcerange_hi": float(
+        env.sim.model.actuator_forcerange[0, calf_motor_ctrl_id, 1].item()
+      ),
       "fl_thigh_pos_soft_limit_lo": float(soft_joint_limits[thigh_joint_idx, 0].item()),
       "fl_thigh_pos_soft_limit_hi": float(soft_joint_limits[thigh_joint_idx, 1].item()),
       "fl_calf_pos_soft_limit_lo": float(soft_joint_limits[calf_joint_idx, 0].item()),
@@ -292,7 +352,9 @@ def _collect_run(run: RunSpec, device: str, max_steps: int, out_dir: Path) -> di
       "fl_calf_pos_hard_limit_lo": float(joint_limits[calf_joint_idx, 0].item()),
       "fl_calf_pos_hard_limit_hi": float(joint_limits[calf_joint_idx, 1].item()),
       "hybrid_thigh_pos_gain_active": bool(act.hybrid_thigh_pos_gain_active[0].item()),
-      "hybrid_two_phase_advance_active": bool(act.hybrid_two_phase_advance_active[0].item()),
+      "hybrid_two_phase_advance_active": bool(
+        act.hybrid_two_phase_advance_active[0].item()
+      ),
       "two_phase_lift_counter": int(act.two_phase_lift_counter[0].item()),
       "two_phase_switch_step": int(act.two_phase_switch_step[0].item()),
       "entered_recovery": entry_step >= 0,
@@ -326,10 +388,18 @@ def _collect_run(run: RunSpec, device: str, max_steps: int, out_dir: Path) -> di
     "first_cross_step": first_cross_step,
     "exit_step": exit_step,
     "outcome": outcome,
-    "max_calf_forward_dist_m": max(float(row["fl_calf_forward_dist_m"]) for row in rows),
-    "max_foot_forward_dist_m": max(float(row["fl_foot_forward_dist_m"]) for row in rows),
-    "max_calf_height_above_wire_m": max(float(row["fl_calf_height_above_wire_m"]) for row in rows),
-    "max_foot_height_above_wire_m": max(float(row["fl_foot_height_above_wire_m"]) for row in rows),
+    "max_calf_forward_dist_m": max(
+      float(row["fl_calf_forward_dist_m"]) for row in rows
+    ),
+    "max_foot_forward_dist_m": max(
+      float(row["fl_foot_forward_dist_m"]) for row in rows
+    ),
+    "max_calf_height_above_wire_m": max(
+      float(row["fl_calf_height_above_wire_m"]) for row in rows
+    ),
+    "max_foot_height_above_wire_m": max(
+      float(row["fl_foot_height_above_wire_m"]) for row in rows
+    ),
   }
   return summary
 
@@ -372,7 +442,8 @@ def _load_trace(path: str) -> dict[int, dict[str, Any]]:
       "base_z_m": float(row["base_z_m"]),
       "base_roll_deg": float(row["base_roll_deg"]),
       "base_pitch_deg": float(row["base_pitch_deg"]),
-      "hybrid_two_phase_advance_active": row["hybrid_two_phase_advance_active"] == "True",
+      "hybrid_two_phase_advance_active": row["hybrid_two_phase_advance_active"]
+      == "True",
       "hybrid_thigh_pos_gain_active": row["hybrid_thigh_pos_gain_active"] == "True",
     }
   return normalized
@@ -424,7 +495,9 @@ def main() -> None:
   out_dir = Path(cfg.out_dir)
   out_dir.mkdir(parents=True, exist_ok=True)
 
-  summaries = [_collect_run(run, cfg.device, cfg.max_steps, out_dir) for run in cfg.runs]
+  summaries = [
+    _collect_run(run, cfg.device, cfg.max_steps, out_dir) for run in cfg.runs
+  ]
   _write_csv(out_dir / "summary.csv", summaries)
   _write_csv(out_dir / "aligned_trace.csv", _build_aligned_rows(summaries))
 

@@ -35,4 +35,3 @@ register_mjlab_task(
   rl_cfg=go2_wire_recovery_residual_ppo_runner_cfg(),
   runner_cls=MjlabOnPolicyRunner,
 )
-

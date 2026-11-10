@@ -28,7 +28,11 @@ import torch
 import mjlab.tasks  # noqa: F401
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.tasks.recovery.env_cfg_residual import go2_wire_recovery_residual_env_cfg
-from mjlab.tasks.recovery.mdp.actions import LEG_NAMES, PHASE_NORMAL_WALK, PHASE_RECOVERY
+from mjlab.tasks.recovery.mdp.actions import (
+  LEG_NAMES,
+  PHASE_NORMAL_WALK,
+  PHASE_RECOVERY,
+)
 
 
 def snapshot(env, act, entity, label, env_id):
@@ -49,14 +53,30 @@ def snapshot(env, act, entity, label, env_id):
     walking_cmd_calf=float(act._raw_actions[env_id, calf_i]),
     recovery_thigh_vel_ctrl=float(act.hybrid_thigh_vel_ctrl[env_id]),
     recovery_calf_torque_ctrl=float(act.hybrid_calf_torque_ctrl[env_id]),
-    pos_thigh_gainprm=sim.model.actuator_gainprm[env_id, act._pos_thigh_ctrl_id, :3].tolist(),
-    pos_thigh_biasprm=sim.model.actuator_biasprm[env_id, act._pos_thigh_ctrl_id, :3].tolist(),
-    aux_thigh_gainprm=sim.model.actuator_gainprm[env_id, act._aux_thigh_ctrl_id, :3].tolist(),
-    aux_thigh_biasprm=sim.model.actuator_biasprm[env_id, act._aux_thigh_ctrl_id, :3].tolist(),
-    pos_calf_gainprm=sim.model.actuator_gainprm[env_id, act._pos_calf_ctrl_id, :3].tolist(),
-    pos_calf_biasprm=sim.model.actuator_biasprm[env_id, act._pos_calf_ctrl_id, :3].tolist(),
-    aux_calf_gainprm=sim.model.actuator_gainprm[env_id, act._aux_calf_ctrl_id, :3].tolist(),
-    aux_calf_biasprm=sim.model.actuator_biasprm[env_id, act._aux_calf_ctrl_id, :3].tolist(),
+    pos_thigh_gainprm=sim.model.actuator_gainprm[
+      env_id, act._pos_thigh_ctrl_id, :3
+    ].tolist(),
+    pos_thigh_biasprm=sim.model.actuator_biasprm[
+      env_id, act._pos_thigh_ctrl_id, :3
+    ].tolist(),
+    aux_thigh_gainprm=sim.model.actuator_gainprm[
+      env_id, act._aux_thigh_ctrl_id, :3
+    ].tolist(),
+    aux_thigh_biasprm=sim.model.actuator_biasprm[
+      env_id, act._aux_thigh_ctrl_id, :3
+    ].tolist(),
+    pos_calf_gainprm=sim.model.actuator_gainprm[
+      env_id, act._pos_calf_ctrl_id, :3
+    ].tolist(),
+    pos_calf_biasprm=sim.model.actuator_biasprm[
+      env_id, act._pos_calf_ctrl_id, :3
+    ].tolist(),
+    aux_calf_gainprm=sim.model.actuator_gainprm[
+      env_id, act._aux_calf_ctrl_id, :3
+    ].tolist(),
+    aux_calf_biasprm=sim.model.actuator_biasprm[
+      env_id, act._aux_calf_ctrl_id, :3
+    ].tolist(),
     aux_thigh_ctrl=float(sim.data.ctrl[env_id, act._aux_thigh_ctrl_id]),
     aux_calf_ctrl=float(sim.data.ctrl[env_id, act._aux_calf_ctrl_id]),
     aux_thigh_force=float(sim.data.actuator_force[env_id, act._aux_thigh_ctrl_id]),
@@ -68,18 +88,30 @@ def snapshot(env, act, entity, label, env_id):
 
 def print_snap(s):
   print(f"--- {s['label']} (env {s['env_id']}, phase={s['phase']}) ---")
-  print(f"  thigh qpos/qvel = {s['thigh_qpos']:+.5f} / {s['thigh_qvel']:+.5f}   "
-        f"calf qpos/qvel = {s['calf_qpos']:+.5f} / {s['calf_qvel']:+.5f}   "
-        f"hip qpos = {s['hip_qpos']:+.5f}")
-  print(f"  walking_cmd thigh/calf = {s['walking_cmd_thigh']:+.4f} / {s['walking_cmd_calf']:+.4f}   "
-        f"recovery ctrl thigh_vel/calf_torque = {s['recovery_thigh_vel_ctrl']:+.3f} / {s['recovery_calf_torque_ctrl']:+.3f}")
-  print(f"  pos_thigh gain/bias = {s['pos_thigh_gainprm']} / {s['pos_thigh_biasprm']}   "
-        f"aux_thigh gain/bias = {s['aux_thigh_gainprm']} / {s['aux_thigh_biasprm']}")
-  print(f"  pos_calf  gain/bias = {s['pos_calf_gainprm']} / {s['pos_calf_biasprm']}   "
-        f"aux_calf  gain/bias = {s['aux_calf_gainprm']} / {s['aux_calf_biasprm']}")
-  print(f"  aux_thigh ctrl/force = {s['aux_thigh_ctrl']:+.3f} / {s['aux_thigh_force']:+.5f}   "
-        f"aux_calf ctrl/force = {s['aux_calf_ctrl']:+.3f} / {s['aux_calf_force']:+.5f}")
-  print(f"  pos_thigh force = {s['pos_thigh_force']:+.5f}   pos_calf force = {s['pos_calf_force']:+.5f}")
+  print(
+    f"  thigh qpos/qvel = {s['thigh_qpos']:+.5f} / {s['thigh_qvel']:+.5f}   "
+    f"calf qpos/qvel = {s['calf_qpos']:+.5f} / {s['calf_qvel']:+.5f}   "
+    f"hip qpos = {s['hip_qpos']:+.5f}"
+  )
+  print(
+    f"  walking_cmd thigh/calf = {s['walking_cmd_thigh']:+.4f} / {s['walking_cmd_calf']:+.4f}   "
+    f"recovery ctrl thigh_vel/calf_torque = {s['recovery_thigh_vel_ctrl']:+.3f} / {s['recovery_calf_torque_ctrl']:+.3f}"
+  )
+  print(
+    f"  pos_thigh gain/bias = {s['pos_thigh_gainprm']} / {s['pos_thigh_biasprm']}   "
+    f"aux_thigh gain/bias = {s['aux_thigh_gainprm']} / {s['aux_thigh_biasprm']}"
+  )
+  print(
+    f"  pos_calf  gain/bias = {s['pos_calf_gainprm']} / {s['pos_calf_biasprm']}   "
+    f"aux_calf  gain/bias = {s['aux_calf_gainprm']} / {s['aux_calf_biasprm']}"
+  )
+  print(
+    f"  aux_thigh ctrl/force = {s['aux_thigh_ctrl']:+.3f} / {s['aux_thigh_force']:+.5f}   "
+    f"aux_calf ctrl/force = {s['aux_calf_ctrl']:+.3f} / {s['aux_calf_force']:+.5f}"
+  )
+  print(
+    f"  pos_thigh force = {s['pos_thigh_force']:+.5f}   pos_calf force = {s['pos_calf_force']:+.5f}"
+  )
 
 
 def enter_recovery(env, act, env_ids):
@@ -111,8 +143,12 @@ def other_joint_gains_unchanged(env, act, entity, env_id, baseline):
   mismatches = []
   n_act = sim.model.actuator_gainprm.shape[1]
   for ctrl_id in range(n_act):
-    if ctrl_id in (act._pos_thigh_ctrl_id, act._pos_calf_ctrl_id,
-                   act._aux_thigh_ctrl_id, act._aux_calf_ctrl_id):
+    if ctrl_id in (
+      act._pos_thigh_ctrl_id,
+      act._pos_calf_ctrl_id,
+      act._aux_thigh_ctrl_id,
+      act._aux_calf_ctrl_id,
+    ):
       continue
     g = sim.model.actuator_gainprm[env_id, ctrl_id, :3].tolist()
     b = sim.model.actuator_biasprm[env_id, ctrl_id, :3].tolist()
@@ -126,7 +162,11 @@ def other_joint_gains_unchanged(env, act, entity, env_id, baseline):
 def main():
   torch.manual_seed(0)
   cfg = go2_wire_recovery_residual_env_cfg(
-    affected_leg_idx=0, num_envs=2, recovery_mode="hybrid", policy_device="cpu", play=True
+    affected_leg_idx=0,
+    num_envs=2,
+    recovery_mode="hybrid",
+    policy_device="cpu",
+    play=True,
   )
   cfg.sim.device = "cpu"
   env = ManagerBasedRlEnv(cfg=cfg, device="cpu")
@@ -159,8 +199,14 @@ def main():
   print("\n################ CYCLE 1 ################")
   s_normal_before = snapshot(env, act, entity, "NORMAL-before", 0)
   print_snap(s_normal_before)
-  orig_pos_thigh = (s_normal_before["pos_thigh_gainprm"], s_normal_before["pos_thigh_biasprm"])
-  orig_pos_calf = (s_normal_before["pos_calf_gainprm"], s_normal_before["pos_calf_biasprm"])
+  orig_pos_thigh = (
+    s_normal_before["pos_thigh_gainprm"],
+    s_normal_before["pos_thigh_biasprm"],
+  )
+  orig_pos_calf = (
+    s_normal_before["pos_calf_gainprm"],
+    s_normal_before["pos_calf_biasprm"],
+  )
 
   # --- Enter recovery on env 0 ONLY; env 1 stays NORMAL. ---
   enter_recovery(env, act, [0])
@@ -188,19 +234,28 @@ def main():
   print_snap(s_after0)
   print_snap(s_after1)
 
-  other0_ok, other0_mismatch = other_joint_gains_unchanged(env, act, entity, 0, baseline_env0)
-  other1_ok, other1_mismatch = other_joint_gains_unchanged(env, act, entity, 1, baseline_env1)
+  other0_ok, other0_mismatch = other_joint_gains_unchanged(
+    env, act, entity, 0, baseline_env0
+  )
+  other1_ok, other1_mismatch = other_joint_gains_unchanged(
+    env, act, entity, 1, baseline_env1
+  )
 
   results["entry_pos_disabled"] = (
-    s_entry0["pos_thigh_gainprm"] == [0.0, 0.0, 0.0] and s_entry0["pos_thigh_biasprm"] == [0.0, 0.0, 0.0]
-    and s_entry0["pos_calf_gainprm"] == [0.0, 0.0, 0.0] and s_entry0["pos_calf_biasprm"] == [0.0, 0.0, 0.0]
+    s_entry0["pos_thigh_gainprm"] == [0.0, 0.0, 0.0]
+    and s_entry0["pos_thigh_biasprm"] == [0.0, 0.0, 0.0]
+    and s_entry0["pos_calf_gainprm"] == [0.0, 0.0, 0.0]
+    and s_entry0["pos_calf_biasprm"] == [0.0, 0.0, 0.0]
   )
   results["entry_aux_active"] = (
-    s_entry0["aux_thigh_gainprm"][0] != 0.0 and s_entry0["aux_calf_gainprm"] == s_entry0["aux_calf_gainprm"]
-    and s_entry0["recovery_thigh_vel_ctrl"] != 0.0 and s_entry0["recovery_calf_torque_ctrl"] != 0.0
+    s_entry0["aux_thigh_gainprm"][0] != 0.0
+    and s_entry0["aux_calf_gainprm"] == s_entry0["aux_calf_gainprm"]
+    and s_entry0["recovery_thigh_vel_ctrl"] != 0.0
+    and s_entry0["recovery_calf_torque_ctrl"] != 0.0
   )
   results["env1_untouched_during_env0_recovery"] = (
-    s_entry1["pos_thigh_gainprm"] == orig_pos_thigh[0] and s_entry1["aux_thigh_gainprm"] == [0.0, 0.0, 0.0]
+    s_entry1["pos_thigh_gainprm"] == orig_pos_thigh[0]
+    and s_entry1["aux_thigh_gainprm"] == [0.0, 0.0, 0.0]
     and s_mid1["pos_thigh_gainprm"] == orig_pos_thigh[0]
   )
   results["other_joints_unaffected_env0"] = other0_ok
@@ -215,15 +270,22 @@ def main():
   # ctrl=0 but nonzero kd still applies passive damping at all times.
   results["exit_aux_disabled"] = (
     s_after0["aux_thigh_gainprm"] == [0.0, 0.0, 0.0]
-    and s_after0["aux_thigh_ctrl"] == 0.0 and s_after0["aux_calf_ctrl"] == 0.0
-    and s_after0["aux_thigh_force"] == 0.0 and s_after0["aux_calf_force"] == 0.0
-    and s_after0["recovery_thigh_vel_ctrl"] == 0.0 and s_after0["recovery_calf_torque_ctrl"] == 0.0
+    and s_after0["aux_thigh_ctrl"] == 0.0
+    and s_after0["aux_calf_ctrl"] == 0.0
+    and s_after0["aux_thigh_force"] == 0.0
+    and s_after0["aux_calf_force"] == 0.0
+    and s_after0["recovery_thigh_vel_ctrl"] == 0.0
+    and s_after0["recovery_calf_torque_ctrl"] == 0.0
   )
   results["exit_pos_restored_exact"] = (
-    s_after0["pos_thigh_gainprm"] == orig_pos_thigh[0] and s_after0["pos_thigh_biasprm"] == orig_pos_thigh[1]
-    and s_after0["pos_calf_gainprm"] == orig_pos_calf[0] and s_after0["pos_calf_biasprm"] == orig_pos_calf[1]
+    s_after0["pos_thigh_gainprm"] == orig_pos_thigh[0]
+    and s_after0["pos_thigh_biasprm"] == orig_pos_thigh[1]
+    and s_after0["pos_calf_gainprm"] == orig_pos_calf[0]
+    and s_after0["pos_calf_biasprm"] == orig_pos_calf[1]
   )
-  results["hip_unaffected_throughout"] = True  # hip is excluded from pos/aux toggling entirely by design
+  results["hip_unaffected_throughout"] = (
+    True  # hip is excluded from pos/aux toggling entirely by design
+  )
 
   print("\n==== CYCLE 1 CHECKS ====")
   for k, v in results.items():
@@ -245,10 +307,13 @@ def main():
   s_after0_c2 = snapshot(env, act, entity, "NORMAL-after-cycle2", 0)
   print_snap(s_after0_c2)
   results["cycle2_exact_restore"] = (
-    s_after0_c2["pos_thigh_gainprm"] == orig_pos_thigh[0] and s_after0_c2["pos_thigh_biasprm"] == orig_pos_thigh[1]
-    and s_after0_c2["pos_calf_gainprm"] == orig_pos_calf[0] and s_after0_c2["pos_calf_biasprm"] == orig_pos_calf[1]
+    s_after0_c2["pos_thigh_gainprm"] == orig_pos_thigh[0]
+    and s_after0_c2["pos_thigh_biasprm"] == orig_pos_thigh[1]
+    and s_after0_c2["pos_calf_gainprm"] == orig_pos_calf[0]
+    and s_after0_c2["pos_calf_biasprm"] == orig_pos_calf[1]
     and s_after0_c2["aux_thigh_gainprm"] == [0.0, 0.0, 0.0]
-    and s_after0_c2["aux_thigh_force"] == 0.0 and s_after0_c2["aux_calf_force"] == 0.0
+    and s_after0_c2["aux_thigh_force"] == 0.0
+    and s_after0_c2["aux_calf_force"] == 0.0
   )
   print("  cycle2_exact_restore:", results["cycle2_exact_restore"])
 

@@ -311,7 +311,9 @@ def _write_outputs(summaries: list[dict[str, Any]], out_dir: Path) -> None:
 
   for seed in (0, 11):
     seed_runs = [summary for summary in summaries if summary["seed"] == seed]
-    baseline = next(summary for summary in seed_runs if summary["variant"] == "baseline")
+    baseline = next(
+      summary for summary in seed_runs if summary["variant"] == "baseline"
+    )
     forward_bias = next(
       summary for summary in seed_runs if summary["variant"] == "forward_bias"
     )

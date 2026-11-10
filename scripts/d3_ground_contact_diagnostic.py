@@ -121,7 +121,9 @@ def build_env(cfg: D3GroundConfig, device: str):
   # calf2), so we don't miss contact on the foot/thigh/hip geoms.
   fl_ground_cfg = ContactSensorCfg(
     name=FL_GROUND_SENSOR_NAME,
-    primary=ContactMatch(mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"),
+    primary=ContactMatch(
+      mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"
+    ),
     secondary=ContactMatch(mode="body", pattern="terrain"),
     fields=("found", "force"),
     reduce="netforce",
@@ -133,7 +135,9 @@ def build_env(cfg: D3GroundConfig, device: str):
   # infer this from foot_z/aggregate force alone.
   fl_ground_pergeom_cfg = ContactSensorCfg(
     name=FL_GROUND_PERGEOM_SENSOR_NAME,
-    primary=ContactMatch(mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"),
+    primary=ContactMatch(
+      mode="geom", pattern=rf"{leg}_.*_collision\d*$", entity="robot"
+    ),
     secondary=ContactMatch(mode="body", pattern="terrain"),
     fields=("found", "force"),
     reduce="none",
@@ -143,7 +147,9 @@ def build_env(cfg: D3GroundConfig, device: str):
   # sensor, but for the OTHER (unaffected) front leg's calf geom. Reuse
   # the existing sensor's already-resolved primary pattern so we don't
   # need to re-derive wire geometry/spec internals.
-  existing_wire_sensor = next(s for s in env_cfg.scene.sensors if s.name == "wire_contact")
+  existing_wire_sensor = next(
+    s for s in env_cfg.scene.sensors if s.name == "wire_contact"
+  )
   fr_wire_cfg = ContactSensorCfg(
     name=FR_WIRE_SENSOR_NAME,
     primary=existing_wire_sensor.primary,
@@ -233,7 +239,9 @@ def run(cfg: D3GroundConfig) -> Path:
     fl_ground = env.scene.sensors[FL_GROUND_SENSOR_NAME]
     fl_ground_found_rows = fl_ground.data.found[0].reshape(-1) > 0
     fl_ground_found = bool(fl_ground_found_rows.any())
-    fl_ground_row_mags = torch.linalg.norm(fl_ground.data.force[0].reshape(-1, 3), dim=-1)
+    fl_ground_row_mags = torch.linalg.norm(
+      fl_ground.data.force[0].reshape(-1, 3), dim=-1
+    )
     fl_ground_fmag = float(fl_ground_row_mags.max()) if fl_ground_found else 0.0
 
     fr_wire = env.scene.sensors[FR_WIRE_SENSOR_NAME]
@@ -246,9 +254,13 @@ def run(cfg: D3GroundConfig) -> Path:
     # collision geom(s) are touching terrain right now, by name.
     fl_pergeom = env.scene.sensors[FL_GROUND_PERGEOM_SENSOR_NAME]
     pergeom_found = fl_pergeom.data.found[0].reshape(-1) > 0
-    pergeom_force_mag = torch.linalg.norm(fl_pergeom.data.force[0].reshape(-1, 3), dim=-1)
+    pergeom_force_mag = torch.linalg.norm(
+      fl_pergeom.data.force[0].reshape(-1, 3), dim=-1
+    )
     contacting_geoms = [
-      name for name, found in zip(fl_pergeom.primary_names, pergeom_found.tolist()) if found
+      name
+      for name, found in zip(fl_pergeom.primary_names, pergeom_found.tolist())
+      if found
     ]
     contacting_geoms_forces = [
       float(pergeom_force_mag[i])
@@ -276,8 +288,16 @@ def run(cfg: D3GroundConfig) -> Path:
     # unmodified, purely for before/after comparison -- do not trust these
     # values for hybrid-mode recovery joints.
     actuator_force = entity.data.actuator_force[0]
-    thigh_force = float(actuator_force[thigh_i]) if thigh_i < actuator_force.shape[0] else float("nan")
-    calf_force = float(actuator_force[calf_i]) if calf_i < actuator_force.shape[0] else float("nan")
+    thigh_force = (
+      float(actuator_force[thigh_i])
+      if thigh_i < actuator_force.shape[0]
+      else float("nan")
+    )
+    calf_force = (
+      float(actuator_force[calf_i])
+      if calf_i < actuator_force.shape[0]
+      else float("nan")
+    )
 
     # CORRECTED (GLOBAL CTRL-ID) INDEXING METHOD: `act._pos_thigh_ctrl_id`,
     # `act._pos_calf_ctrl_id`, `act._aux_thigh_ctrl_id`, `act._aux_calf_ctrl_id`
@@ -300,9 +320,13 @@ def run(cfg: D3GroundConfig) -> Path:
 
     exit_reason = ""
     if phase == PHASE_POST_RECOVERY:
-      exit_reason = "cap_timeout" if bool(act.recovery_failed_timeout[0]) else "crossing+release"
+      exit_reason = (
+        "cap_timeout" if bool(act.recovery_failed_timeout[0]) else "crossing+release"
+      )
 
-    recovery_elapsed = int(act.recovery_elapsed[0]) if hasattr(act, "recovery_elapsed") else -1
+    recovery_elapsed = (
+      int(act.recovery_elapsed[0]) if hasattr(act, "recovery_elapsed") else -1
+    )
 
     return {
       "step": step,
@@ -325,7 +349,9 @@ def run(cfg: D3GroundConfig) -> Path:
       "hip_pos": float(qpos[hip_i]),
       "hip_vel": float(qvel[hip_i]),
       "fl_ground_contact_geoms": "|".join(g.split("/")[-1] for g in contacting_geoms),
-      "fl_ground_contact_geom_forces": "|".join(f"{f:.2f}" for f in contacting_geoms_forces),
+      "fl_ground_contact_geom_forces": "|".join(
+        f"{f:.2f}" for f in contacting_geoms_forces
+      ),
       "thigh_actuator_force_ORIGINAL_SUSPECT_INDEXING": thigh_force,
       "calf_actuator_force_ORIGINAL_SUSPECT_INDEXING": calf_force,
       "pos_thigh_actuator_force_global": pos_thigh_force_global,
@@ -357,7 +383,12 @@ def run(cfg: D3GroundConfig) -> Path:
     }
 
   def do_step(step_idx: int, action: torch.Tensor) -> dict:
-    nonlocal entry_foot_pos, running_max_h, contacted_wire, recovery_activated, fr_confounded
+    nonlocal \
+      entry_foot_pos, \
+      running_max_h, \
+      contacted_wire, \
+      recovery_activated, \
+      fr_confounded
     env.step(action)
     if bool(act.newly_entangled[0]):
       entry_foot_pos = act._entity.data.site_pos_w[0, act._foot_site_idx, :].clone()
@@ -390,7 +421,9 @@ def run(cfg: D3GroundConfig) -> Path:
       step_counter["i"] += 1
       return action
 
-    print("[INFO] Debug mode: native viewer (DYNAMIC, real physics). Close window to end run.")
+    print(
+      "[INFO] Debug mode: native viewer (DYNAMIC, real physics). Close window to end run."
+    )
     NativeMujocoViewer(env, viewer_policy).run()
   else:
     for i in range(cfg.max_steps):
@@ -422,7 +455,9 @@ def run(cfg: D3GroundConfig) -> Path:
   return csv_path
 
 
-def _print_causal_timeline(rows: list[dict], contacted_wire: bool, fr_confounded: bool) -> None:
+def _print_causal_timeline(
+  rows: list[dict], contacted_wire: bool, fr_confounded: bool
+) -> None:
   print("\n==== D3 GROUND-CONTACT / FR-CONFOUND CAUSAL TIMELINE ====")
 
   def first(pred):
@@ -431,14 +466,22 @@ def _print_causal_timeline(rows: list[dict], contacted_wire: bool, fr_confounded
   wire_evt = first(lambda r: r["wire_in_contact"])
   rec_evt = first(lambda r: r["phase"] == "RECOVERY")
   recovery_rows = [r for r in rows if r["phase"] == "RECOVERY"]
-  peak_row = max(recovery_rows, key=lambda r: r["foot_z"]) if recovery_rows else max(rows, key=lambda r: r["foot_z"])
+  peak_row = (
+    max(recovery_rows, key=lambda r: r["foot_z"])
+    if recovery_rows
+    else max(rows, key=lambda r: r["foot_z"])
+  )
   # NOTE: FL touches the ground constantly during normal stance/walking --
   # that is expected and uninformative. The scientifically relevant event
   # is ground contact occurring DURING RECOVERY, after the foot has
   # already lifted off (i.e. at/after the foot-height peak), since that is
   # the only contact that could explain a post-peak collapse.
   ground_evt = first(
-    lambda r: r["fl_ground_contact"] and r["phase"] == "RECOVERY" and r["step"] >= peak_row["step"]
+    lambda r: (
+      r["fl_ground_contact"]
+      and r["phase"] == "RECOVERY"
+      and r["step"] >= peak_row["step"]
+    )
   )
   post_evt = first(lambda r: r["phase"] == "POST_RECOVERY")
   min_after_peak = None
@@ -461,12 +504,17 @@ def _print_causal_timeline(rows: list[dict], contacted_wire: bool, fr_confounded
   fmt(ground_evt, "4. FIRST FL-ground contact DURING RECOVERY (post-peak)")
   if ground_evt is not None:
     ground_rows = [
-      r for r in rows
-      if r["fl_ground_contact"] and r["phase"] == "RECOVERY" and r["step"] >= peak_row["step"]
+      r
+      for r in rows
+      if r["fl_ground_contact"]
+      and r["phase"] == "RECOVERY"
+      and r["step"] >= peak_row["step"]
     ]
     peak_force = max(r["fl_ground_force_mag"] for r in ground_rows)
     duration = len(ground_rows) * (rows[1]["sim_time"] - rows[0]["sim_time"])
-    print(f"     peak force = {peak_force:.2f} N, contact steps = {len(ground_rows)} (~{duration:.3f}s)")
+    print(
+      f"     peak force = {peak_force:.2f} N, contact steps = {len(ground_rows)} (~{duration:.3f}s)"
+    )
   else:
     all_ground_rows = [r for r in rows if r["fl_ground_contact"]]
     print(
@@ -491,7 +539,9 @@ def _print_causal_timeline(rows: list[dict], contacted_wire: bool, fr_confounded
       "base-disturbance coupling). See CSV for fl_ground_contact column."
     )
 
-  print(f"\n  FR-wire confound: {'CONFOUNDED (FR contacted wire)' if fr_confounded else 'clean (FR did not contact wire)'}")
+  print(
+    f"\n  FR-wire confound: {'CONFOUNDED (FR contacted wire)' if fr_confounded else 'clean (FR did not contact wire)'}"
+  )
   print(f"  FL contacted wire (recovery trigger fired): {contacted_wire}")
   print("\n  Dynamic (not static) visualization of this exact run:")
   print("    uv run python scripts/d3_ground_contact_diagnostic.py --debug")

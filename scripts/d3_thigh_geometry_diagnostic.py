@@ -48,7 +48,11 @@ def run_baseline_with_hip():
   torch.manual_seed(SEED)
   device = "cpu"
   cfg = go2_wire_recovery_residual_env_cfg(
-    affected_leg_idx=0, num_envs=1, recovery_mode="hybrid", policy_device=device, play=True
+    affected_leg_idx=0,
+    num_envs=1,
+    recovery_mode="hybrid",
+    policy_device=device,
+    play=True,
   )
   cfg.seed = SEED
   cfg.sim.device = device
@@ -71,24 +75,31 @@ def run_baseline_with_hip():
     qvel = entity.data.joint_vel[0]
     foot_pos = entity.data.site_pos_w[0, act._foot_site_idx, :].clone()
     phase = int(act.phase[0])
-    rows.append(dict(
-      step=i,
-      phase=phase,
-      recovery_elapsed=int(act.recovery_elapsed[0]) if phase == PHASE_RECOVERY else -1,
-      hip_pos=float(qpos[hip_i]),
-      hip_vel=float(qvel[hip_i]),
-      thigh_pos=float(qpos[thigh_i]),
-      thigh_vel=float(qvel[thigh_i]),
-      calf_pos=float(qpos[calf_i]),
-      calf_vel=float(qvel[calf_i]),
-      foot_x=float(foot_pos[0]),
-      foot_y=float(foot_pos[1]),
-      foot_z=float(foot_pos[2]),
-      clearance=float(act.foot_height_above_wire[0]),
-    ))
+    rows.append(
+      dict(
+        step=i,
+        phase=phase,
+        recovery_elapsed=int(act.recovery_elapsed[0])
+        if phase == PHASE_RECOVERY
+        else -1,
+        hip_pos=float(qpos[hip_i]),
+        hip_vel=float(qvel[hip_i]),
+        thigh_pos=float(qpos[thigh_i]),
+        thigh_vel=float(qvel[thigh_i]),
+        calf_pos=float(qpos[calf_i]),
+        calf_vel=float(qvel[calf_i]),
+        foot_x=float(foot_pos[0]),
+        foot_y=float(foot_pos[1]),
+        foot_z=float(foot_pos[2]),
+        clearance=float(act.foot_height_above_wire[0]),
+      )
+    )
     if phase == 2 and reached_post_recovery_at is None:  # PHASE_POST_RECOVERY
       reached_post_recovery_at = i
-    if reached_post_recovery_at is not None and i - reached_post_recovery_at >= STOP_AFTER_POST_RECOVERY:
+    if (
+      reached_post_recovery_at is not None
+      and i - reached_post_recovery_at >= STOP_AFTER_POST_RECOVERY
+    ):
       break
 
   # Snapshot full qpos/qvel at a representative mid-recovery instant,
@@ -113,7 +124,11 @@ def build_kinematic_model():
   stepping/physics/control)."""
   device = "cpu"
   cfg = go2_wire_recovery_residual_env_cfg(
-    affected_leg_idx=0, num_envs=1, recovery_mode="hybrid", policy_device=device, play=True
+    affected_leg_idx=0,
+    num_envs=1,
+    recovery_mode="hybrid",
+    policy_device=device,
+    play=True,
   )
   cfg.seed = SEED
   cfg.sim.device = device
@@ -136,7 +151,9 @@ def build_kinematic_model():
   # Resolve the actual MuJoCo-level site name (mjlab prefixes entity
   # element names with the entity's spec name, e.g. "robot/FL" -- NOT
   # the bare entity-local name "FL" used by `entity.site_names`).
-  foot_site_names_entity = list(entity.site_names) if hasattr(entity, "site_names") else None
+  foot_site_names_entity = (
+    list(entity.site_names) if hasattr(entity, "site_names") else None
+  )
   foot_site_name = None
   if foot_site_names_entity is not None:
     entity_local_name = foot_site_names_entity[act._foot_site_idx]
@@ -160,7 +177,9 @@ def joint_qpos_adr(mj_model, entity_joint_name_in_spec: str):
   """Resolve the MuJoCo-level qpos address for a named joint. Entity
   joint names in mjlab are typically the same as the MjSpec joint name
   for single-entity scenes, but we resolve robustly via mj_name2id."""
-  jid = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_JOINT, entity_joint_name_in_spec)
+  jid = mujoco.mj_name2id(
+    mj_model, mujoco.mjtObj.mjOBJ_JOINT, entity_joint_name_in_spec
+  )
   if jid < 0:
     raise ValueError(f"Joint {entity_joint_name_in_spec} not found in compiled model.")
   return mj_model.jnt_qposadr[jid]
@@ -173,7 +192,15 @@ def foot_site_world_pos(mj_model, mj_data, site_name: str) -> np.ndarray:
   return mj_data.site_xpos[sid].copy()
 
 
-def sweep_thigh(mj_model, mj_data, calf_val: float, hip_val: float, thigh_range, foot_site_name: str, n=40):
+def sweep_thigh(
+  mj_model,
+  mj_data,
+  calf_val: float,
+  hip_val: float,
+  thigh_range,
+  foot_site_name: str,
+  n=40,
+):
   hip_adr = joint_qpos_adr(mj_model, "robot/FL_hip_joint")
   thigh_adr = joint_qpos_adr(mj_model, "robot/FL_thigh_joint")
   calf_adr = joint_qpos_adr(mj_model, "robot/FL_calf_joint")
@@ -191,7 +218,15 @@ def sweep_thigh(mj_model, mj_data, calf_val: float, hip_val: float, thigh_range,
   return results
 
 
-def sweep_hip(mj_model, mj_data, thigh_val: float, calf_val: float, hip_range, foot_site_name: str, n=30):
+def sweep_hip(
+  mj_model,
+  mj_data,
+  thigh_val: float,
+  calf_val: float,
+  hip_range,
+  foot_site_name: str,
+  n=30,
+):
   hip_adr = joint_qpos_adr(mj_model, "robot/FL_hip_joint")
   thigh_adr = joint_qpos_adr(mj_model, "robot/FL_thigh_joint")
   calf_adr = joint_qpos_adr(mj_model, "robot/FL_calf_joint")
@@ -214,24 +249,36 @@ def main():
   out_dir.mkdir(parents=True, exist_ok=True)
 
   print("=== PART 1: re-running D3 baseline (with hip logged) ===")
-  rows, rec_rows, peak_idx, joint_names, hip_i, thigh_i, calf_i = run_baseline_with_hip()
+  rows, rec_rows, peak_idx, joint_names, hip_i, thigh_i, calf_i = (
+    run_baseline_with_hip()
+  )
 
   thigh_vals = [r["thigh_pos"] for r in rec_rows]
   calf_vals = [r["calf_pos"] for r in rec_rows]
   hip_vals = [r["hip_pos"] for r in rec_rows]
-  print(f"Actual thigh range during recovery: {min(thigh_vals):.4f} to {max(thigh_vals):.4f} rad")
-  print(f"Actual calf  range during recovery: {min(calf_vals):.4f} to {max(calf_vals):.4f} rad")
-  print(f"Actual hip   range during recovery: {min(hip_vals):.4f} to {max(hip_vals):.4f} rad")
+  print(
+    f"Actual thigh range during recovery: {min(thigh_vals):.4f} to {max(thigh_vals):.4f} rad"
+  )
+  print(
+    f"Actual calf  range during recovery: {min(calf_vals):.4f} to {max(calf_vals):.4f} rad"
+  )
+  print(
+    f"Actual hip   range during recovery: {min(hip_vals):.4f} to {max(hip_vals):.4f} rad"
+  )
 
   lo = max(0, peak_idx - 3)
   hi = min(len(rec_rows), peak_idx + 11)
   print("\n--- Trajectory table around foot-height peak ---")
-  print(f"{'elapsed':>7} {'hip':>8} {'thigh':>8} {'calf':>8} {'foot_x':>8} {'foot_z':>8} {'clearance':>10}")
+  print(
+    f"{'elapsed':>7} {'hip':>8} {'thigh':>8} {'calf':>8} {'foot_x':>8} {'foot_z':>8} {'clearance':>10}"
+  )
   for i in range(lo, hi):
     r = rec_rows[i]
     marker = "  <== PEAK" if i == peak_idx else ""
-    print(f"{r['recovery_elapsed']:>7} {r['hip_pos']:>8.4f} {r['thigh_pos']:>8.4f} {r['calf_pos']:>8.4f} "
-          f"{r['foot_x']:>8.4f} {r['foot_z']:>8.4f} {r['clearance']:>10.4f}{marker}")
+    print(
+      f"{r['recovery_elapsed']:>7} {r['hip_pos']:>8.4f} {r['thigh_pos']:>8.4f} {r['calf_pos']:>8.4f} "
+      f"{r['foot_x']:>8.4f} {r['foot_z']:>8.4f} {r['clearance']:>10.4f}{marker}"
+    )
 
   with open(out_dir / "baseline_with_hip.csv", "w", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
@@ -245,7 +292,9 @@ def main():
   calf_early = rec_rows[early_i]["calf_pos"]
   calf_peak = rec_rows[peak_i_local]["calf_pos"]
   calf_late = rec_rows[late_i]["calf_pos"]
-  hip_rep = rec_rows[peak_i_local]["hip_pos"]  # hold hip at its peak-instant value for Part 2
+  hip_rep = rec_rows[peak_i_local][
+    "hip_pos"
+  ]  # hold hip at its peak-instant value for Part 2
 
   thigh_lo, thigh_hi = min(thigh_vals), max(thigh_vals)
 
@@ -256,8 +305,14 @@ def main():
   print(f"Using foot site: {foot_site_name}")
 
   sweep_results = {}
-  for label, calf_v in [("early", calf_early), ("peak", calf_peak), ("late", calf_late)]:
-    res = sweep_thigh(mj_model, mj_data, calf_v, hip_rep, (thigh_lo, thigh_hi), foot_site_name)
+  for label, calf_v in [
+    ("early", calf_early),
+    ("peak", calf_peak),
+    ("late", calf_late),
+  ]:
+    res = sweep_thigh(
+      mj_model, mj_data, calf_v, hip_rep, (thigh_lo, thigh_hi), foot_site_name
+    )
     sweep_results[label] = res
     zs = [r[3] for r in res]
     max_i = zs.index(max(zs))
@@ -267,8 +322,10 @@ def main():
     monotonic_increasing = all(zs[i] <= zs[i + 1] + 1e-9 for i in range(len(zs) - 1))
     monotonic_decreasing = all(zs[i] >= zs[i + 1] - 1e-9 for i in range(len(zs) - 1))
     turning_point = not (monotonic_increasing or monotonic_decreasing)
-    print(f"   monotonic increasing: {monotonic_increasing}  monotonic decreasing: {monotonic_decreasing}  "
-          f"turning point present: {turning_point}")
+    print(
+      f"   monotonic increasing: {monotonic_increasing}  monotonic decreasing: {monotonic_decreasing}  "
+      f"turning point present: {turning_point}"
+    )
 
   with open(out_dir / "thigh_sweep.csv", "w", newline="") as f:
     writer = csv.writer(f)
@@ -284,7 +341,9 @@ def main():
   if hip_hi - hip_lo < 0.02:
     mid = 0.5 * (hip_lo + hip_hi)
     hip_lo, hip_hi = mid - 0.1, mid + 0.1
-    print(f"(observed hip range was nearly flat; padded to {hip_lo:.4f}..{hip_hi:.4f} for a visible sweep)")
+    print(
+      f"(observed hip range was nearly flat; padded to {hip_lo:.4f}..{hip_hi:.4f} for a visible sweep)"
+    )
 
   hip_sweep_results = {}
   for label, (thigh_v, calf_v) in [
@@ -292,16 +351,22 @@ def main():
     ("peak", (rec_rows[peak_i_local]["thigh_pos"], calf_peak)),
     ("late", (rec_rows[late_i]["thigh_pos"], calf_late)),
   ]:
-    res = sweep_hip(mj_model, mj_data, thigh_v, calf_v, (hip_lo, hip_hi), foot_site_name)
+    res = sweep_hip(
+      mj_model, mj_data, thigh_v, calf_v, (hip_lo, hip_hi), foot_site_name
+    )
     hip_sweep_results[label] = res
     zs = [r[3] for r in res]
     dz = max(zs) - min(zs)
-    print(f"-- thigh={thigh_v:.4f}, calf={calf_v:.4f} ({label}) -- "
-          f"hip swept {hip_lo:.4f}..{hip_hi:.4f}: foot_z range = {dz:.4f} m (min={min(zs):.4f}, max={max(zs):.4f})")
+    print(
+      f"-- thigh={thigh_v:.4f}, calf={calf_v:.4f} ({label}) -- "
+      f"hip swept {hip_lo:.4f}..{hip_hi:.4f}: foot_z range = {dz:.4f} m (min={min(zs):.4f}, max={max(zs):.4f})"
+    )
 
   with open(out_dir / "hip_sweep.csv", "w", newline="") as f:
     writer = csv.writer(f)
-    writer.writerow(["config_label", "thigh_val", "calf_val", "hip", "foot_x", "foot_y", "foot_z"])
+    writer.writerow(
+      ["config_label", "thigh_val", "calf_val", "hip", "foot_x", "foot_y", "foot_z"]
+    )
     for label, res in hip_sweep_results.items():
       thigh_v, calf_v = {
         "early": (rec_rows[early_i]["thigh_pos"], calf_early),

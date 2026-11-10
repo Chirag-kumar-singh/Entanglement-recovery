@@ -178,16 +178,20 @@ def analyze_seed(seed: int) -> dict:
   base_z = {s: float(d3[s]["base_z"]) for s in d3 if STEP_START <= s <= STEP_END}
   quat_w = {s: float(d3[s]["base_quat_w"]) for s in d3 if STEP_START <= s <= STEP_END}
   fl_ground = {
-    s: d3[s]["fl_ground_contact"] == "True"
-    for s in d3
-    if STEP_START <= s <= STEP_END
+    s: d3[s]["fl_ground_contact"] == "True" for s in d3 if STEP_START <= s <= STEP_END
   }
 
   # Other-leg ground contact + hip-wire contact: only available from the
   # newly-widened raw per-step text (steps 38-62 now covered).
-  fr_ground = {s: leg_ground_contact(pairs_by_step.get(s, []), "FR") for s in pairs_by_step}
-  rl_ground = {s: leg_ground_contact(pairs_by_step.get(s, []), "RL") for s in pairs_by_step}
-  rr_ground = {s: leg_ground_contact(pairs_by_step.get(s, []), "RR") for s in pairs_by_step}
+  fr_ground = {
+    s: leg_ground_contact(pairs_by_step.get(s, []), "FR") for s in pairs_by_step
+  }
+  rl_ground = {
+    s: leg_ground_contact(pairs_by_step.get(s, []), "RL") for s in pairs_by_step
+  }
+  rr_ground = {
+    s: leg_ground_contact(pairs_by_step.get(s, []), "RR") for s in pairs_by_step
+  }
   hip_wire = {s: hip_wire_contact(pairs_by_step.get(s, [])) for s in pairs_by_step}
 
   descent_step = first_sustained_descent(base_z)
@@ -208,7 +212,9 @@ def analyze_seed(seed: int) -> dict:
   rl_loss_step = loss_event(rl_ground)
   rr_loss_step = loss_event(rr_ground)
 
-  hip_wire_step = first_sustained_bool_change(hip_wire, False, 1)  # single occurrence ok (new discrete event)
+  hip_wire_step = first_sustained_bool_change(
+    hip_wire, False, 1
+  )  # single occurrence ok (new discrete event)
 
   # FL foot collapse: first step where foot_z drops by > 0.01 m from the
   # immediately preceding step's running peak (reuses D4.2/D4.3's

@@ -80,10 +80,18 @@ def run_one(thigh_vel_sign: float):
   act.newly_entangled[:] = False
 
   # State immediately AFTER the gain toggle but BEFORE any physics step.
-  pos_gain_after_toggle = sim.model.actuator_gainprm[0, act._pos_thigh_ctrl_id, :3].clone()
-  pos_bias_after_toggle = sim.model.actuator_biasprm[0, act._pos_thigh_ctrl_id, :3].clone()
-  aux_gain_after_toggle = sim.model.actuator_gainprm[0, act._aux_thigh_ctrl_id, :3].clone()
-  aux_bias_after_toggle = sim.model.actuator_biasprm[0, act._aux_thigh_ctrl_id, :3].clone()
+  pos_gain_after_toggle = sim.model.actuator_gainprm[
+    0, act._pos_thigh_ctrl_id, :3
+  ].clone()
+  pos_bias_after_toggle = sim.model.actuator_biasprm[
+    0, act._pos_thigh_ctrl_id, :3
+  ].clone()
+  aux_gain_after_toggle = sim.model.actuator_gainprm[
+    0, act._aux_thigh_ctrl_id, :3
+  ].clone()
+  aux_bias_after_toggle = sim.model.actuator_biasprm[
+    0, act._aux_thigh_ctrl_id, :3
+  ].clone()
   commanded_thigh_vel_ctrl = float(act.hybrid_thigh_vel_ctrl[0])
 
   samples = []
@@ -142,16 +150,39 @@ def run_one(thigh_vel_sign: float):
 
 
 def report(label, r):
-  print(f"\n===== {label} (recovery_thigh_velocity sign = {r['thigh_vel_sign']:+.0f}) =====")
+  print(
+    f"\n===== {label} (recovery_thigh_velocity sign = {r['thigh_vel_sign']:+.0f}) ====="
+  )
   print("  walk_policy_thigh_cmd (context only)     =", r["walk_policy_thigh_cmd"])
   print("  qvel_before activation                   =", r["qvel_before"])
-  print("  pos actuator gain BEFORE (should be active, e.g. [20,0,0]) =", r["pos_gain_before"])
-  print("  pos actuator gain AFTER TOGGLE (should be [0,0,0])         =", r["pos_gain_after_toggle"])
-  print("  pos actuator bias AFTER TOGGLE (should be [0,0,0])         =", r["pos_bias_after_toggle"])
-  print("  aux  actuator gain BEFORE (should be [0,0,0], inert)       =", r["aux_gain_before"])
-  print("  aux  actuator gain AFTER TOGGLE (should be nonzero kd)     =", r["aux_gain_after_toggle"])
-  print("  aux  actuator bias AFTER TOGGLE (should be nonzero -kd)    =", r["aux_bias_after_toggle"])
-  print("  commanded_thigh_vel_ctrl (actual ctrl written this step)   =", r["commanded_thigh_vel_ctrl"])
+  print(
+    "  pos actuator gain BEFORE (should be active, e.g. [20,0,0]) =",
+    r["pos_gain_before"],
+  )
+  print(
+    "  pos actuator gain AFTER TOGGLE (should be [0,0,0])         =",
+    r["pos_gain_after_toggle"],
+  )
+  print(
+    "  pos actuator bias AFTER TOGGLE (should be [0,0,0])         =",
+    r["pos_bias_after_toggle"],
+  )
+  print(
+    "  aux  actuator gain BEFORE (should be [0,0,0], inert)       =",
+    r["aux_gain_before"],
+  )
+  print(
+    "  aux  actuator gain AFTER TOGGLE (should be nonzero kd)     =",
+    r["aux_gain_after_toggle"],
+  )
+  print(
+    "  aux  actuator bias AFTER TOGGLE (should be nonzero -kd)    =",
+    r["aux_bias_after_toggle"],
+  )
+  print(
+    "  commanded_thigh_vel_ctrl (actual ctrl written this step)   =",
+    r["commanded_thigh_vel_ctrl"],
+  )
   print("  -- per-step samples (instantaneous) --")
   for s in r["samples"]:
     print(
@@ -161,8 +192,14 @@ def report(label, r):
       f"ctrl_aux={s['ctrl_aux']:+.5f}  "
       f"foot_delta(x,y,z)={[f'{v:+.5f}' for v in s['foot_delta']]}"
     )
-  print("  pos actuator gain RESTORED after exit (should match BEFORE) =", r["pos_gain_restored"])
-  print("  aux  actuator gain RESTORED after exit (should be [0,0,0])   =", r["aux_gain_restored"])
+  print(
+    "  pos actuator gain RESTORED after exit (should match BEFORE) =",
+    r["pos_gain_restored"],
+  )
+  print(
+    "  aux  actuator gain RESTORED after exit (should be [0,0,0])   =",
+    r["aux_gain_restored"],
+  )
 
 
 r_pos = run_one(thigh_vel_sign=1.0)
@@ -178,7 +215,9 @@ print(f"B1 step0 qvel = {qvel_b1_step0:+.5f}   B2 step0 qvel = {qvel_b2_step0:+.
 print("Opposite sign qvel response:", (qvel_b1_step0 > 0) != (qvel_b2_step0 > 0))
 force_b1 = r_pos["samples"][0]["actuator_force_aux"]
 force_b2 = r_neg["samples"][0]["actuator_force_aux"]
-print(f"B1 step0 actuator_force_aux = {force_b1:+.5f}   B2 step0 actuator_force_aux = {force_b2:+.5f}")
+print(
+  f"B1 step0 actuator_force_aux = {force_b1:+.5f}   B2 step0 actuator_force_aux = {force_b2:+.5f}"
+)
 print("Opposite sign actuator force:", (force_b1 > 0) != (force_b2 > 0))
 foot_x_b1 = r_pos["samples"][-1]["foot_delta"][0]
 foot_x_b2 = r_neg["samples"][-1]["foot_delta"][0]

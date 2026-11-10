@@ -113,10 +113,18 @@ WIRE_FORWARD_NORM_SCALE = 0.1
 # trained with (confirmed live in multiple prior diagnostic scripts this
 # session via `action_manager.get_term("joint_pos").target_names`).
 WALK_JOINT_ORDER = (
-  "FL_hip_joint", "FL_thigh_joint", "FL_calf_joint",
-  "FR_hip_joint", "FR_thigh_joint", "FR_calf_joint",
-  "RL_hip_joint", "RL_thigh_joint", "RL_calf_joint",
-  "RR_hip_joint", "RR_thigh_joint", "RR_calf_joint",
+  "FL_hip_joint",
+  "FL_thigh_joint",
+  "FL_calf_joint",
+  "FR_hip_joint",
+  "FR_thigh_joint",
+  "FR_calf_joint",
+  "RL_hip_joint",
+  "RL_thigh_joint",
+  "RL_calf_joint",
+  "RR_hip_joint",
+  "RR_thigh_joint",
+  "RR_calf_joint",
 )
 
 
@@ -587,10 +595,13 @@ class ResidualRecoveryAction(ActionTerm):
 
     leg = LEG_NAMES[cfg.affected_leg_idx]
     self._affected_idx = torch.tensor(
-      [WALK_JOINT_ORDER.index(f"{leg}_hip_joint"),
-       WALK_JOINT_ORDER.index(f"{leg}_thigh_joint"),
-       WALK_JOINT_ORDER.index(f"{leg}_calf_joint")],
-      device=self.device, dtype=torch.long,
+      [
+        WALK_JOINT_ORDER.index(f"{leg}_hip_joint"),
+        WALK_JOINT_ORDER.index(f"{leg}_thigh_joint"),
+        WALK_JOINT_ORDER.index(f"{leg}_calf_joint"),
+      ],
+      device=self.device,
+      dtype=torch.long,
     )
 
     self._policy = _load_frozen_walk_policy(cfg.walk_checkpoint, cfg.device)
@@ -599,9 +610,7 @@ class ResidualRecoveryAction(ActionTerm):
     # of env.action_manager.action (which holds the recovery policy's
     # own 3-dim Delta_a). See module docstring: critical for faithful
     # observation reconstruction.
-    self._last_walk_raw_action = torch.zeros(
-      self.num_envs, 12, device=self.device
-    )
+    self._last_walk_raw_action = torch.zeros(self.num_envs, 12, device=self.device)
 
     self._raw_actions = torch.zeros(self.num_envs, 3, device=self.device)
     self._action_dim = 3
@@ -656,15 +665,25 @@ class ResidualRecoveryAction(ActionTerm):
     # docstring and mjlab.tasks.recovery.mdp.wire_geometry).
     self.calf_forward_dist = torch.zeros(self.num_envs, device=self.device)
     self.calf_height_above_wire = torch.zeros(self.num_envs, device=self.device)
-    self.calf_side_far = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
-    self.calf_clearance_event = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+    self.calf_side_far = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self.calf_clearance_event = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
 
     self.foot_forward_dist = torch.zeros(self.num_envs, device=self.device)
     self.foot_height_above_wire = torch.zeros(self.num_envs, device=self.device)
-    self.foot_side_far = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
-    self.foot_crossed_event = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+    self.foot_side_far = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self.foot_crossed_event = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
     # Backward-compat alias (old single-stage name some callers may use).
-    self.crossing_event = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+    self.crossing_event = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
 
     # --- Potential-difference (delta) shaping state (post-audit rework,
     # see chat history: replaces the old absolute-clamp progress reward,
@@ -760,7 +779,9 @@ class ResidualRecoveryAction(ActionTerm):
     # Effective thresholds (per-env, recomputed at entering_recovery based
     # on _entry_leg_speed): one of three tiers selected.
     self._effective_clearance_margin = torch.zeros(self.num_envs, device=self.device)
-    self._effective_foot_crossing_margin = torch.zeros(self.num_envs, device=self.device)
+    self._effective_foot_crossing_margin = torch.zeros(
+      self.num_envs, device=self.device
+    )
 
     # --- D1 deterministic-mode fixed delta (built once; zero on the
     # ab/ad/hip index per the binary normal/obstructed-swing spec: the
@@ -800,7 +821,9 @@ class ResidualRecoveryAction(ActionTerm):
       f"actuator found targeting joint '{joint_name}'."
     )
 
-  def _update_phase_aware_thresholds(self, entry_leg_speed: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+  def _update_phase_aware_thresholds(
+    self, entry_leg_speed: torch.Tensor
+  ) -> tuple[torch.Tensor, torch.Tensor]:
     """D5/D5.31: Compute effective crossing-latch thresholds based on
     entry leg speed (thigh + calf velocity) using three tiers, with
     margins selected from ``cfg`` so the direction correction lives in
@@ -828,19 +851,16 @@ class ResidualRecoveryAction(ActionTerm):
 
     # Initialize to slow-tier defaults
     clearance = torch.full_like(
-      entry_leg_speed,
-      cfg.phase_aware_slow_clearance_margin,
-      device=device
+      entry_leg_speed, cfg.phase_aware_slow_clearance_margin, device=device
     )
     crossing = torch.full_like(
-      entry_leg_speed,
-      cfg.phase_aware_slow_foot_crossing_margin,
-      device=device
+      entry_leg_speed, cfg.phase_aware_slow_foot_crossing_margin, device=device
     )
 
     # Medium tier: 4.5 <= leg_speed < 6.5
-    medium_mask = (entry_leg_speed >= cfg.phase_aware_speed_threshold_low) & \
-                  (entry_leg_speed < cfg.phase_aware_speed_threshold_high)
+    medium_mask = (entry_leg_speed >= cfg.phase_aware_speed_threshold_low) & (
+      entry_leg_speed < cfg.phase_aware_speed_threshold_high
+    )
     clearance[medium_mask] = cfg.phase_aware_medium_clearance_margin
     crossing[medium_mask] = cfg.phase_aware_medium_foot_crossing_margin
 
@@ -885,9 +905,7 @@ class ResidualRecoveryAction(ActionTerm):
     self._aux_thigh_ctrl_id = self._find_actuator_ctrl_id(
       thigh_joint, NamedVelocityActuator
     )
-    self._aux_calf_ctrl_id = self._find_actuator_ctrl_id(
-      calf_joint, NamedMotorActuator
-    )
+    self._aux_calf_ctrl_id = self._find_actuator_ctrl_id(calf_joint, NamedMotorActuator)
 
     # Local (entity-scoped) joint indices, for set_joint_velocity_target/
     # set_joint_effort_target (which index by JOINT, not ctrl id).
@@ -925,8 +943,12 @@ class ResidualRecoveryAction(ActionTerm):
     self._peak_armed = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
     self._peak_running_max = torch.zeros(self.num_envs, device=self.device)
     self._peak_entry_height = torch.zeros(self.num_envs, device=self.device)
-    self._peak_decline_counter = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
-    self._peak_triggered = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+    self._peak_decline_counter = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.long
+    )
+    self._peak_triggered = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
     # Debug/logging only: recovery_elapsed step at which the trigger
     # fired for each env (-1 = not yet triggered this recovery attempt).
     self.peak_trigger_step = torch.full(
@@ -967,9 +989,9 @@ class ResidualRecoveryAction(ActionTerm):
       sim.model.actuator_gainprm[enter_ids, self._aux_thigh_ctrl_id, 0] = (
         self.cfg.recovery_thigh_velocity_kd
       )
-      sim.model.actuator_biasprm[enter_ids, self._aux_thigh_ctrl_id, 2] = (
-        -self.cfg.recovery_thigh_velocity_kd
-      )
+      sim.model.actuator_biasprm[
+        enter_ids, self._aux_thigh_ctrl_id, 2
+      ] = -self.cfg.recovery_thigh_velocity_kd
       self.hybrid_thigh_pos_gain_active[enter_ids] = False
 
       # EXPERIMENTAL peak-detector: reset per-env state on every fresh
@@ -1024,14 +1046,14 @@ class ResidualRecoveryAction(ActionTerm):
       active = in_recovery & (~self._peak_triggered)
 
       rise = h - self._peak_entry_height
-      newly_armed = active & (~self._peak_armed) & (
-        rise >= self.cfg.peak_detector_rise_threshold
+      newly_armed = (
+        active & (~self._peak_armed) & (rise >= self.cfg.peak_detector_rise_threshold)
       )
       armed_now = self._peak_armed | newly_armed
 
       prev_running_max = self._peak_running_max
-      declined = active & armed_now & (
-        h < prev_running_max - self.cfg.peak_detector_decline_eps
+      declined = (
+        active & armed_now & (h < prev_running_max - self.cfg.peak_detector_decline_eps)
       )
       self._peak_decline_counter = torch.where(
         declined,
@@ -1154,7 +1176,9 @@ class ResidualRecoveryAction(ActionTerm):
     """Bool, shape [B]: True once sustained no-contact has been observed
     for ``release_required_steps`` AFTER ``crossing_achieved`` latched
     (i.e. the genuine, geometry-gated release condition)."""
-    return self._crossing_achieved & (self._release_counter >= self.cfg.release_required_steps)
+    return self._crossing_achieved & (
+      self._release_counter >= self.cfg.release_required_steps
+    )
 
   @property
   def recovery_failed_timeout(self) -> torch.Tensor:
@@ -1252,7 +1276,7 @@ class ResidualRecoveryAction(ActionTerm):
       calf_idx = joint_names.index(calf_name)
 
       thigh_vel = torch.abs(self._entity.data.joint_vel[:, thigh_idx])  # [B]
-      calf_vel = torch.abs(self._entity.data.joint_vel[:, calf_idx])    # [B]
+      calf_vel = torch.abs(self._entity.data.joint_vel[:, calf_idx])  # [B]
       entry_leg_speed = thigh_vel + calf_vel  # [B]
 
       # Update entry leg speed when entering recovery
@@ -1286,7 +1310,9 @@ class ResidualRecoveryAction(ActionTerm):
     seg_pos = wire_geometry.wire_segment_world_pos(self._env, self._wire_geom_ids)
 
     calf_pos = self._entity.data.geom_pos_w[:, self._calf_geom_idx, :]  # [B, 3]
-    calf_local_x, calf_local_z = wire_geometry.local_wire_xz_at_y(seg_pos, calf_pos[:, 1])
+    calf_local_x, calf_local_z = wire_geometry.local_wire_xz_at_y(
+      seg_pos, calf_pos[:, 1]
+    )
     calf_forward_dist = wire_geometry.signed_forward_distance(
       calf_pos[:, :2],
       torch.stack([calf_local_x, calf_pos[:, 1]], dim=-1),
@@ -1297,7 +1323,9 @@ class ResidualRecoveryAction(ActionTerm):
     calf_lifted = calf_height_above_wire > self._effective_clearance_margin
 
     foot_pos = self._entity.data.site_pos_w[:, self._foot_site_idx, :]  # [B, 3]
-    foot_local_x, foot_local_z = wire_geometry.local_wire_xz_at_y(seg_pos, foot_pos[:, 1])
+    foot_local_x, foot_local_z = wire_geometry.local_wire_xz_at_y(
+      seg_pos, foot_pos[:, 1]
+    )
     foot_forward_dist = wire_geometry.signed_forward_distance(
       foot_pos[:, :2],
       torch.stack([foot_local_x, foot_pos[:, 1]], dim=-1),
@@ -1314,24 +1342,31 @@ class ResidualRecoveryAction(ActionTerm):
     self.foot_side_far = foot_side_far
 
     self._recovery_elapsed = torch.where(
-      entering_recovery, torch.zeros_like(self._recovery_elapsed), self._recovery_elapsed
+      entering_recovery,
+      torch.zeros_like(self._recovery_elapsed),
+      self._recovery_elapsed,
     )
     self._release_counter = torch.where(
       entering_recovery, torch.zeros_like(self._release_counter), self._release_counter
     )
     self._calf_clearance_achieved = torch.where(
-      entering_recovery, torch.zeros_like(self._calf_clearance_achieved),
+      entering_recovery,
+      torch.zeros_like(self._calf_clearance_achieved),
       self._calf_clearance_achieved,
     )
     self._foot_crossed_achieved = torch.where(
-      entering_recovery, torch.zeros_like(self._foot_crossed_achieved),
+      entering_recovery,
+      torch.zeros_like(self._foot_crossed_achieved),
       self._foot_crossed_achieved,
     )
     self._crossing_achieved = torch.where(
-      entering_recovery, torch.zeros_like(self._crossing_achieved), self._crossing_achieved
+      entering_recovery,
+      torch.zeros_like(self._crossing_achieved),
+      self._crossing_achieved,
     )
     self._recovery_failed_timeout = torch.where(
-      entering_recovery, torch.zeros_like(self._recovery_failed_timeout),
+      entering_recovery,
+      torch.zeros_like(self._recovery_failed_timeout),
       self._recovery_failed_timeout,
     )
     # Initialize side tracking on entry so the very first in-recovery
@@ -1353,7 +1388,10 @@ class ResidualRecoveryAction(ActionTerm):
     # at/below the wire (sliding/scraping past at ground level, the
     # originally observed failure mode) does NOT latch.
     calf_clearance_event = (
-      still_recovery_after_entry & (~self._prev_calf_side_far) & calf_side_far & calf_lifted
+      still_recovery_after_entry
+      & (~self._prev_calf_side_far)
+      & calf_side_far
+      & calf_lifted
     )
     self.calf_clearance_event = calf_clearance_event
     self._calf_clearance_achieved = self._calf_clearance_achieved | calf_clearance_event
@@ -1364,7 +1402,8 @@ class ResidualRecoveryAction(ActionTerm):
     # wire at all (see module docstring: the toe is a lower kinematic
     # point than the calf and is not what gets entangled).
     foot_crossed_event = (
-      still_recovery_after_entry & self._calf_clearance_achieved
+      still_recovery_after_entry
+      & self._calf_clearance_achieved
       & (~self._foot_crossed_achieved)
       & (foot_forward_dist > self._effective_foot_crossing_margin)
     )
@@ -1374,7 +1413,9 @@ class ResidualRecoveryAction(ActionTerm):
     # Backward-compat aliases: "crossing" now means the FULL two-stage
     # condition is satisfied.
     full_crossing_now = self._calf_clearance_achieved & self._foot_crossed_achieved
-    crossing_event = full_crossing_now & (~self._crossing_achieved) & still_recovery_after_entry
+    crossing_event = (
+      full_crossing_now & (~self._crossing_achieved) & still_recovery_after_entry
+    )
     self.crossing_event = crossing_event
     self._crossing_achieved = self._crossing_achieved | full_crossing_now
 
@@ -1382,15 +1423,20 @@ class ResidualRecoveryAction(ActionTerm):
     self._release_counter = torch.where(
       eligible_for_release & ~in_contact,
       self._release_counter + 1,
-      torch.where(eligible_for_release & in_contact,
-                  torch.zeros_like(self._release_counter), self._release_counter),
+      torch.where(
+        eligible_for_release & in_contact,
+        torch.zeros_like(self._release_counter),
+        self._release_counter,
+      ),
     )
 
     # --- Potential-difference (delta) shaping, stage 1 & 2 (see
     # `_stage1_best_potential`/`_stage2_best_potential` docstring above).
     # Computed AFTER the stage-1/stage-2 latches above so
     # `calf_clearance_achieved` already reflects this step's own event.
-    norm_calf_h = torch.clamp(calf_height_above_wire / WIRE_HEIGHT_NORM_SCALE, -1.0, 1.0)
+    norm_calf_h = torch.clamp(
+      calf_height_above_wire / WIRE_HEIGHT_NORM_SCALE, -1.0, 1.0
+    )
     norm_calf_f = torch.clamp(calf_forward_dist / WIRE_FORWARD_NORM_SCALE, -1.0, 1.0)
     norm_foot_f = torch.clamp(foot_forward_dist / WIRE_FORWARD_NORM_SCALE, -1.0, 1.0)
     phi1 = norm_calf_h + norm_calf_f
@@ -1398,7 +1444,9 @@ class ResidualRecoveryAction(ActionTerm):
 
     stage1_active = still_recovery_after_entry & ~self._calf_clearance_achieved
     stage2_active = (
-      still_recovery_after_entry & self._calf_clearance_achieved & ~self._foot_crossed_achieved
+      still_recovery_after_entry
+      & self._calf_clearance_achieved
+      & ~self._foot_crossed_achieved
     )
 
     # Baseline the running-best potential to the CURRENT value (not zero)
@@ -1415,10 +1463,14 @@ class ResidualRecoveryAction(ActionTerm):
     )
 
     new_best1 = torch.where(
-      stage1_active, torch.maximum(self._stage1_best_potential, phi1), self._stage1_best_potential
+      stage1_active,
+      torch.maximum(self._stage1_best_potential, phi1),
+      self._stage1_best_potential,
     )
     new_best2 = torch.where(
-      stage2_active, torch.maximum(self._stage2_best_potential, phi2), self._stage2_best_potential
+      stage2_active,
+      torch.maximum(self._stage2_best_potential, phi2),
+      self._stage2_best_potential,
     )
     self.stage1_progress_reward = torch.where(
       stage1_active, new_best1 - self._stage1_best_potential, torch.zeros_like(phi1)
@@ -1432,7 +1484,9 @@ class ResidualRecoveryAction(ActionTerm):
     released_sustained = self._release_counter >= self.cfg.release_required_steps
     genuine_recovery_complete = self._crossing_achieved & released_sustained
     cap_reached = self._recovery_elapsed >= self.cfg.max_recovery_steps
-    exiting_recovery = still_recovery_after_entry & (genuine_recovery_complete | cap_reached)
+    exiting_recovery = still_recovery_after_entry & (
+      genuine_recovery_complete | cap_reached
+    )
 
     self._recovery_failed_timeout = torch.where(
       exiting_recovery & ~genuine_recovery_complete,
@@ -1444,10 +1498,14 @@ class ResidualRecoveryAction(ActionTerm):
       exiting_recovery, torch.full_like(self._phase, PHASE_POST_RECOVERY), self._phase
     )
     self._post_recovery_elapsed = torch.where(
-      exiting_recovery, torch.zeros_like(self._post_recovery_elapsed), self._post_recovery_elapsed
+      exiting_recovery,
+      torch.zeros_like(self._post_recovery_elapsed),
+      self._post_recovery_elapsed,
     )
     self._stable_since_post_recovery = torch.where(
-      exiting_recovery, torch.ones_like(self._stable_since_post_recovery), self._stable_since_post_recovery
+      exiting_recovery,
+      torch.ones_like(self._stable_since_post_recovery),
+      self._stable_since_post_recovery,
     )
 
     self._prev_calf_side_far = calf_side_far.clone()
@@ -1475,18 +1533,24 @@ class ResidualRecoveryAction(ActionTerm):
     gravity_b = self._entity.data.projected_gravity_b
     upright_now = torch.abs(gravity_b[:, 2]) > math.cos(math.radians(70.0))
     self._stable_since_post_recovery = torch.where(
-      still_post, self._stable_since_post_recovery & upright_now, self._stable_since_post_recovery
+      still_post,
+      self._stable_since_post_recovery & upright_now,
+      self._stable_since_post_recovery,
     )
     self._post_recovery_elapsed = torch.where(
       still_post, self._post_recovery_elapsed + 1, self._post_recovery_elapsed
     )
     reached_stable_window = (
-      still_post & self._post_recovery_eligible & self._stable_since_post_recovery
+      still_post
+      & self._post_recovery_eligible
+      & self._stable_since_post_recovery
       & (self._post_recovery_elapsed >= self.cfg.post_recovery_stable_steps)
     )
     just_succeeded = reached_stable_window & ~self._already_succeeded_this_episode
     self.newly_succeeded = just_succeeded
-    self._already_succeeded_this_episode = self._already_succeeded_this_episode | just_succeeded
+    self._already_succeeded_this_episode = (
+      self._already_succeeded_this_episode | just_succeeded
+    )
 
   def _build_walk_obs(self) -> torch.Tensor:
     """Reconstructs the EXACT 48-dim observation vector the frozen
@@ -1520,8 +1584,15 @@ class ResidualRecoveryAction(ActionTerm):
     )
 
     return torch.cat(
-      [base_lin_vel, base_ang_vel, projected_gravity, joint_pos_rel,
-       joint_vel_rel, last_action, command],
+      [
+        base_lin_vel,
+        base_ang_vel,
+        projected_gravity,
+        joint_pos_rel,
+        joint_vel_rel,
+        last_action,
+        command,
+      ],
       dim=-1,
     )
 
@@ -1571,9 +1642,7 @@ class ResidualRecoveryAction(ActionTerm):
       delta_a = delta_a * recovery_mask_2d
 
     obs_walk = self._build_walk_obs()
-    obs_walk_td = TensorDict(
-      {"actor": obs_walk}, batch_size=[obs_walk.shape[0]]
-    )
+    obs_walk_td = TensorDict({"actor": obs_walk}, batch_size=[obs_walk.shape[0]])
     with torch.no_grad():
       a_walk_raw = self._policy(obs_walk_td)  # frozen, no grad, [B, 12]
 
@@ -1612,7 +1681,9 @@ class ResidualRecoveryAction(ActionTerm):
         f"calf_delta={self.cfg.calf_recovery_delta}{extra})"
       )
     if bool(self.newly_recovered[0]):
-      reason = "cap_timeout" if bool(self._recovery_failed_timeout[0]) else "crossing+release"
+      reason = (
+        "cap_timeout" if bool(self._recovery_failed_timeout[0]) else "crossing+release"
+      )
       print(
         f"[recovery] env0 EXIT RECOVERY (reason={reason}, "
         f"elapsed={int(self._recovery_elapsed[0])}, "

@@ -154,7 +154,9 @@ def _draw_schematic(
   y_limits: tuple[float, float],
 ) -> None:
   left, top, right, bottom = box
-  draw.rounded_rectangle(box, radius=18, fill=(18, 22, 30), outline=(70, 80, 100), width=2)
+  draw.rounded_rectangle(
+    box, radius=18, fill=(18, 22, 30), outline=(70, 80, 100), width=2
+  )
 
   margin_x = 50
   margin_y = 30
@@ -188,14 +190,20 @@ def _draw_schematic(
   wire_y = sy(0.0)
   draw.line((wire_x, plot_top, wire_x, plot_bottom), fill=(245, 196, 0), width=4)
   draw.line((plot_left, wire_y, plot_right, wire_y), fill=(245, 196, 0), width=2)
-  draw.text((wire_x + 6, plot_top + 2), "wire plane fd=0", fill=(245, 196, 0), font=_font(16))
-  draw.text((plot_left + 4, wire_y + 4), "wire height 0 m", fill=(245, 196, 0), font=_font(16))
+  draw.text(
+    (wire_x + 6, plot_top + 2), "wire plane fd=0", fill=(245, 196, 0), font=_font(16)
+  )
+  draw.text(
+    (plot_left + 4, wire_y + 4), "wire height 0 m", fill=(245, 196, 0), font=_font(16)
+  )
 
   def draw_point(x_val: float, y_val: float, color, label: str) -> None:
     px = sx(x_val)
     py = sy(y_val)
     r = 7
-    draw.ellipse((px - r, py - r, px + r, py + r), fill=color, outline=(255, 255, 255), width=2)
+    draw.ellipse(
+      (px - r, py - r, px + r, py + r), fill=color, outline=(255, 255, 255), width=2
+    )
     draw.text((px + 10, py - 14), label, fill=color, font=_font(16))
 
   draw_point(
@@ -219,19 +227,44 @@ def _draw_schematic(
     draw.line((px, plot_bottom, px, plot_bottom + 6), fill=(200, 200, 200), width=1)
     label = tick_label(float(value))
     bbox = draw.textbbox((0, 0), label, font=_font(14))
-    draw.text((px - (bbox[2] - bbox[0]) / 2, plot_bottom + 8), label, fill=(200, 200, 200), font=_font(14))
+    draw.text(
+      (px - (bbox[2] - bbox[0]) / 2, plot_bottom + 8),
+      label,
+      fill=(200, 200, 200),
+      font=_font(14),
+    )
   for value in np.linspace(y_min, y_max, 4):
     py = sy(float(value))
     draw.line((plot_left - 6, py, plot_left, py), fill=(200, 200, 200), width=1)
     label = f"{value:.2f}"
     bbox = draw.textbbox((0, 0), label, font=_font(14))
-    draw.text((plot_left - 12 - (bbox[2] - bbox[0]), py - 8), label, fill=(200, 200, 200), font=_font(14))
+    draw.text(
+      (plot_left - 12 - (bbox[2] - bbox[0]), py - 8),
+      label,
+      fill=(200, 200, 200),
+      font=_font(14),
+    )
 
-  draw.text((left + 20, bottom - 48), "signed forward distance (m)  -> far side +", fill=(220, 220, 220), font=_font(16))
-  draw.text((left + 20, bottom - 28), "height above wire (m)", fill=(220, 220, 220), font=_font(16))
+  draw.text(
+    (left + 20, bottom - 48),
+    "signed forward distance (m)  -> far side +",
+    fill=(220, 220, 220),
+    font=_font(16),
+  )
+  draw.text(
+    (left + 20, bottom - 28),
+    "height above wire (m)",
+    fill=(220, 220, 220),
+    font=_font(16),
+  )
 
 
-def _annotate_frame(frame: np.ndarray, row: dict[str, Any], x_limits: tuple[float, float], y_limits: tuple[float, float]) -> np.ndarray:
+def _annotate_frame(
+  frame: np.ndarray,
+  row: dict[str, Any],
+  x_limits: tuple[float, float],
+  y_limits: tuple[float, float],
+) -> np.ndarray:
   image = Image.fromarray(frame)
   base_w, base_h = image.size
   panel_w = 520
@@ -247,8 +280,15 @@ def _annotate_frame(frame: np.ndarray, row: dict[str, Any], x_limits: tuple[floa
   draw.rectangle((panel_left, 0, base_w + panel_w, base_h), fill=(12, 16, 24))
   draw.line((panel_left, 0, panel_left, base_h), fill=(80, 92, 110), width=2)
 
-  draw.text((panel_left + 18, 14), f"Seed {row['seed']}", fill=(255, 255, 255), font=title_font)
-  draw.text((panel_left + 18, 48), str(row["variant"]).replace("_", " ").upper(), fill=(190, 220, 255), font=title_font)
+  draw.text(
+    (panel_left + 18, 14), f"Seed {row['seed']}", fill=(255, 255, 255), font=title_font
+  )
+  draw.text(
+    (panel_left + 18, 48),
+    str(row["variant"]).replace("_", " ").upper(),
+    fill=(190, 220, 255),
+    font=title_font,
+  )
 
   if row.get("frame_kind") == "reset":
     time_label = "reset state"
@@ -258,7 +298,12 @@ def _annotate_frame(frame: np.ndarray, row: dict[str, Any], x_limits: tuple[floa
       f"   |   recovery t = {float(row['recovery_elapsed']) * 0.02:.2f} s"
     )
   draw.text((panel_left + 18, 90), time_label, fill=(230, 230, 230), font=body_font)
-  draw.text((panel_left + 18, 116), f"phase: {row['phase']}", fill=(230, 230, 230), font=body_font)
+  draw.text(
+    (panel_left + 18, 116),
+    f"phase: {row['phase']}",
+    fill=(230, 230, 230),
+    font=body_font,
+  )
   draw.text(
     (panel_left + 18, 142),
     f"exit: {row['recovery_exit_reason']}   |   outcome: {row['observation_outcome']}",
@@ -272,13 +317,33 @@ def _annotate_frame(frame: np.ndarray, row: dict[str, Any], x_limits: tuple[floa
     "RECOVERY": (208, 138, 14),
     "POST_RECOVERY": (38, 128, 64),
   }.get(str(row["phase"]), (82, 82, 82))
-  _draw_badge(draw, (panel_left + 18, badge_y), f"phase {row['phase']}", phase_fill, body_font)
+  _draw_badge(
+    draw, (panel_left + 18, badge_y), f"phase {row['phase']}", phase_fill, body_font
+  )
   stage1_fill = (38, 128, 64) if row["calf_clearance_achieved"] else (90, 95, 105)
   stage2_fill = (38, 128, 64) if row["foot_crossed_achieved"] else (90, 95, 105)
   cross_fill = (38, 128, 64) if row["crossing_achieved"] else (90, 95, 105)
-  _draw_badge(draw, (panel_left + 18, badge_y + 42), f"stage 1 {'latched' if row['calf_clearance_achieved'] else 'pending'}", stage1_fill, small_font)
-  _draw_badge(draw, (panel_left + 18, badge_y + 84), f"stage 2 {'latched' if row['foot_crossed_achieved'] else 'pending'}", stage2_fill, small_font)
-  _draw_badge(draw, (panel_left + 18, badge_y + 126), f"crossing {'latched' if row['crossing_achieved'] else 'pending'}", cross_fill, small_font)
+  _draw_badge(
+    draw,
+    (panel_left + 18, badge_y + 42),
+    f"stage 1 {'latched' if row['calf_clearance_achieved'] else 'pending'}",
+    stage1_fill,
+    small_font,
+  )
+  _draw_badge(
+    draw,
+    (panel_left + 18, badge_y + 84),
+    f"stage 2 {'latched' if row['foot_crossed_achieved'] else 'pending'}",
+    stage2_fill,
+    small_font,
+  )
+  _draw_badge(
+    draw,
+    (panel_left + 18, badge_y + 126),
+    f"crossing {'latched' if row['crossing_achieved'] else 'pending'}",
+    cross_fill,
+    small_font,
+  )
 
   info_lines = [
     f"calf fd = {float(row['calf_forward_dist_m']):+.3f} m",
@@ -293,13 +358,17 @@ def _annotate_frame(frame: np.ndarray, row: dict[str, Any], x_limits: tuple[floa
     draw.text((panel_left + 18, text_y), line, fill=(230, 230, 230), font=body_font)
     text_y += 26
 
-  draw.text((panel_left + 18, 520), "Evaluator convention:", fill=(245, 196, 0), font=body_font)
+  draw.text(
+    (panel_left + 18, 520), "Evaluator convention:", fill=(245, 196, 0), font=body_font
+  )
   convention = [
     "forward distance uses the robot's latched",
     "heading at RECOVERY entry; positive = far side.",
   ]
   for idx, line in enumerate(convention):
-    draw.text((panel_left + 18, 546 + 22 * idx), line, fill=(230, 230, 230), font=small_font)
+    draw.text(
+      (panel_left + 18, 546 + 22 * idx), line, fill=(230, 230, 230), font=small_font
+    )
 
   schematic_box = (panel_left + 18, 602 - 248, panel_left + panel_w - 18, 602)
   _draw_schematic(draw, schematic_box, row, x_limits=x_limits, y_limits=y_limits)
@@ -330,7 +399,12 @@ def _load_reference_rows(run: RunSpec) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for raw_row in reader:
       row: dict[str, Any] = dict(raw_row)
-      for key in ("step", "recovery_elapsed", "two_phase_lift_counter", "two_phase_switch_step"):
+      for key in (
+        "step",
+        "recovery_elapsed",
+        "two_phase_lift_counter",
+        "two_phase_switch_step",
+      ):
         if key in row and row[key] != "":
           row[key] = int(row[key])
       for key in (
@@ -367,7 +441,9 @@ def _sample_indices(num_rows: int) -> list[int]:
   return sorted(raw_indices)
 
 
-def _compare_rows(actual: dict[str, Any], expected: dict[str, Any], *, atol: float = 1e-6) -> None:
+def _compare_rows(
+  actual: dict[str, Any], expected: dict[str, Any], *, atol: float = 1e-6
+) -> None:
   keys_to_check = (
     "step",
     "phase",
@@ -458,10 +534,14 @@ def _record_run(
           "foot_crossed_achieved": bool(act.foot_crossed_achieved[0].item()),
           "crossing_achieved": bool(act.crossing_achieved[0].item()),
           "release_achieved": bool(act.release_achieved[0].item()),
-          "two_phase_advance_active": bool(act.hybrid_two_phase_advance_active[0].item()),
+          "two_phase_advance_active": bool(
+            act.hybrid_two_phase_advance_active[0].item()
+          ),
           "two_phase_switch_step": int(act.two_phase_switch_step[0].item()),
           "two_phase_lift_counter": int(act.two_phase_lift_counter[0].item()),
-          "base_forward_vel_body_x": float(entity.data.root_link_lin_vel_b[0, 0].item()),
+          "base_forward_vel_body_x": float(
+            entity.data.root_link_lin_vel_b[0, 0].item()
+          ),
           "variant": "gradual_transition" if run.experimental_two_phase else "baseline",
           "seed": run.seed,
         }
@@ -474,7 +554,9 @@ def _record_run(
 
       phase = int(act.phase[0].item())
       entered_recovery = (
-        entered_recovery or phase == PHASE_RECOVERY or bool(act.newly_entangled[0].item())
+        entered_recovery
+        or phase == PHASE_RECOVERY
+        or bool(act.newly_entangled[0].item())
       )
       post_recovery_entered = (
         post_recovery_entered
@@ -484,7 +566,8 @@ def _record_run(
       if bool(act.newly_recovered[0].item()):
         recovery_exit_reason = (
           "crossing_release"
-          if bool(act.crossing_achieved[0].item()) and bool(act.release_achieved[0].item())
+          if bool(act.crossing_achieved[0].item())
+          and bool(act.release_achieved[0].item())
           else "cap_timeout"
         )
 
@@ -541,12 +624,12 @@ def _record_run(
     )
   sample_checks = _verify_against_reference_csv(run, playback_rows, reference_rows)
 
-  x_vals = [
-    float(row["calf_forward_dist_m"]) for row in rows
-  ] + [float(row["foot_forward_dist_m"]) for row in rows]
-  y_vals = [
-    float(row["calf_height_above_wire_m"]) for row in rows
-  ] + [float(row["foot_height_above_wire_m"]) for row in rows]
+  x_vals = [float(row["calf_forward_dist_m"]) for row in rows] + [
+    float(row["foot_forward_dist_m"]) for row in rows
+  ]
+  y_vals = [float(row["calf_height_above_wire_m"]) for row in rows] + [
+    float(row["foot_height_above_wire_m"]) for row in rows
+  ]
   x_min = min(x_vals + [-0.08]) - 0.04
   x_max = max(x_vals + [0.28]) + 0.04
   y_min = min(y_vals + [0.0]) - 0.02
@@ -585,7 +668,9 @@ def main() -> None:
   out_dir = Path(cfg.out_dir)
   out_dir.mkdir(parents=True, exist_ok=True)
 
-  summaries = [_record_run(run, cfg.device, cfg.max_steps, cfg.fps, out_dir) for run in cfg.runs]
+  summaries = [
+    _record_run(run, cfg.device, cfg.max_steps, cfg.fps, out_dir) for run in cfg.runs
+  ]
   manifest = out_dir / "manifest.json"
   manifest.write_text(json.dumps(summaries, indent=2, sort_keys=True))
 

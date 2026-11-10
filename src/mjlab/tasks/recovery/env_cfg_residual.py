@@ -98,9 +98,7 @@ FORWARD_CMD_VAL = 0.3
 
 # Default checkpoint for the frozen walking policy. Override via
 # `walk_checkpoint` if training a new base policy.
-DEFAULT_WALK_CHECKPOINT = (
-  "logs/rsl_rl/go2_velocity/2026-09-17_13-00-16/model_9900.pt"
-)
+DEFAULT_WALK_CHECKPOINT = "logs/rsl_rl/go2_velocity/2026-09-17_13-00-16/model_9900.pt"
 
 
 def _build_recovery_robot_cfg(
@@ -555,9 +553,7 @@ def go2_wire_recovery_residual_env_cfg(
       params={"action_term_name": "joint_pos"},
       reduce="sum",
     ),
-    "fell_over": MetricsTermCfg(
-      func=mdp.metric_fell_over, params={}, reduce="max"
-    ),
+    "fell_over": MetricsTermCfg(func=mdp.metric_fell_over, params={}, reduce="max"),
     "residual_magnitude_mean": MetricsTermCfg(
       func=mdp.metric_residual_magnitude,
       params={"action_term_name": "joint_pos"},

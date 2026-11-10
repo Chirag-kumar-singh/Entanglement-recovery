@@ -109,7 +109,9 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     writer.writerows(rows)
 
 
-def _build_env(seed: int, device: str, max_recovery_steps_override: int) -> ManagerBasedRlEnv:
+def _build_env(
+  seed: int, device: str, max_recovery_steps_override: int
+) -> ManagerBasedRlEnv:
   d3_cfg = D3GroundConfig(seed=seed, device=device, use_isolated_wire=True)
   return build_env(d3_cfg, device, max_recovery_steps_override)
 
@@ -165,8 +167,12 @@ def _restore_snapshot(
     (env.scene.sensors[wire_contact_sensor_name].data.found[0] > 0).any()
   )
   return {
-    "qpos_max_abs_diff": float(torch.max(torch.abs(actual_qpos - snapshot.qpos)).item()),
-    "qvel_max_abs_diff": float(torch.max(torch.abs(actual_qvel - snapshot.qvel)).item()),
+    "qpos_max_abs_diff": float(
+      torch.max(torch.abs(actual_qpos - snapshot.qpos)).item()
+    ),
+    "qvel_max_abs_diff": float(
+      torch.max(torch.abs(actual_qvel - snapshot.qvel)).item()
+    ),
     "wire_contact_after_restore": float(actual_wire_contact),
     "wire_contact_force_mag_n_after_restore": (
       float(
@@ -235,9 +241,9 @@ def install_fixed_delay_handoff(
       sim.model.actuator_gainprm[transition_ids, act._aux_thigh_ctrl_id, 0] = (
         act.cfg.recovery_thigh_velocity_kd
       )
-      sim.model.actuator_biasprm[transition_ids, act._aux_thigh_ctrl_id, 2] = (
-        -act.cfg.recovery_thigh_velocity_kd
-      )
+      sim.model.actuator_biasprm[
+        transition_ids, act._aux_thigh_ctrl_id, 2
+      ] = -act.cfg.recovery_thigh_velocity_kd
       act.hybrid_thigh_pos_gain_active[transition_ids] = False
       state["holding"][transition_ids] = False
       state["handoff_step"][transition_ids] = state["current_step"] + 1
@@ -307,7 +313,9 @@ def _capture_pre_entry_snapshot(
     joint_vel=data.joint_vel[0].clone(),
     qpos=data.data.qpos[0].clone(),
     qvel=data.data.qvel[0].clone(),
-    wire_contact=bool((env.scene.sensors[act.cfg.wire_contact_sensor_name].data.found[0] > 0).any()),
+    wire_contact=bool(
+      (env.scene.sensors[act.cfg.wire_contact_sensor_name].data.found[0] > 0).any()
+    ),
     wire_contact_force_mag_n=_wire_force_mag(env, act),
     base_z_m=float(data.root_link_pos_w[0, 2].item()),
     base_ang_vel_y_rps=float(data.root_link_ang_vel_b[0, 1].item()),
@@ -358,7 +366,9 @@ def _collect_row(
     "phase_id": int(act.phase[0].item()),
     "recovery_elapsed": int(act.recovery_elapsed[0].item()),
     "post_recovery_elapsed": int(act.post_recovery_elapsed[0].item()),
-    "rel_step_from_entry": rel_step_from_entry if rel_step_from_entry is not None else "",
+    "rel_step_from_entry": rel_step_from_entry
+    if rel_step_from_entry is not None
+    else "",
     "holding": holding,
     "handoff_step": handoff_step if handoff_step is not None else "",
     "pos_actuators_active": bool(act.hybrid_thigh_pos_gain_active[0].item()),
@@ -423,9 +433,15 @@ def _run_baseline(cfg: D549Config, out_dir: Path) -> RunResult:
   for step in range(cfg.max_steps):
     phase_before = int(act.phase[0].item())
     if phase_before == PHASE_NORMAL_WALK:
-      pre_entry_base_z_values.append(float(env.scene["robot"].data.root_link_pos_w[0, 2].item()))
-      pre_entry_pitch_values.append(float(env.scene["robot"].data.root_link_ang_vel_b[0, 1].item()))
-    if snapshot is None and bool((env.scene.sensors[act.cfg.wire_contact_sensor_name].data.found[0] > 0).any()):
+      pre_entry_base_z_values.append(
+        float(env.scene["robot"].data.root_link_pos_w[0, 2].item())
+      )
+      pre_entry_pitch_values.append(
+        float(env.scene["robot"].data.root_link_ang_vel_b[0, 1].item())
+      )
+    if snapshot is None and bool(
+      (env.scene.sensors[act.cfg.wire_contact_sensor_name].data.found[0] > 0).any()
+    ):
       snapshot = _capture_pre_entry_snapshot(env, act, step)
       entry_step = step
 
@@ -447,7 +463,9 @@ def _run_baseline(cfg: D549Config, out_dir: Path) -> RunResult:
 
   env.close()
 
-  assert snapshot is not None and entry_step is not None, "Baseline never reached first contact"
+  assert snapshot is not None and entry_step is not None, (
+    "Baseline never reached first contact"
+  )
   trace_path = out_dir / "baseline_trace.csv"
   _write_csv(trace_path, rows)
 
@@ -545,11 +563,7 @@ def _summarize_run(
   max_wire_force_row = max(entry_rows, key=lambda row: row["wire_contact_force_mag_n"])
 
   first_base_drop_step = next(
-    (
-      row["step"]
-      for row in entry_rows
-      if row["base_z_m"] < baseline_base_z_min
-    ),
+    (row["step"] for row in entry_rows if row["base_z_m"] < baseline_base_z_min),
     -1,
   )
   first_pitch_excursion_step = next(
@@ -598,7 +612,9 @@ def _summarize_run(
       restore_info["qvel_max_abs_diff"] if restore_info is not None else float("nan")
     ),
     "restore_wire_contact": (
-      restore_info["wire_contact_after_restore"] if restore_info is not None else float("nan")
+      restore_info["wire_contact_after_restore"]
+      if restore_info is not None
+      else float("nan")
     ),
     "restore_wire_force_mag_n": (
       restore_info["wire_contact_force_mag_n_after_restore"]
@@ -787,7 +803,10 @@ def _write_report(
     ),
   ]
 
-  if cf["min_base_z_m"] > base["min_base_z_m"] and cf["max_abs_pitch_rate_rps"] < base["max_abs_pitch_rate_rps"]:
+  if (
+    cf["min_base_z_m"] > base["min_base_z_m"]
+    and cf["max_abs_pitch_rate_rps"] < base["max_abs_pitch_rate_rps"]
+  ):
     lines.extend(
       [
         "",
@@ -821,7 +840,9 @@ def main() -> None:
   assert baseline.entry_snapshot is not None
   counterfactual = _run_counterfactual(cfg, out_dir, baseline.entry_snapshot)
 
-  _write_csv(out_dir / "entry_snapshot.csv", [_entry_snapshot_row(baseline.entry_snapshot)])
+  _write_csv(
+    out_dir / "entry_snapshot.csv", [_entry_snapshot_row(baseline.entry_snapshot)]
+  )
   _write_csv(
     out_dir / "comparison_summary.csv",
     [baseline.summary, counterfactual.summary],

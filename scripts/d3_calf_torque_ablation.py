@@ -36,7 +36,11 @@ from mjlab.tasks.recovery.mdp.actions import (
   PHASE_RECOVERY,
 )
 
-PHASE_NAMES = {PHASE_NORMAL_WALK: "NORMAL_WALK", PHASE_RECOVERY: "RECOVERY", PHASE_POST_RECOVERY: "POST_RECOVERY"}
+PHASE_NAMES = {
+  PHASE_NORMAL_WALK: "NORMAL_WALK",
+  PHASE_RECOVERY: "RECOVERY",
+  PHASE_POST_RECOVERY: "POST_RECOVERY",
+}
 SEED = 0
 MAX_STEPS = 400
 STOP_AFTER_POST_RECOVERY = 60
@@ -45,7 +49,11 @@ CALF_TORQUE_STOP_AFTER_STEPS = 5  # per spec: baseline peak was ~5 steps in
 
 def make_env(device: str):
   cfg = go2_wire_recovery_residual_env_cfg(
-    affected_leg_idx=0, num_envs=1, recovery_mode="hybrid", policy_device=device, play=True
+    affected_leg_idx=0,
+    num_envs=1,
+    recovery_mode="hybrid",
+    policy_device=device,
+    play=True,
   )
   cfg.seed = SEED
   cfg.sim.device = device
@@ -70,7 +78,9 @@ def install_calf_ablation(act, stop_after_steps: int):
     stop_mask = in_recovery & (act.recovery_elapsed >= stop_after_steps)
     if stop_mask.any():
       act.hybrid_calf_torque_ctrl = torch.where(
-        stop_mask, torch.zeros_like(act.hybrid_calf_torque_ctrl), act.hybrid_calf_torque_ctrl
+        stop_mask,
+        torch.zeros_like(act.hybrid_calf_torque_ctrl),
+        act.hybrid_calf_torque_ctrl,
       )
       zero_col = torch.zeros(act.num_envs, 1, device=act.device)
       # Re-issue the effort target for ALL envs each call (cheap, 1 env
@@ -141,7 +151,10 @@ def run_one(label: str, ablate: bool, device: str = "cpu"):
     rows.append(row)
     if row["phase"] == "POST_RECOVERY" and reached_post_recovery_at is None:
       reached_post_recovery_at = i
-    if reached_post_recovery_at is not None and i - reached_post_recovery_at >= STOP_AFTER_POST_RECOVERY:
+    if (
+      reached_post_recovery_at is not None
+      and i - reached_post_recovery_at >= STOP_AFTER_POST_RECOVERY
+    ):
       break
   env.close()
 
@@ -150,17 +163,25 @@ def run_one(label: str, ablate: bool, device: str = "cpu"):
     label=label,
     n_recovery_rows=len(rec_rows),
     max_foot_height=max((r["foot_z"] for r in rows), default=float("nan")),
-    max_clearance=max((r["foot_height_above_wire"] for r in rec_rows), default=float("nan")),
-    min_clearance=min((r["foot_height_above_wire"] for r in rec_rows), default=float("nan")),
+    max_clearance=max(
+      (r["foot_height_above_wire"] for r in rec_rows), default=float("nan")
+    ),
+    min_clearance=min(
+      (r["foot_height_above_wire"] for r in rec_rows), default=float("nan")
+    ),
     max_calf_excursion=(
       max((abs(r["calf_pos"]) for r in rec_rows), default=float("nan"))
     ),
-    final_forward_dist=rec_rows[-1]["foot_forward_dist_to_wire"] if rec_rows else float("nan"),
+    final_forward_dist=rec_rows[-1]["foot_forward_dist_to_wire"]
+    if rec_rows
+    else float("nan"),
     crossed=any(r["crossing_achieved"] for r in rows),
     reached_post_recovery=reached_post_recovery_at is not None,
     final_phase=rows[-1]["phase"] if rows else "NONE",
     calf_torque_zero_steps=sum(1 for r in rec_rows if r["calf_torque_cmd"] == 0.0),
-    fell=any(r["base_z"] < 0.15 for r in rows),  # crude stability guard, informational only
+    fell=any(
+      r["base_z"] < 0.15 for r in rows
+    ),  # crude stability guard, informational only
   )
   return rows, summary
 
@@ -171,7 +192,11 @@ def main():
 
   print("=== Running BASELINE (calf torque active all 16 recovery steps) ===")
   base_rows, base_summary = run_one("baseline", ablate=False)
-  print("=== Running ABLATION (calf torque stops after recovery step", CALF_TORQUE_STOP_AFTER_STEPS, ") ===")
+  print(
+    "=== Running ABLATION (calf torque stops after recovery step",
+    CALF_TORQUE_STOP_AFTER_STEPS,
+    ") ===",
+  )
   abl_rows, abl_summary = run_one("ablation_stop5", ablate=True)
 
   for rows, name in [(base_rows, "baseline"), (abl_rows, "ablation_stop5")]:
@@ -182,7 +207,9 @@ def main():
       writer.writerows(rows)
     print(f"[D3-ablation] CSV written: {csv_path} ({len(rows)} rows)")
 
-  print("\n==== PER-RECOVERY-STEP COMPARISON (step | foot_z base vs abl | clearance base vs abl | calf_torque base vs abl) ====")
+  print(
+    "\n==== PER-RECOVERY-STEP COMPARISON (step | foot_z base vs abl | clearance base vs abl | calf_torque base vs abl) ===="
+  )
   base_rec = [r for r in base_rows if r["phase"] == "RECOVERY"]
   abl_rec = [r for r in abl_rows if r["phase"] == "RECOVERY"]
   n = max(len(base_rec), len(abl_rec))
@@ -197,12 +224,18 @@ def main():
     at = f"{a['calf_torque_cmd']:+.2f}" if a else "  -   "
     bcalf = f"{b['calf_pos']:.3f}" if b else "  -   "
     acalf = f"{a['calf_pos']:.3f}" if a else "  -   "
-    print(f"  recov_step {i:2d}: foot_z {bz} / {az}   clearance {bc} / {ac}   calf_torque {bt} / {at}   calf_pos {bcalf} / {acalf}")
+    print(
+      f"  recov_step {i:2d}: foot_z {bz} / {az}   clearance {bc} / {ac}   calf_torque {bt} / {at}   calf_pos {bcalf} / {acalf}"
+    )
 
   print("\n==== SUMMARY: BASELINE ====")
   for k, v in base_summary.items():
     print(f"  {k}: {v}")
-  print("\n==== SUMMARY: ABLATION (stop calf torque after step", CALF_TORQUE_STOP_AFTER_STEPS, ") ====")
+  print(
+    "\n==== SUMMARY: ABLATION (stop calf torque after step",
+    CALF_TORQUE_STOP_AFTER_STEPS,
+    ") ====",
+  )
   for k, v in abl_summary.items():
     print(f"  {k}: {v}")
 
@@ -218,7 +251,9 @@ def main():
 
   base_collapse = post_peak_collapse(base_rec)
   abl_collapse = post_peak_collapse(abl_rec)
-  print(f"\nPost-peak foot-height collapse magnitude: baseline={base_collapse:.4f} m   ablation={abl_collapse:.4f} m")
+  print(
+    f"\nPost-peak foot-height collapse magnitude: baseline={base_collapse:.4f} m   ablation={abl_collapse:.4f} m"
+  )
 
   print("\n==== INTERPRETATION ====")
   if abl_collapse is not None and base_collapse is not None:

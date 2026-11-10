@@ -61,7 +61,9 @@ def runs(seq: list[bool]) -> list[tuple[int, int, bool]]:
 
 
 def analyze_seed(seed: int) -> None:
-  listing_path = Path(f"logs/d4_6_support_descent_timing/seed{seed}_full/contact_listing.txt")
+  listing_path = Path(
+    f"logs/d4_6_support_descent_timing/seed{seed}_full/contact_listing.txt"
+  )
   pairs_by_step = parse_contact_listing(listing_path)
   steps = sorted(pairs_by_step.keys())
 
@@ -74,12 +76,8 @@ def analyze_seed(seed: int) -> None:
     pre_idx_end = next((i for i, s in enumerate(steps) if s >= 44), len(steps))
     pre_runs = [r for r in leg_runs if r[1] < pre_idx_end]
 
-    stance_lens = [
-      (steps[r[1]] - steps[r[0]] + 1) for r in pre_runs if r[2] is True
-    ]
-    swing_lens = [
-      (steps[r[1]] - steps[r[0]] + 1) for r in pre_runs if r[2] is False
-    ]
+    stance_lens = [(steps[r[1]] - steps[r[0]] + 1) for r in pre_runs if r[2] is True]
+    swing_lens = [(steps[r[1]] - steps[r[0]] + 1) for r in pre_runs if r[2] is False]
 
     print(f"\n  -- {leg} --")
     print(f"  Pre-recovery (steps 0-43) stance/swing runs (step range : state):")
@@ -87,9 +85,13 @@ def analyze_seed(seed: int) -> None:
       state = "STANCE" if r[2] else "SWING"
       print(f"    [{steps[r[0]]:3d}-{steps[r[1]]:3d}] {state}")
     if stance_lens:
-      print(f"  Mean pre-recovery stance duration: {sum(stance_lens)/len(stance_lens):.1f} steps")
+      print(
+        f"  Mean pre-recovery stance duration: {sum(stance_lens) / len(stance_lens):.1f} steps"
+      )
     if swing_lens:
-      print(f"  Mean pre-recovery swing duration: {sum(swing_lens)/len(swing_lens):.1f} steps")
+      print(
+        f"  Mean pre-recovery swing duration: {sum(swing_lens) / len(swing_lens):.1f} steps"
+      )
 
     # Post-entry behavior: find the run containing/following step 47.
     post_runs = [r for r in leg_runs if steps[r[1]] >= 44]
@@ -106,7 +108,7 @@ def analyze_seed(seed: int) -> None:
     if swing_at_47 is not None:
       length = steps[swing_at_47[1]] - steps[swing_at_47[0]] + 1
       is_open_ended = steps[swing_at_47[1]] == steps[-1]
-      typical = f"{sum(swing_lens)/len(swing_lens):.1f}" if swing_lens else "N/A"
+      typical = f"{sum(swing_lens) / len(swing_lens):.1f}" if swing_lens else "N/A"
       print(
         f"  Swing run covering step 47: [{steps[swing_at_47[0]]}-{steps[swing_at_47[1]]}]"
         f" (len={length}{'+ (still ongoing at window end)' if is_open_ended else ''}, "

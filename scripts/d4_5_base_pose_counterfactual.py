@@ -231,7 +231,9 @@ def run(cfg: D45Config) -> list[dict]:
     result = {"seed": cfg.seed, "step": step}
     for name, (b_pos, b_quat) in variants.items():
       g_pos, g_quat = compose(b_pos, b_quat, local_pos, local_quat)
-      clearance, seg = clearance_for_hip_pose(g_pos, g_quat, wire_pos, wire_xmat, wire_names)
+      clearance, seg = clearance_for_hip_pose(
+        g_pos, g_quat, wire_pos, wire_xmat, wire_names
+      )
       result[f"{name}_clearance"] = round(clearance, 5)
       result[f"{name}_nearest_seg"] = seg
 

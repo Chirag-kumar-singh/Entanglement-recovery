@@ -272,15 +272,11 @@ class wire_recovery_success(ManagerTermBase):
         )
       if joint_vel_sanity_tolerance is not None:
         joint_vel = asset.data.joint_vel[:, jids_t]
-        sanity = sanity & (
-          torch.norm(joint_vel, dim=-1) < joint_vel_sanity_tolerance
-        )
+        sanity = sanity & (torch.norm(joint_vel, dim=-1) < joint_vel_sanity_tolerance)
     else:
       sanity = torch.ones(env.num_envs, device=env.device, dtype=torch.bool)
 
-    instantaneous_success = (
-      self.contact_seen & released_sustained & upright & sanity
-    )
+    instantaneous_success = self.contact_seen & released_sustained & upright & sanity
 
     # 7. Latch: only ever fire once per episode. Once succeeded, stays
     # True (and hence keeps returning True as a termination) but the

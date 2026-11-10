@@ -1,0 +1,7 @@
+survey_leg=FL seed=0 steps=220
+wire plane x=0.000 span y=[0.300, 0.500] z=0.100
+
+FL: calf crosses x=0.00 at step=57; near-plane calf y in [0.3675, 0.3878], calf z in [0.0793, 0.0932]
+FR: calf crosses x=0.00 at step=51; near-plane calf y in [0.1316, 0.1509], calf z in [0.0744, 0.0937]
+RL: calf crosses x=0.00 at step=122; near-plane calf y in [0.3301, 0.3479], calf z in [0.0779, 0.0975]
+RR: calf crosses x=0.00 at step=126; near-plane calf y in [0.0904, 0.1071], calf z in [0.0783, 0.0902]

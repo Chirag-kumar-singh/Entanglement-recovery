@@ -67,6 +67,9 @@ print("RESULT measured_qvel (expect >0):", qvel)
 print("RESULT foot_dx_over_3steps:", foot_dx)
 print(
   "RESULT PASS:",
-  pos_gain[0] == 0.0 and aux_gain[0] != 0.0 and abs(ctrl_written - 2.0) < 1e-6 and qvel > 0.0,
+  pos_gain[0] == 0.0
+  and aux_gain[0] != 0.0
+  and abs(ctrl_written - 2.0) < 1e-6
+  and qvel > 0.0,
 )
 env.close()

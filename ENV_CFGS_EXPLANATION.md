@@ -82,8 +82,8 @@ cfg = make_velocity_env_cfg()  # Start with template
 #### Customization 1: Physics Parameters
 
 ```python
-cfg.sim.mujoco.ccd_iterations = 500        # More collision detection iterations
-cfg.sim.contact_sensor_maxmatch = 500      # Track more simultaneous contacts
+cfg.sim.mujoco.ccd_iterations = 500  # More collision detection iterations
+cfg.sim.contact_sensor_maxmatch = 500  # Track more simultaneous contacts
 ```
 
 **Why?** Rough terrain has many obstacles → need more collision checks → avoid missing contacts.
@@ -108,8 +108,8 @@ The template has generic sensors that need robot-specific configuration:
 
 ```python
 for sensor in cfg.scene.sensors or ():
-    if sensor.name == "terrain_scan":
-        sensor.frame.name = "base_link"  # Mount raycast on Go2's body center
+  if sensor.name == "terrain_scan":
+    sensor.frame.name = "base_link"  # Mount raycast on Go2's body center
 ```
 
 **Why?** The template doesn't know where to attach sensors. Go2 has a specific body link called `"base_link"`.
@@ -133,7 +133,7 @@ geom_names = tuple(f"{name}_foot_collision" for name in foot_names)
 
 ```python
 sensor.frame = tuple(
-    ObjRef(type="site", name=site_name, entity="robot") for site_name in site_names
+  ObjRef(type="site", name=site_name, entity="robot") for site_name in site_names
 )
 sensor.pattern = RingPatternCfg.single_ring(radius=0.04, num_samples=4)
 ```
@@ -144,12 +144,12 @@ sensor.pattern = RingPatternCfg.single_ring(radius=0.04, num_samples=4)
 
 ```python
 feet_ground_cfg = ContactSensorCfg(
-    name="feet_ground_contact",
-    primary=ContactMatch(mode="geom", pattern=geom_names, entity="robot"),
-    secondary=ContactMatch(mode="body", pattern="terrain"),
-    fields=("found", "force"),
-    reduce="netforce",
-    track_air_time=True,  # How long foot has been in air
+  name="feet_ground_contact",
+  primary=ContactMatch(mode="geom", pattern=geom_names, entity="robot"),
+  secondary=ContactMatch(mode="body", pattern="terrain"),
+  fields=("found", "force"),
+  reduce="netforce",
+  track_air_time=True,  # How long foot has been in air
 )
 ```
 
@@ -159,7 +159,7 @@ feet_ground_cfg = ContactSensorCfg(
 
 ```python
 if cfg.scene.terrain.terrain_generator is not None:
-    cfg.scene.terrain.terrain_generator.curriculum = True
+  cfg.scene.terrain.terrain_generator.curriculum = True
 ```
 
 **Why?** Start on easy flat ground → gradually get rougher terrain.
@@ -175,9 +175,9 @@ joint_pos_action.scale = GO2_ACTION_SCALE
 
 ```python
 GO2_ACTION_SCALE = {
-    "hip": 0.5,       # Hip joints: ±0.5 rad = ±28.6°
-    "thigh": 0.7,     # Thigh joints: ±0.7 rad = ±40°
-    "calf": 0.7,      # Calf joints: ±0.7 rad = ±40°
+  "hip": 0.5,  # Hip joints: ±0.5 rad = ±28.6°
+  "thigh": 0.7,  # Thigh joints: ±0.7 rad = ±40°
+  "calf": 0.7,  # Calf joints: ±0.7 rad = ±40°
 }
 ```
 
@@ -189,15 +189,15 @@ The template rewards exist but use default parameters. Go2 needs specific tuning
 
 ```python
 cfg.rewards["pose"].params["std_standing"] = {
-    r".*(FR|FL|RR|RL)_hip_joint.*": 0.05,    # Relaxed hip when standing
-    r".*(FR|FL|RR|RL)_thigh_joint.*": 0.1,   # Medium thigh penalty
-    r".*(FR|FL|RR|RL)_calf_joint.*": 0.15,   # Stricter calf penalty
+  r".*(FR|FL|RR|RL)_hip_joint.*": 0.05,  # Relaxed hip when standing
+  r".*(FR|FL|RR|RL)_thigh_joint.*": 0.1,  # Medium thigh penalty
+  r".*(FR|FL|RR|RL)_calf_joint.*": 0.15,  # Stricter calf penalty
 }
 cfg.rewards["pose"].params["std_walking"] = {
-    # When moving fast, allow more joint movement
-    r".*(FR|FL|RR|RL)_hip_joint.*": 0.15,
-    r".*(FR|FL|RR|RL)_thigh_joint.*": 0.35,
-    r".*(FR|FL|RR|RL)_calf_joint.*": 0.5,
+  # When moving fast, allow more joint movement
+  r".*(FR|FL|RR|RL)_hip_joint.*": 0.15,
+  r".*(FR|FL|RR|RL)_thigh_joint.*": 0.35,
+  r".*(FR|FL|RR|RL)_calf_joint.*": 0.5,
 }
 ```
 
@@ -209,8 +209,8 @@ cfg.rewards["pose"].params["std_walking"] = {
 
 ```python
 cfg.terminations["illegal_contact"] = TerminationTermCfg(
-    func=mdp.illegal_contact,
-    params={"sensor_name": nonfoot_ground_cfg.name, "force_threshold": 10.0},
+  func=mdp.illegal_contact,
+  params={"sensor_name": nonfoot_ground_cfg.name, "force_threshold": 10.0},
 )
 ```
 
@@ -222,11 +222,11 @@ When `play=True` (evaluation, not training):
 
 ```python
 if play:
-    cfg.episode_length_s = int(1e9)  # Nearly infinite
-    cfg.observations["actor"].enable_corruption = False  # Remove noise
-    cfg.events.pop("push_robot", None)  # Don't push during demo
-    cfg.terminations.pop("out_of_terrain_bounds", None)  # Let it roam
-    cfg.curriculum = {}  # Use final, hardest difficulty
+  cfg.episode_length_s = int(1e9)  # Nearly infinite
+  cfg.observations["actor"].enable_corruption = False  # Remove noise
+  cfg.events.pop("push_robot", None)  # Don't push during demo
+  cfg.terminations.pop("out_of_terrain_bounds", None)  # Let it roam
+  cfg.curriculum = {}  # Use final, hardest difficulty
 ```
 
 ### Step 2: `unitree_go2_flat_env_cfg()` - Flat Terrain Version
@@ -242,9 +242,9 @@ cfg = unitree_go2_rough_env_cfg(play=play)  # Start with rough version
 **1. Reduce simulation complexity:**
 
 ```python
-cfg.sim.njmax = 300                          # Fewer constraint slots
-cfg.sim.mujoco.ccd_iterations = 50           # Fewer collision checks
-cfg.sim.contact_sensor_maxmatch = 64         # Fewer contact slots
+cfg.sim.njmax = 300  # Fewer constraint slots
+cfg.sim.mujoco.ccd_iterations = 50  # Fewer collision checks
+cfg.sim.contact_sensor_maxmatch = 64  # Fewer contact slots
 ```
 
 **Why?** Flat ground has no obstacles → fewer collisions → can use cheaper settings → train faster.
@@ -252,16 +252,14 @@ cfg.sim.contact_sensor_maxmatch = 64         # Fewer contact slots
 **2. Change terrain to flat plane:**
 
 ```python
-cfg.scene.terrain.terrain_type = "plane"     # No roughness
-cfg.scene.terrain.terrain_generator = None   # No generation
+cfg.scene.terrain.terrain_type = "plane"  # No roughness
+cfg.scene.terrain.terrain_generator = None  # No generation
 ```
 
 **3. Remove terrain-related observations:**
 
 ```python
-cfg.scene.sensors = tuple(
-    sensor for sensor in (...) if sensor.name != "terrain_scan"
-)
+cfg.scene.sensors = tuple(sensor for sensor in (...) if sensor.name != "terrain_scan")
 del cfg.observations["actor"].terms["height_scan"]
 del cfg.observations["critic"].terms["height_scan"]
 ```
@@ -280,9 +278,9 @@ cfg.curriculum.pop("terrain_levels", None)  # No terrain difficulty increase
 
 ```python
 if play:
-    twist_cmd.ranges.lin_vel_x = (-0.5, 1.0)   # Reduce for stable demo
-    twist_cmd.ranges.lin_vel_y = (-0.5, 0.5)
-    twist_cmd.ranges.ang_vel_z = (-0.5, 0.5)
+  twist_cmd.ranges.lin_vel_x = (-0.5, 1.0)  # Reduce for stable demo
+  twist_cmd.ranges.lin_vel_y = (-0.5, 0.5)
+  twist_cmd.ranges.ang_vel_z = (-0.5, 0.5)
 ```
 
 **Why?** During demo, keep motion reasonable and visible.
@@ -299,18 +297,18 @@ From the template:
 
 ```python
 commands: dict[str, CommandTermCfg] = {
-    "twist": UniformVelocityCommandCfg(
-        resampling_time_range=(3.0, 8.0),
-        rel_standing_envs=0.1,      # 10% → vx=vy=wz=0 (stand still)
-        rel_heading_envs=0.3,       # 30% → vx=vy=0, random wz (rotate in place)
-        rel_forward_envs=0.2,       # 20% → vy=0, random vx (go forward/back)
-        heading_command=True,       # Allow rotation
-        ranges=UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-1.0, 1.0),
-            lin_vel_y=(-1.0, 1.0),
-            ang_vel_z=(-0.5, 0.5),
-        ),
-    )
+  "twist": UniformVelocityCommandCfg(
+    resampling_time_range=(3.0, 8.0),
+    rel_standing_envs=0.1,  # 10% → vx=vy=wz=0 (stand still)
+    rel_heading_envs=0.3,  # 30% → vx=vy=0, random wz (rotate in place)
+    rel_forward_envs=0.2,  # 20% → vy=0, random vx (go forward/back)
+    heading_command=True,  # Allow rotation
+    ranges=UniformVelocityCommandCfg.Ranges(
+      lin_vel_x=(-1.0, 1.0),
+      lin_vel_y=(-1.0, 1.0),
+      ang_vel_z=(-0.5, 0.5),
+    ),
+  )
 }
 ```
 

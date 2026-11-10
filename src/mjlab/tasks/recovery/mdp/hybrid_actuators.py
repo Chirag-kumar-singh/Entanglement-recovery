@@ -34,6 +34,8 @@ from mjlab.actuator.builtin_actuator import (
   BuiltinVelocityActuatorCfg,
 )
 from mjlab.utils.spec import apply_target_overrides, create_velocity_actuator
+
+
 @dataclass(kw_only=True)
 class NamedVelocityActuatorCfg(BuiltinVelocityActuatorCfg):
   """``BuiltinVelocityActuatorCfg`` with an explicit, distinct actuator name."""
@@ -126,4 +128,3 @@ from mjlab.actuator.builtin_group import _TARGET_TENSOR_MAP  # noqa: E402
 
 _TARGET_TENSOR_MAP[(NamedVelocityActuator, TransmissionType.JOINT)] = "joint_vel_target"
 _TARGET_TENSOR_MAP[(NamedMotorActuator, TransmissionType.JOINT)] = "joint_effort_target"
-

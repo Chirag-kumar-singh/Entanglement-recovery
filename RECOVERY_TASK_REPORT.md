@@ -160,11 +160,11 @@ Mjlab-Go2-Entanglement-Recovery-Oracle
 
 ```python
 go2_entanglement_recovery_env_cfg(
-    affected_leg_idx=2,              # 0=FL, 1=FR, 2=RL, 3=RR
-    affected_leg_joint="RL_calf_joint",
-    obstacle_pos=(0.5, 0.0, 0.3),    # [x, y, z] world frame (meters)
-    obstacle_radius=0.05,            # Obstacle size (meters)
-    play=False,                       # True: disable noise/randomization
+  affected_leg_idx=2,  # 0=FL, 1=FR, 2=RL, 3=RR
+  affected_leg_joint="RL_calf_joint",
+  obstacle_pos=(0.5, 0.0, 0.3),  # [x, y, z] world frame (meters)
+  obstacle_radius=0.05,  # Obstacle size (meters)
+  play=False,  # True: disable noise/randomization
 )
 ```
 
@@ -289,8 +289,8 @@ from mjlab.tasks.recovery.env_cfg import go2_entanglement_recovery_env_cfg
 
 # Train for FR leg specifically
 cfg = go2_entanglement_recovery_env_cfg(
-    affected_leg_idx=1,  # FR leg
-    affected_leg_joint="FR_calf_joint",
+  affected_leg_idx=1,  # FR leg
+  affected_leg_joint="FR_calf_joint",
 )
 ```
 

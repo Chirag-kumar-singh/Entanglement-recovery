@@ -70,8 +70,12 @@ def test_speed_tier_selection_boundaries():
   # on the low end, per `_update_phase_aware_thresholds`'s `>=` mask).
   assert clearance[2].item() == pytest.approx(cfg.phase_aware_medium_clearance_margin)
   assert clearance[3].item() == pytest.approx(cfg.phase_aware_medium_clearance_margin)
-  assert crossing[2].item() == pytest.approx(cfg.phase_aware_medium_foot_crossing_margin)
-  assert crossing[3].item() == pytest.approx(cfg.phase_aware_medium_foot_crossing_margin)
+  assert crossing[2].item() == pytest.approx(
+    cfg.phase_aware_medium_foot_crossing_margin
+  )
+  assert crossing[3].item() == pytest.approx(
+    cfg.phase_aware_medium_foot_crossing_margin
+  )
 
   # Fast tier: speed >= 6.5 -> indices 4, 5.
   assert clearance[4].item() == pytest.approx(cfg.phase_aware_fast_clearance_margin)

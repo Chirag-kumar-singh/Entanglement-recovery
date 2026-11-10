@@ -215,9 +215,9 @@ def install_stance_deferred_handoff(act, stance_max_wait_steps: int) -> dict:
       sim.model.actuator_gainprm[transition_ids, act._aux_thigh_ctrl_id, 0] = (
         act.cfg.recovery_thigh_velocity_kd
       )
-      sim.model.actuator_biasprm[transition_ids, act._aux_thigh_ctrl_id, 2] = (
-        -act.cfg.recovery_thigh_velocity_kd
-      )
+      sim.model.actuator_biasprm[
+        transition_ids, act._aux_thigh_ctrl_id, 2
+      ] = -act.cfg.recovery_thigh_velocity_kd
       act.hybrid_thigh_pos_gain_active[transition_ids] = False
       state["holding"][transition_ids] = False
       for i in transition_ids.tolist():
@@ -302,7 +302,9 @@ def run(cfg: D517Config) -> Path:
   device = cfg.device or "cpu"
   d3_cfg = D3GroundConfig(seed=cfg.seed, device=device, use_isolated_wire=True)
   env = build_ablation_env(
-    d3_cfg, device, ablate_hip_wire=False,
+    d3_cfg,
+    device,
+    ablate_hip_wire=False,
     max_recovery_steps_override=cfg.max_recovery_steps_override,
   )
   act = env.action_manager._terms["joint_pos"]
@@ -386,64 +388,64 @@ def run(cfg: D517Config) -> Path:
       state["stage2_first_step"] = step
 
     return {
-        "step": step,
-        "phase": new_phase,
-        "recovery_elapsed": int(act.recovery_elapsed[0]),
-        "pos_actuators_active": pos_actuators_active,
-        "holding": holding_now,
-        "foot_z": float(foot_pos_w[2]),
-        "foot_vz": float(entity.data.site_lin_vel_w[0, act._foot_site_idx, 2]),
-        "foot_height_above_wire": foot_height_above_wire,
-        "foot_x_base": float(foot_pos_b[0]),
-        "foot_y_base": float(foot_pos_b[1]),
-        "foot_z_base": float(foot_pos_b[2]),
-        "hip_pos": float(qpos[hip_i]),
-        "hip_vel": float(qvel[hip_i]),
-        "thigh_pos": float(qpos[thigh_i]),
-        "thigh_vel": float(qvel[thigh_i]),
-        "calf_pos": float(qpos[calf_i]),
-        "calf_vel": float(qvel[calf_i]),
-        "base_x": float(base_pos_w[0]),
-        "base_y": float(base_pos_w[1]),
-        "base_z": float(base_pos_w[2]),
-        "base_quat_w": float(base_quat_w[0]),
-        "base_quat_x": float(base_quat_w[1]),
-        "base_quat_y": float(base_quat_w[2]),
-        "base_quat_z": float(base_quat_w[3]),
-        "base_lin_vel_x": float(base_lin_vel_b[0]),
-        "base_lin_vel_y": float(base_lin_vel_b[1]),
-        "base_lin_vel_z": float(base_lin_vel_b[2]),
-        "base_ang_vel_x": float(base_ang_vel_b[0]),
-        "base_ang_vel_y": float(base_ang_vel_b[1]),
-        "base_ang_vel_z": float(base_ang_vel_b[2]),
-        "wire_in_contact": wire_in_contact,
-        "fl_ground_contact": fl_ground_found,
-        "fr_wire_contact": fr_wire_found,
-        "pos_thigh_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._pos_thigh_ctrl_id]
-        ),
-        "aux_thigh_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._aux_thigh_ctrl_id]
-        ),
-        "pos_calf_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._pos_calf_ctrl_id]
-        ),
-        "aux_calf_actuator_force_global": float(
-          env.sim.data.actuator_force[0, act._aux_calf_ctrl_id]
-        ),
-        "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
-        "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
-        "calf_forward_dist": calf_forward_dist,
-        "calf_height_above_wire": calf_height_above_wire,
-        "calf_side_far": calf_side_far,
-        "foot_forward_dist": foot_forward_dist,
-        "calf_clearance_achieved": calf_clearance_achieved,
-        "foot_crossed_achieved": foot_crossed_achieved,
-        "crossing_achieved": crossing_achieved,
-        "release_counter": release_counter,
-        "recovery_failed_timeout_flag": recovery_failed_timeout_flag,
-        "released_sustained": released_sustained,
-        "genuine_recovery_complete": genuine_recovery_complete,
+      "step": step,
+      "phase": new_phase,
+      "recovery_elapsed": int(act.recovery_elapsed[0]),
+      "pos_actuators_active": pos_actuators_active,
+      "holding": holding_now,
+      "foot_z": float(foot_pos_w[2]),
+      "foot_vz": float(entity.data.site_lin_vel_w[0, act._foot_site_idx, 2]),
+      "foot_height_above_wire": foot_height_above_wire,
+      "foot_x_base": float(foot_pos_b[0]),
+      "foot_y_base": float(foot_pos_b[1]),
+      "foot_z_base": float(foot_pos_b[2]),
+      "hip_pos": float(qpos[hip_i]),
+      "hip_vel": float(qvel[hip_i]),
+      "thigh_pos": float(qpos[thigh_i]),
+      "thigh_vel": float(qvel[thigh_i]),
+      "calf_pos": float(qpos[calf_i]),
+      "calf_vel": float(qvel[calf_i]),
+      "base_x": float(base_pos_w[0]),
+      "base_y": float(base_pos_w[1]),
+      "base_z": float(base_pos_w[2]),
+      "base_quat_w": float(base_quat_w[0]),
+      "base_quat_x": float(base_quat_w[1]),
+      "base_quat_y": float(base_quat_w[2]),
+      "base_quat_z": float(base_quat_w[3]),
+      "base_lin_vel_x": float(base_lin_vel_b[0]),
+      "base_lin_vel_y": float(base_lin_vel_b[1]),
+      "base_lin_vel_z": float(base_lin_vel_b[2]),
+      "base_ang_vel_x": float(base_ang_vel_b[0]),
+      "base_ang_vel_y": float(base_ang_vel_b[1]),
+      "base_ang_vel_z": float(base_ang_vel_b[2]),
+      "wire_in_contact": wire_in_contact,
+      "fl_ground_contact": fl_ground_found,
+      "fr_wire_contact": fr_wire_found,
+      "pos_thigh_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._pos_thigh_ctrl_id]
+      ),
+      "aux_thigh_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._aux_thigh_ctrl_id]
+      ),
+      "pos_calf_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._pos_calf_ctrl_id]
+      ),
+      "aux_calf_actuator_force_global": float(
+        env.sim.data.actuator_force[0, act._aux_calf_ctrl_id]
+      ),
+      "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
+      "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
+      "calf_forward_dist": calf_forward_dist,
+      "calf_height_above_wire": calf_height_above_wire,
+      "calf_side_far": calf_side_far,
+      "foot_forward_dist": foot_forward_dist,
+      "calf_clearance_achieved": calf_clearance_achieved,
+      "foot_crossed_achieved": foot_crossed_achieved,
+      "crossing_achieved": crossing_achieved,
+      "release_counter": release_counter,
+      "recovery_failed_timeout_flag": recovery_failed_timeout_flag,
+      "released_sustained": released_sustained,
+      "genuine_recovery_complete": genuine_recovery_complete,
     }
 
   def do_step(step: int, action: torch.Tensor) -> dict:
@@ -461,7 +463,11 @@ def run(cfg: D517Config) -> Path:
       if pending["step"] is not None:
         row = do_step_post(pending["step"], pending["prev_phase"])
         rows.append(row)
-        if pending["step"] % 10 == 0 or row["calf_clearance_achieved"] or row["crossing_achieved"]:
+        if (
+          pending["step"] % 10 == 0
+          or row["calf_clearance_achieved"]
+          or row["crossing_achieved"]
+        ):
           print(
             f"[D5.17] step={pending['step']} phase={row['phase']} "
             f"holding={row['holding']} pos_act={row['pos_actuators_active']} "
@@ -477,7 +483,9 @@ def run(cfg: D517Config) -> Path:
       pending["prev_phase"] = prev_phase
       return torch.zeros(env.action_manager.action.shape, device=device)
 
-    print("[INFO] Debug mode: native viewer (DYNAMIC, real physics). Close window to end run.")
+    print(
+      "[INFO] Debug mode: native viewer (DYNAMIC, real physics). Close window to end run."
+    )
     try:
       NativeMujocoViewer(env, viewer_policy).run()
     except SystemExit:
@@ -515,7 +523,9 @@ def run(cfg: D517Config) -> Path:
     f.write(f"stage1_first_latch_step={state['stage1_first_step']}\n")
     f.write(f"stage2_first_latch_step={state['stage2_first_step']}\n")
   print(f"[D5.17] wrote {csv_path}")
-  print(f"  condition={cfg.condition} trigger_step={trigger_step} handoff_step={handoff_step} reason={handoff_reason}")
+  print(
+    f"  condition={cfg.condition} trigger_step={trigger_step} handoff_step={handoff_step} reason={handoff_reason}"
+  )
   print(f"  {state['exit_line']}")
   print(f"  stage1_first_latch_step={state['stage1_first_step']}")
   print(f"  stage2_first_latch_step={state['stage2_first_step']}")

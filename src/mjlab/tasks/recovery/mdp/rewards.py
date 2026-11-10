@@ -401,7 +401,7 @@ def residual_magnitude_penalty(
     Penalty tensor of shape [B] (always >= 0).
   """
   term = _get_action_term(env, action_term_name)
-  return torch.sum(term.raw_action ** 2, dim=-1)
+  return torch.sum(term.raw_action**2, dim=-1)
 
 
 def affected_leg_joint_vel_penalty(
@@ -420,7 +420,7 @@ def affected_leg_joint_vel_penalty(
   jids = _affected_leg_joint_ids(env, leg_name, asset_cfg)
   jids_t = torch.as_tensor(jids, device=env.device, dtype=torch.long)
   joint_vel = asset.data.joint_vel[:, jids_t]
-  return torch.sum(joint_vel ** 2, dim=-1)
+  return torch.sum(joint_vel**2, dim=-1)
 
 
 def residual_rate_penalty(
@@ -601,4 +601,3 @@ def wire_recovery_final_success_bonus(
   """
   term = _get_action_term(env, action_term_name)
   return term.newly_succeeded.float()
-

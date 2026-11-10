@@ -42,15 +42,28 @@ act.newly_entangled[:] = False
 for _ in range(10):
   env.step(zero)
 
-gainprm_thigh_env0 = env.sim.model.actuator_gainprm[0, act._pos_thigh_ctrl_id, :3].tolist()
-gainprm_thigh_env1 = env.sim.model.actuator_gainprm[1, act._pos_thigh_ctrl_id, :3].tolist()
+gainprm_thigh_env0 = env.sim.model.actuator_gainprm[
+  0, act._pos_thigh_ctrl_id, :3
+].tolist()
+gainprm_thigh_env1 = env.sim.model.actuator_gainprm[
+  1, act._pos_thigh_ctrl_id, :3
+].tolist()
 aux_gain_env0 = env.sim.model.actuator_gainprm[0, act._aux_thigh_ctrl_id, :3].tolist()
 aux_gain_env1 = env.sim.model.actuator_gainprm[1, act._aux_thigh_ctrl_id, :3].tolist()
 
-print("RESULT env0_thigh_pos_gain (should be 0,0,0 -- in RECOVERY):", gainprm_thigh_env0)
-print("RESULT env1_thigh_pos_gain (should be [20,0,0] -- unaffected):", gainprm_thigh_env1)
+print(
+  "RESULT env0_thigh_pos_gain (should be 0,0,0 -- in RECOVERY):", gainprm_thigh_env0
+)
+print(
+  "RESULT env1_thigh_pos_gain (should be [20,0,0] -- unaffected):", gainprm_thigh_env1
+)
 print("RESULT env0_aux_thigh_gain (should be nonzero -- active):", aux_gain_env0)
 print("RESULT env1_aux_thigh_gain (should be 0,0,0 -- inactive):", aux_gain_env1)
-print("RESULT isolation_ok:", gainprm_thigh_env1[0] == 20.0 and aux_gain_env1[0] == 0.0 and gainprm_thigh_env0[0] == 0.0)
+print(
+  "RESULT isolation_ok:",
+  gainprm_thigh_env1[0] == 20.0
+  and aux_gain_env1[0] == 0.0
+  and gainprm_thigh_env0[0] == 0.0,
+)
 
 env.close()

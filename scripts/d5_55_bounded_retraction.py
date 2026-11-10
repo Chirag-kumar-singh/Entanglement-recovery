@@ -100,6 +100,21 @@ class BoundedRetraction:
     self.events.append({"step": self.step, "msg": msg})
     print(f"[D5.55] step={self.step} {msg}")
 
+  def _reset_two_phase_state(self, *, reset_switch_step: bool) -> None:
+    """Clear two-phase advance state if this build has it (it is optional)."""
+    act = self.act
+    for name, value in (
+      ("hybrid_two_phase_advance_active", False),
+      ("two_phase_lift_counter", 0),
+    ):
+      buf = getattr(act, name, None)
+      if buf is not None:
+        buf[0] = value
+    if reset_switch_step:
+      buf = getattr(act, "two_phase_switch_step", None)
+      if buf is not None:
+        buf[0] = -1
+
   def _enable_hybrid_gains(self) -> None:
     act, env = self.act, self.env
     m = env.sim.model
@@ -162,9 +177,7 @@ class BoundedRetraction:
     # retract command based on `in_recovery` alone and undo our pause). ---
     if bool(act.newly_entangled[0]):
       self._enable_hybrid_gains()
-      act.hybrid_two_phase_advance_active[0] = False
-      act.two_phase_lift_counter[0] = 0
-      act.two_phase_switch_step[0] = -1
+      self._reset_two_phase_state(reset_switch_step=True)
       act._peak_armed[0] = False
       act._peak_running_max[0] = act.foot_height_above_wire[0]
       act._peak_entry_height[0] = act.foot_height_above_wire[0]
@@ -189,8 +202,7 @@ class BoundedRetraction:
     if bool(act.newly_recovered[0]):
       if self.status != "IDLE":
         self._restore_walking_gains()
-      act.hybrid_two_phase_advance_active[0] = False
-      act.two_phase_lift_counter[0] = 0
+      self._reset_two_phase_state(reset_switch_step=False)
       self._log(f"EXIT recovery (status was {self.status}, cycle {self.cycle})")
       self.status = "IDLE"
 
@@ -235,10 +247,10 @@ class BoundedRetraction:
     act.hybrid_thigh_vel_ctrl = thigh_vel_cmd
     act.hybrid_calf_torque_ctrl = calf_torque_cmd
     act._entity.set_joint_velocity_target(
-      thigh_vel_cmd.unsqueeze(-1), joint_ids=act._hybrid_thigh_joint_ids
+      thigh_vel_cmd.unsqueeze(-1), joint_ids=[act._hybrid_thigh_joint_id]
     )
     act._entity.set_joint_effort_target(
-      calf_torque_cmd.unsqueeze(-1), joint_ids=act._hybrid_calf_joint_ids
+      calf_torque_cmd.unsqueeze(-1), joint_ids=[act._hybrid_calf_joint_id]
     )
 
 

@@ -113,7 +113,9 @@ def local_wire_xz_at_y(
   def _interp(coord_idx: int) -> torch.Tensor:
     c_below = seg_pos[..., coord_idx].gather(-1, idx_below.unsqueeze(-1)).squeeze(-1)
     c_above = seg_pos[..., coord_idx].gather(-1, idx_above.unsqueeze(-1)).squeeze(-1)
-    c_nearest = seg_pos[..., coord_idx].gather(-1, nearest_idx.unsqueeze(-1)).squeeze(-1)
+    c_nearest = (
+      seg_pos[..., coord_idx].gather(-1, nearest_idx.unsqueeze(-1)).squeeze(-1)
+    )
     interpolated = c_below + w * (c_above - c_below)
     return torch.where(valid, interpolated, c_nearest)
 
@@ -150,4 +152,3 @@ def signed_forward_distance(
   """
   delta = point_xy - wire_local_xy  # [B, 2]
   return torch.sum(delta * forward_dir_xy, dim=-1)
-

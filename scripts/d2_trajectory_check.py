@@ -129,9 +129,7 @@ def build_row(
     unaffected_mask[i] = False
   if a_walk is not None and a_final is not None:
     other9_unchanged = bool(
-      torch.allclose(
-        a_walk[0, unaffected_mask], a_final[0, unaffected_mask], atol=1e-6
-      )
+      torch.allclose(a_walk[0, unaffected_mask], a_final[0, unaffected_mask], atol=1e-6)
     )
     walk_thigh = float(a_walk[0, affected_idx[1]])
     walk_calf = float(a_walk[0, affected_idx[2]])
@@ -152,7 +150,9 @@ def build_row(
   exit_reason = ""
   if phase == PHASE_POST_RECOVERY:
     exit_reason = (
-      "cap_timeout" if bool(action_term.recovery_failed_timeout[0]) else "crossing+release"
+      "cap_timeout"
+      if bool(action_term.recovery_failed_timeout[0])
+      else "crossing+release"
     )
 
   row = {
@@ -365,8 +365,12 @@ def _make_plots(rows: list[dict], out_dir: Path) -> None:
 
   # Plot C: clearance.
   fig, ax = plt.subplots(figsize=(8, 4))
-  ax.plot(t, [r["foot_height_above_wire"] for r in rows], label="foot_height_above_wire")
-  ax.plot(t, [r["calf_height_above_wire"] for r in rows], label="calf_height_above_wire")
+  ax.plot(
+    t, [r["foot_height_above_wire"] for r in rows], label="foot_height_above_wire"
+  )
+  ax.plot(
+    t, [r["calf_height_above_wire"] for r in rows], label="calf_height_above_wire"
+  )
   ax.plot(
     t,
     [r["foot_forward_dist_to_wire"] for r in rows],

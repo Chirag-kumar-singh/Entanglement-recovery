@@ -26,7 +26,9 @@ import torch
 
 def run_one(thigh_vel_sign: float, calf_torque_sign: float, n_steps: int = 40):
   cfg = go2_wire_recovery_residual_env_cfg(
-    affected_leg_idx=0, num_envs=1, recovery_mode="hybrid",
+    affected_leg_idx=0,
+    num_envs=1,
+    recovery_mode="hybrid",
     policy_device="cpu",
     recovery_thigh_velocity=2.0 * thigh_vel_sign,
     recovery_calf_torque=5.0 * calf_torque_sign,
@@ -84,8 +86,12 @@ def run_one(thigh_vel_sign: float, calf_torque_sign: float, n_steps: int = 40):
   act._apply_hybrid_actuators()
   act.newly_recovered[:] = False
 
-  gainprm_thigh_pos_after = env.sim.model.actuator_gainprm[0, act._pos_thigh_ctrl_id, :3].clone()
-  gainprm_aux_thigh_after = env.sim.model.actuator_gainprm[0, act._aux_thigh_ctrl_id, :3].clone()
+  gainprm_thigh_pos_after = env.sim.model.actuator_gainprm[
+    0, act._pos_thigh_ctrl_id, :3
+  ].clone()
+  gainprm_aux_thigh_after = env.sim.model.actuator_gainprm[
+    0, act._aux_thigh_ctrl_id, :3
+  ].clone()
 
   env.close()
   return {
@@ -93,12 +99,18 @@ def run_one(thigh_vel_sign: float, calf_torque_sign: float, n_steps: int = 40):
     "calf_delta": calf_end - calf_start,
     "foot_delta": (foot_end - foot_start).tolist(),
     "max_thigh_vel": max_thigh_vel,
-    "restored_pos_gain_ok": bool(torch.allclose(gainprm_thigh_pos_after, torch.tensor([20.0, 0.0, 0.0]), atol=1e-4)),
-    "aux_gain_off_after_exit": bool(torch.allclose(gainprm_aux_thigh_after, torch.zeros(3), atol=1e-4)),
+    "restored_pos_gain_ok": bool(
+      torch.allclose(gainprm_thigh_pos_after, torch.tensor([20.0, 0.0, 0.0]), atol=1e-4)
+    ),
+    "aux_gain_off_after_exit": bool(
+      torch.allclose(gainprm_aux_thigh_after, torch.zeros(3), atol=1e-4)
+    ),
   }
 
 
-print("=== sign combo: thigh_vel=-1 (negative cmd), calf_torque=-1 (negative cmd) [current config default sign] ===")
+print(
+  "=== sign combo: thigh_vel=-1 (negative cmd), calf_torque=-1 (negative cmd) [current config default sign] ==="
+)
 r = run_one(thigh_vel_sign=1.0, calf_torque_sign=1.0)
 for k, v in r.items():
   print(" ", k, "=", v)

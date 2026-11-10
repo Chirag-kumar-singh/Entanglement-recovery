@@ -218,7 +218,9 @@ def _restore_snapshot(
   all_joints = torch.arange(len(robot.joint_names), device=env.device)
   env_ids = torch.tensor([0], device=env.device)
   robot.write_root_link_pose_to_sim(snapshot.root_pose_w.unsqueeze(0), env_ids=env_ids)
-  robot.write_root_link_velocity_to_sim(snapshot.root_vel_w.unsqueeze(0), env_ids=env_ids)
+  robot.write_root_link_velocity_to_sim(
+    snapshot.root_vel_w.unsqueeze(0), env_ids=env_ids
+  )
   robot.write_joint_state_to_sim(
     snapshot.joint_pos.unsqueeze(0),
     snapshot.joint_vel.unsqueeze(0),
@@ -247,7 +249,10 @@ def _restore_snapshot(
     "wire_contact_after_restore": float(actual_wire_contact),
     "wire_contact_force_mag_n_after_restore": float(
       torch.linalg.norm(
-        env.scene.sensors[wire_contact_sensor_name].data.force[0].reshape(-1, 3).sum(dim=0)
+        env.scene.sensors[wire_contact_sensor_name]
+        .data.force[0]
+        .reshape(-1, 3)
+        .sum(dim=0)
       ).item()
       if env.scene.sensors[wire_contact_sensor_name].data.force is not None
       else 0.0
@@ -297,11 +302,15 @@ def _run_episode(
   post_recovery_entered = False
 
   for step in range(max_steps):
-    pre_snapshot_row = _capture_snapshot(env, act, pre_step=True, step=step, recovery_entry_step=recovery_entry_step)
+    pre_snapshot_row = _capture_snapshot(
+      env, act, pre_step=True, step=step, recovery_entry_step=recovery_entry_step
+    )
     actions = torch.zeros(1, env.action_manager.total_action_dim, device=env.device)
     _obs, _rew, terminateds, truncateds, _info = env.step(actions)
 
-    row = _capture_snapshot(env, act, pre_step=False, step=step, recovery_entry_step=recovery_entry_step)
+    row = _capture_snapshot(
+      env, act, pre_step=False, step=step, recovery_entry_step=recovery_entry_step
+    )
     row.update(
       {
         "label": run.label,
@@ -315,8 +324,12 @@ def _run_episode(
     phase = int(act.phase[0].item())
     max_calf_forward = max(max_calf_forward, float(act.calf_forward_dist[0].item()))
     max_foot_forward = max(max_foot_forward, float(act.foot_forward_dist[0].item()))
-    max_base_forward = max(max_base_forward, float(env.scene["robot"].data.root_link_lin_vel_b[0, 0].item()))
-    min_base_vertical = min(min_base_vertical, float(env.scene["robot"].data.root_link_lin_vel_b[0, 2].item()))
+    max_base_forward = max(
+      max_base_forward, float(env.scene["robot"].data.root_link_lin_vel_b[0, 0].item())
+    )
+    min_base_vertical = min(
+      min_base_vertical, float(env.scene["robot"].data.root_link_lin_vel_b[0, 2].item())
+    )
     if first_positive_calf_step < 0 and float(act.calf_forward_dist[0].item()) > 0.0:
       first_positive_calf_step = step
     if first_stage1_step < 0 and bool(act.calf_clearance_achieved[0].item()):
@@ -341,23 +354,37 @@ def _run_episode(
         qpos=torch.tensor(pre_snapshot_row["qpos"], device=env.device),
         qvel=torch.tensor(pre_snapshot_row["qvel"], device=env.device),
         wire_contact=bool(pre_snapshot_row["wire_contact"]),
-        wire_contact_force_mag_n=float(
-          pre_snapshot_row["wire_contact_force_mag_n"]
-        ),
+        wire_contact_force_mag_n=float(pre_snapshot_row["wire_contact_force_mag_n"]),
         base_lin_vel_w=torch.tensor(
-          [pre_snapshot_row["base_lin_vel_w_x_mps"], pre_snapshot_row["base_lin_vel_w_y_mps"], pre_snapshot_row["base_lin_vel_w_z_mps"]],
+          [
+            pre_snapshot_row["base_lin_vel_w_x_mps"],
+            pre_snapshot_row["base_lin_vel_w_y_mps"],
+            pre_snapshot_row["base_lin_vel_w_z_mps"],
+          ],
           device=env.device,
         ),
         base_lin_vel_b=torch.tensor(
-          [pre_snapshot_row["base_lin_vel_b_x_mps"], pre_snapshot_row["base_lin_vel_b_y_mps"], pre_snapshot_row["base_lin_vel_b_z_mps"]],
+          [
+            pre_snapshot_row["base_lin_vel_b_x_mps"],
+            pre_snapshot_row["base_lin_vel_b_y_mps"],
+            pre_snapshot_row["base_lin_vel_b_z_mps"],
+          ],
           device=env.device,
         ),
         base_ang_vel_w=torch.tensor(
-          [pre_snapshot_row["base_ang_vel_w_x_rps"], pre_snapshot_row["base_ang_vel_w_y_rps"], pre_snapshot_row["base_ang_vel_w_z_rps"]],
+          [
+            pre_snapshot_row["base_ang_vel_w_x_rps"],
+            pre_snapshot_row["base_ang_vel_w_y_rps"],
+            pre_snapshot_row["base_ang_vel_w_z_rps"],
+          ],
           device=env.device,
         ),
         projected_gravity_b=torch.tensor(
-          [pre_snapshot_row["projected_gravity_b_x"], pre_snapshot_row["projected_gravity_b_y"], pre_snapshot_row["projected_gravity_b_z"]],
+          [
+            pre_snapshot_row["projected_gravity_b_x"],
+            pre_snapshot_row["projected_gravity_b_y"],
+            pre_snapshot_row["projected_gravity_b_z"],
+          ],
           device=env.device,
         ),
         calf_forward_dist_m=float(pre_snapshot_row["fl_calf_forward_dist_m"]),
@@ -376,7 +403,8 @@ def _run_episode(
     if bool(act.newly_recovered[0].item()):
       recovery_exit_reason = (
         "crossing_release"
-        if bool(act.crossing_achieved[0].item()) and bool(act.release_achieved[0].item())
+        if bool(act.crossing_achieved[0].item())
+        and bool(act.release_achieved[0].item())
         else "cap_timeout"
       )
       post_recovery_entered = True
@@ -398,8 +426,12 @@ def _run_episode(
     "variant": "swap" if run.swap_source else "baseline",
     "swap_source": run.swap_source or "",
     "trace_csv": str(trace_path),
-    "entry_pre_step": int(entry_pre_snapshot.pre_entry_step) if entry_pre_snapshot else -1,
-    "recovery_entry_step": int(entry_pre_snapshot.recovery_entry_step) if entry_pre_snapshot else -1,
+    "entry_pre_step": int(entry_pre_snapshot.pre_entry_step)
+    if entry_pre_snapshot
+    else -1,
+    "recovery_entry_step": int(entry_pre_snapshot.recovery_entry_step)
+    if entry_pre_snapshot
+    else -1,
     "entry_snapshot_applied": swap_snapshot is not None,
     "entry_restore_root_pose_max_abs_diff": applied["root_pose_max_abs_diff"],
     "entry_restore_root_vel_max_abs_diff": applied["root_vel_max_abs_diff"],
@@ -408,17 +440,39 @@ def _run_episode(
     "entry_restore_qpos_max_abs_diff": applied["qpos_max_abs_diff"],
     "entry_restore_qvel_max_abs_diff": applied["qvel_max_abs_diff"],
     "entry_restore_wire_contact": applied["wire_contact_after_restore"],
-    "entry_restore_wire_contact_force_mag_n": applied["wire_contact_force_mag_n_after_restore"],
-    "entry_snapshot_wire_contact": entry_pre_snapshot.wire_contact if entry_pre_snapshot else False,
-    "entry_snapshot_wire_contact_force_mag_n": entry_pre_snapshot.wire_contact_force_mag_n if entry_pre_snapshot else float("nan"),
-    "entry_snapshot_base_vx_mps": float(entry_pre_snapshot.base_lin_vel_b[0].item()) if entry_pre_snapshot else float("nan"),
-    "entry_snapshot_base_vz_mps": float(entry_pre_snapshot.base_lin_vel_b[2].item()) if entry_pre_snapshot else float("nan"),
-    "entry_snapshot_calf_forward_dist_m": entry_pre_snapshot.calf_forward_dist_m if entry_pre_snapshot else float("nan"),
-    "entry_snapshot_foot_forward_dist_m": entry_pre_snapshot.foot_forward_dist_m if entry_pre_snapshot else float("nan"),
-    "entry_snapshot_thigh_pos_rad": entry_pre_snapshot.fl_thigh_pos_rad if entry_pre_snapshot else float("nan"),
-    "entry_snapshot_calf_pos_rad": entry_pre_snapshot.fl_calf_pos_rad if entry_pre_snapshot else float("nan"),
-    "entry_snapshot_thigh_vel_radps": entry_pre_snapshot.fl_thigh_vel_radps if entry_pre_snapshot else float("nan"),
-    "entry_snapshot_calf_vel_radps": entry_pre_snapshot.fl_calf_vel_radps if entry_pre_snapshot else float("nan"),
+    "entry_restore_wire_contact_force_mag_n": applied[
+      "wire_contact_force_mag_n_after_restore"
+    ],
+    "entry_snapshot_wire_contact": entry_pre_snapshot.wire_contact
+    if entry_pre_snapshot
+    else False,
+    "entry_snapshot_wire_contact_force_mag_n": entry_pre_snapshot.wire_contact_force_mag_n
+    if entry_pre_snapshot
+    else float("nan"),
+    "entry_snapshot_base_vx_mps": float(entry_pre_snapshot.base_lin_vel_b[0].item())
+    if entry_pre_snapshot
+    else float("nan"),
+    "entry_snapshot_base_vz_mps": float(entry_pre_snapshot.base_lin_vel_b[2].item())
+    if entry_pre_snapshot
+    else float("nan"),
+    "entry_snapshot_calf_forward_dist_m": entry_pre_snapshot.calf_forward_dist_m
+    if entry_pre_snapshot
+    else float("nan"),
+    "entry_snapshot_foot_forward_dist_m": entry_pre_snapshot.foot_forward_dist_m
+    if entry_pre_snapshot
+    else float("nan"),
+    "entry_snapshot_thigh_pos_rad": entry_pre_snapshot.fl_thigh_pos_rad
+    if entry_pre_snapshot
+    else float("nan"),
+    "entry_snapshot_calf_pos_rad": entry_pre_snapshot.fl_calf_pos_rad
+    if entry_pre_snapshot
+    else float("nan"),
+    "entry_snapshot_thigh_vel_radps": entry_pre_snapshot.fl_thigh_vel_radps
+    if entry_pre_snapshot
+    else float("nan"),
+    "entry_snapshot_calf_vel_radps": entry_pre_snapshot.fl_calf_vel_radps
+    if entry_pre_snapshot
+    else float("nan"),
     "first_stage1_step": first_stage1_step,
     "first_stage2_step": first_stage2_step,
     "first_cross_step": first_cross_step,
@@ -489,10 +543,18 @@ def _aligned_window(
     if all(maps[label].get(rel_step) is not None for label in maps):
       source0 = maps["seed0_baseline"][rel_step]
       source11 = maps["seed11_baseline"][rel_step]
-      row["delta_base_lin_vel_b_x_mps"] = float(source11["base_lin_vel_b_x_mps"]) - float(source0["base_lin_vel_b_x_mps"])
-      row["delta_base_lin_vel_b_z_mps"] = float(source11["base_lin_vel_b_z_mps"]) - float(source0["base_lin_vel_b_z_mps"])
-      row["delta_fl_calf_forward_dist_m"] = float(source11["fl_calf_forward_dist_m"]) - float(source0["fl_calf_forward_dist_m"])
-      row["delta_fl_foot_forward_dist_m"] = float(source11["fl_foot_forward_dist_m"]) - float(source0["fl_foot_forward_dist_m"])
+      row["delta_base_lin_vel_b_x_mps"] = float(
+        source11["base_lin_vel_b_x_mps"]
+      ) - float(source0["base_lin_vel_b_x_mps"])
+      row["delta_base_lin_vel_b_z_mps"] = float(
+        source11["base_lin_vel_b_z_mps"]
+      ) - float(source0["base_lin_vel_b_z_mps"])
+      row["delta_fl_calf_forward_dist_m"] = float(
+        source11["fl_calf_forward_dist_m"]
+      ) - float(source0["fl_calf_forward_dist_m"])
+      row["delta_fl_foot_forward_dist_m"] = float(
+        source11["fl_foot_forward_dist_m"]
+      ) - float(source0["fl_foot_forward_dist_m"])
     aligned.append(row)
   return aligned
 
@@ -560,7 +622,9 @@ def main() -> None:
   )
   summaries[swap_run.label] = swap_summary
   traces[swap_run.label] = swap_rows
-  snapshots[swap_run.label] = swap_snapshot if swap_snapshot is not None else snapshots[swap_run.swap_source]
+  snapshots[swap_run.label] = (
+    swap_snapshot if swap_snapshot is not None else snapshots[swap_run.swap_source]
+  )
 
   summary_csv = out_dir / "summary.csv"
   _write_csv(summary_csv, list(summaries.values()))

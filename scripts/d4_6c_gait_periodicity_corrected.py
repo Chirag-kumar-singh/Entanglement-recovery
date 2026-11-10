@@ -68,7 +68,9 @@ def hip_wire_contact(pairs: list[tuple[str, str]]) -> bool:
 
 
 def analyze_seed(seed: int, lines: list[str]) -> None:
-  listing_path = Path(f"logs/d4_6_support_descent_timing/seed{seed}_full/contact_listing.txt")
+  listing_path = Path(
+    f"logs/d4_6_support_descent_timing/seed{seed}_full/contact_listing.txt"
+  )
   pairs_by_step = parse_contact_listing(listing_path)
   steps = sorted(pairs_by_step.keys())
 
@@ -83,9 +85,7 @@ def analyze_seed(seed: int, lines: list[str]) -> None:
     pre_entry_runs = [r for r in leg_runs if r[1] < RECOVERY_ENTRY_STEP]
     # Runs that start before 44 but end at/after 44 are CONTAMINATED and
     # explicitly excluded (this is exactly the step 32-46 bug being fixed).
-    contaminated_runs = [
-      r for r in leg_runs if r[0] < RECOVERY_ENTRY_STEP <= r[1]
-    ]
+    contaminated_runs = [r for r in leg_runs if r[0] < RECOVERY_ENTRY_STEP <= r[1]]
 
     lines.append(f"\n  -- {leg} --")
     lines.append("  ALL runs (step range : state) [* = excluded, crosses step 44]:")
@@ -97,7 +97,9 @@ def analyze_seed(seed: int, lines: list[str]) -> None:
     # Complete pre-entry CYCLES: a cycle is a (stance, swing) or
     # (swing, stance) pair that is fully resolved (both runs end < 44).
     complete_pre_entry_runs = pre_entry_runs
-    lines.append(f"\n  Strictly pre-entry (end < step {RECOVERY_ENTRY_STEP}) COMPLETE runs only:")
+    lines.append(
+      f"\n  Strictly pre-entry (end < step {RECOVERY_ENTRY_STEP}) COMPLETE runs only:"
+    )
     for r in complete_pre_entry_runs:
       state = "STANCE" if r[2] else "SWING"
       dur = r[1] - r[0] + 1
@@ -114,7 +116,7 @@ def analyze_seed(seed: int, lines: list[str]) -> None:
     )
     if swing_durs:
       lines.append(
-        f"  Mean pre-entry swing duration: {sum(swing_durs)/len(swing_durs):.2f} steps "
+        f"  Mean pre-entry swing duration: {sum(swing_durs) / len(swing_durs):.2f} steps "
         f"(n={n_complete_swing_cycles} cycle{'s' if n_complete_swing_cycles != 1 else ''})"
       )
     else:
@@ -211,7 +213,9 @@ def main() -> None:
   for seed in (0, 1):
     analyze_seed(seed, lines)
 
-  out_path = Path("logs/d4_6_support_descent_timing/gait_periodicity_corrected_report.txt")
+  out_path = Path(
+    "logs/d4_6_support_descent_timing/gait_periodicity_corrected_report.txt"
+  )
   out_path.write_text("\n".join(lines) + "\n")
   print("\n".join(lines))
   print(f"\n[D4.6c] report written: {out_path}")

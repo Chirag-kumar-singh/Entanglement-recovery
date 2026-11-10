@@ -48,14 +48,20 @@ def load_points():
   with open(REP_POINTS_CSV) as f:
     reader = csv.DictReader(f)
     for row in reader:
-      points.append((row["label"], float(row["thigh"]), float(row["calf"]), float(row["hip"])))
+      points.append(
+        (row["label"], float(row["thigh"]), float(row["calf"]), float(row["hip"]))
+      )
   return points
 
 
 def main():
   device = "cpu"
   cfg = go2_wire_recovery_residual_env_cfg(
-    affected_leg_idx=0, num_envs=1, recovery_mode="hybrid", policy_device=device, play=True
+    affected_leg_idx=0,
+    num_envs=1,
+    recovery_mode="hybrid",
+    policy_device=device,
+    play=True,
   )
   cfg.sim.device = device
   env = ManagerBasedRlEnv(cfg=cfg, device=device)
