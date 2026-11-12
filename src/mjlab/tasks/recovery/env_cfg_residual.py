@@ -24,10 +24,8 @@ validated in mjlab.tasks.recovery.env_cfg_wire's physical verification
 
 from __future__ import annotations
 
-import math
-from dataclasses import asdict
-
 import dataclasses
+import math
 
 from mjlab.asset_zoo.robots import get_go2_robot_cfg
 from mjlab.asset_zoo.robots.unitree_go2.go2_constants import (
@@ -36,13 +34,12 @@ from mjlab.asset_zoo.robots.unitree_go2.go2_constants import (
 )
 from mjlab.envs import ManagerBasedRlEnvCfg
 from mjlab.envs import mdp as envs_mdp
-from mjlab.managers.command_manager import CommandTermCfg
 from mjlab.managers.event_manager import EventTermCfg
+from mjlab.managers.metrics_manager import MetricsTermCfg
 from mjlab.managers.observation_manager import ObservationGroupCfg, ObservationTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.managers.termination_manager import TerminationTermCfg
-from mjlab.managers.metrics_manager import MetricsTermCfg
 from mjlab.scene import SceneCfg
 from mjlab.sensor import ContactMatch, ContactSensorCfg
 from mjlab.sim import MujocoCfg, SimulationCfg
@@ -50,7 +47,6 @@ from mjlab.tasks.cable_test.ball_cable import BallCableCfg, build_ball_cable_spe
 from mjlab.tasks.recovery import mdp
 from mjlab.tasks.recovery.mdp.actions import ResidualRecoveryActionCfg
 from mjlab.tasks.velocity.mdp.velocity_command import (
-  UniformVelocityCommand,
   UniformVelocityCommandCfg,
 )
 from mjlab.terrains.terrain_entity import TerrainEntityCfg
@@ -175,6 +171,11 @@ def go2_wire_recovery_residual_env_cfg(
   post_recovery_stable_steps: int = 15,
   play: bool = False,
   recovery_mode: str = "ppo_residual",
+  contact_gated_override: bool = False,
+  action_overrides: dict | None = None,
+  obstructed_release_steps: int = 3,
+  obstructed_min_hold_steps: int = 4,
+  max_thigh_retract: float = 0.5,
   thigh_recovery_delta: float = 0.3,
   calf_recovery_delta: float = -0.3,
   recovery_thigh_velocity: float = -2.0,
@@ -270,6 +271,10 @@ def go2_wire_recovery_residual_env_cfg(
       release_required_steps=release_required_steps,
       post_recovery_stable_steps=post_recovery_stable_steps,
       recovery_mode=recovery_mode,
+      contact_gated_override=contact_gated_override,
+      obstructed_release_steps=obstructed_release_steps,
+      obstructed_min_hold_steps=obstructed_min_hold_steps,
+      max_thigh_retract=max_thigh_retract,
       thigh_recovery_delta=thigh_recovery_delta,
       calf_recovery_delta=calf_recovery_delta,
       recovery_thigh_velocity=recovery_thigh_velocity,
@@ -280,6 +285,7 @@ def go2_wire_recovery_residual_env_cfg(
       peak_detector_decline_eps=peak_detector_decline_eps,
       peak_detector_confirm_steps=peak_detector_confirm_steps,
       phase_aware_thresholds=phase_aware_thresholds,
+      **(action_overrides or {}),
     )
   }
 

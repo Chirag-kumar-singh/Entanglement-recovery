@@ -111,10 +111,38 @@ class D558Config:
   which is the direction a REAR leg needs -- see `run` docstring."""
   recovery_calf_torque: float = 5.0
   """Production default open-loop calf flexion torque magnitude."""
+  recovery_mode: str = "hybrid"
+  """"hybrid" (legacy override) or "scripted_step" (IK step over the wire).
+  scripted_step needs --max-recovery-steps-override >= 8+10+8+6 (=32)."""
+  step_lift_height: float = 0.20
+  step_back: float = 0.12
+  step_advance: float = 0.30
+  step_lift_steps: int = 8
+  step_advance_steps: int = 10
+  step_descend_steps: int = 8
+  step_blend_steps: int = 6
+  step_wait_for_swing: bool | None = None
+  """None = auto: True for FL only. FL's wire contact coincides with the
+  FR/RL swing onset, so lifting immediately leaves one foot on the ground;
+  waiting for FL's own swing onset fixes that (4/4 seeds). It hurt FR
+  (0/4) and RR (3/4 vs 4/4), so those keep the immediate step."""
+  contact_gated: bool = False
+  """Enable the contact-gated obstructed-swing override (opt-in)."""
+  max_thigh_retract: float = 0.5
+  obstructed_release_steps: int = 3
+  obstructed_min_hold_steps: int = 4
   out_dir: str = ""
   debug: bool = False
   """Open the native MuJoCo viewer (real physics, same deterministic
   rollout and identical CSV output) instead of running headless."""
+
+
+def _act_force(act, attr: str) -> float:
+  """Actuator force for a hybrid-mode actuator id; 0.0 when the mode has
+  no such actuator (e.g. scripted_step)."""
+  if not hasattr(act, attr):
+    return 0.0
+  return float(act._env.sim.data.actuator_force[0, getattr(act, attr)])
 
 
 def build_leg_env(cfg: D558Config, device: str):
@@ -131,7 +159,7 @@ def build_leg_env(cfg: D558Config, device: str):
   env_cfg = go2_wire_recovery_residual_env_cfg(
     affected_leg_idx=LEG_IDX[leg],
     num_envs=1,
-    recovery_mode="hybrid",
+    recovery_mode=cfg.recovery_mode,
     policy_device=device,
     play=True,
     wire_cfg=wire,
@@ -139,6 +167,22 @@ def build_leg_env(cfg: D558Config, device: str):
     max_recovery_steps=cfg.max_recovery_steps_override,
     recovery_thigh_velocity=cfg.recovery_thigh_velocity,
     recovery_calf_torque=cfg.recovery_calf_torque,
+    contact_gated_override=cfg.contact_gated,
+    action_overrides={
+      "step_lift_height": cfg.step_lift_height,
+      "step_back": cfg.step_back,
+      "step_advance": cfg.step_advance,
+      "step_lift_steps": cfg.step_lift_steps,
+      "step_advance_steps": cfg.step_advance_steps,
+      "step_descend_steps": cfg.step_descend_steps,
+      "step_blend_steps": cfg.step_blend_steps,
+      "step_wait_for_swing": (
+        cfg.leg == "FL" if cfg.step_wait_for_swing is None else cfg.step_wait_for_swing
+      ),
+    },
+    max_thigh_retract=cfg.max_thigh_retract,
+    obstructed_release_steps=cfg.obstructed_release_steps,
+    obstructed_min_hold_steps=cfg.obstructed_min_hold_steps,
   )
   env_cfg.seed = cfg.seed
   env_cfg.sim.device = device
@@ -318,6 +362,12 @@ def run(cfg: D558Config) -> Path:
       "phase": new_phase,
       "recovery_elapsed": int(act.recovery_elapsed[0]),
       "foot_z": float(foot_pos[2]),
+      **{
+        f"{n}_foot_z": float(
+          entity.data.site_pos_w[0, list(entity.site_names).index(n), 2]
+        )
+        for n in LEG_NAMES
+      },
       "foot_vz": float(entity.data.site_lin_vel_w[0, act._foot_site_idx, 2]),
       "foot_height_above_wire": float(act.foot_height_above_wire[0]),
       "hip_pos": float(qpos[hip_i]),
@@ -332,20 +382,20 @@ def run(cfg: D558Config) -> Path:
       "target_ground_contact": ground_found,
       "target_hip_wire_contact_raw": hip_wire_contact_now,
       "target_calf_wire_contact_raw": calf_wire_contact_now,
-      "pos_thigh_actuator_force_global": float(
-        env.sim.data.actuator_force[0, act._pos_thigh_ctrl_id]
+      "pos_thigh_actuator_force_global": _act_force(act, "_pos_thigh_ctrl_id"),
+      "aux_thigh_actuator_force_global": _act_force(act, "_aux_thigh_ctrl_id"),
+      "pos_calf_actuator_force_global": _act_force(act, "_pos_calf_ctrl_id"),
+      "aux_calf_actuator_force_global": _act_force(act, "_aux_calf_ctrl_id"),
+      "thigh_vel_cmd": (
+        float(act.hybrid_thigh_vel_ctrl[0])
+        if hasattr(act, "hybrid_thigh_vel_ctrl")
+        else 0.0
       ),
-      "aux_thigh_actuator_force_global": float(
-        env.sim.data.actuator_force[0, act._aux_thigh_ctrl_id]
+      "calf_torque_cmd": (
+        float(act.hybrid_calf_torque_ctrl[0])
+        if hasattr(act, "hybrid_calf_torque_ctrl")
+        else 0.0
       ),
-      "pos_calf_actuator_force_global": float(
-        env.sim.data.actuator_force[0, act._pos_calf_ctrl_id]
-      ),
-      "aux_calf_actuator_force_global": float(
-        env.sim.data.actuator_force[0, act._aux_calf_ctrl_id]
-      ),
-      "thigh_vel_cmd": float(act.hybrid_thigh_vel_ctrl[0]),
-      "calf_torque_cmd": float(act.hybrid_calf_torque_ctrl[0]),
       "calf_forward_dist": calf_forward_dist,
       "calf_height_above_wire": calf_height_above_wire,
       "calf_side_far": calf_side_far,
@@ -434,8 +484,10 @@ def run(cfg: D558Config) -> Path:
     f"max_steps={max_steps}",
     f"ablate_hip_wire={cfg.ablate_hip_wire}",
     f"max_recovery_steps_override={cfg.max_recovery_steps_override}",
+    f"recovery_mode={cfg.recovery_mode}",
     f"recovery_thigh_velocity={cfg.recovery_thigh_velocity}",
     f"recovery_calf_torque={cfg.recovery_calf_torque}",
+    f"contact_gated={cfg.contact_gated} max_thigh_retract={cfg.max_thigh_retract}",
     f"wire_cfg={PER_LEG_WIRE_CFG[leg]}",
     f"spawn_y={PER_LEG_SPAWN_Y}",
     f"{state['enter_line']}",

@@ -75,16 +75,15 @@ call wrapped in torch.no_grad()).
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import math
-from typing import Literal, TYPE_CHECKING
+from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING, Literal
 
 import torch
 from tensordict import TensorDict
 
 from mjlab.envs.mdp.actions.actions import JointPositionAction, JointPositionActionCfg
 from mjlab.managers.action_manager import ActionTerm, ActionTermCfg
-from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.sensor import BuiltinSensor
 
 if TYPE_CHECKING:
@@ -217,7 +216,9 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   #     states) -- it is a single constant command held for the entire
   #     RECOVERY phase, gated on/off by the exact same phase mask used
   #     by the PPO path.
-  recovery_mode: Literal["ppo_residual", "deterministic", "hybrid"] = "ppo_residual"
+  recovery_mode: Literal["ppo_residual", "deterministic", "hybrid", "scripted_step"] = (
+    "ppo_residual"
+  )
   """Source of the affected-leg recovery behavior during RECOVERY. See
   class docstring addendum above. Default preserves all prior behavior
   unchanged (existing PPO-residual tasks are unaffected).
@@ -380,6 +381,73 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   satisfies "require a genuine decrease after a preceding rise, rather
   than triggering on a single noisy sample" while still reacting
   promptly (at 0.02s/step, this is a 0.02-0.04s detection latency)."""
+
+  # --- "scripted_step" mode: explicit sagittal-plane step over the wire ---
+  #
+  # On entering RECOVERY the affected leg's thigh/calf POSITION targets are
+  # REPLACED (not added to) by a foot-space trajectory converted to joint
+  # angles with 2-link inverse kinematics in the leg's sagittal plane
+  # (x forward, z up, origin at the thigh joint):
+  #   P0 (foot at entry) -> P1 (step_back behind, step_lift_height above)
+  #   -> P2 (step_advance ahead of P0, same height) -> P3 (P2 lowered to
+  #   the standing foot height). The ab/ad joint keeps following the
+  #   frozen walking policy. After the trajectory, the leg target is
+  #   blended back to the walking policy over step_blend_steps. The same
+  #   code serves all four legs (Go2 legs are kinematically identical in
+  #   the sagittal plane). The RECOVERY cap (max_recovery_steps) should be
+  #   >= total trajectory + blend steps.
+  step_lift_height: float = 0.20
+  """Foot lift (m) above its entry height."""
+  step_back: float = 0.12
+  """Backward foot motion (m) during the lift, to unhook from the wire."""
+  step_advance: float = 0.30
+  """Forward foot displacement (m) from entry x at the end of the step."""
+  step_land_extra: float = 0.02
+  """Extra downward foot target (m) below the standing foot height, so the
+  foot reliably reaches the ground at touchdown."""
+  step_lift_steps: int = 8
+  step_advance_steps: int = 10
+  step_descend_steps: int = 8
+  step_blend_steps: int = 6
+  step_wait_for_swing: bool = False
+  """If True, the scripted step starts only once the affected foot lifts
+  above `step_swing_trigger_z` (its own gait swing onset; in a trot the
+  diagonal-partner pair is planted then), or after `step_max_wait_steps`.
+  Until then the leg follows the walking policy. Avoids lifting a leg
+  while its neighbours are also leaving the ground (body drop)."""
+  step_swing_trigger_z: float = 0.04
+  """Foot-site height (m, world) that counts as swing onset."""
+  step_max_wait_steps: int = 14
+  """Fallback: start the step after this many RECOVERY steps regardless."""
+  step_thigh_length: float = 0.213
+  step_calf_length: float = 0.213
+
+  # --- Contact-gated obstructed-swing mode (opt-in, default OFF) ---
+  #
+  # Quad-SDK-inspired (per the project's audit notes; the controller
+  # source itself is NOT in the local quad-sdk copy, so this is an
+  # approximation, not a port): the hybrid override is an
+  # "obstructed swing" mode that is entered on wire contact and LEFT
+  # again (with hysteresis) once contact has cleared, handing the leg
+  # back to the frozen walking policy's normal forward swing. If the leg
+  # catches again the mode re-enters. The retract is also bounded.
+  contact_gated_override: bool = False
+  """If True, the hybrid thigh/calf override is active only while in
+  obstructed mode (see above), instead of for the entire RECOVERY
+  phase. Default False preserves the legacy latched behavior."""
+
+  obstructed_release_steps: int = 3
+  """Consecutive contact-free steps required to leave obstructed mode."""
+
+  obstructed_min_hold_steps: int = 4
+  """Minimum steps in obstructed mode before it may be left (analogue of
+  Quad-SDK's min_switch_ hysteresis)."""
+
+  max_thigh_retract: float = 0.5
+  """Max thigh angle excursion (rad) above its value at the start of
+  each obstructed episode; beyond it the thigh velocity command is
+  zeroed. 0 or negative disables the bound. Only used when
+  contact_gated_override is True."""
 
   # --- Recovery FSM (phase gating) ---
   #
@@ -800,6 +868,20 @@ class ResidualRecoveryAction(ActionTerm):
     if cfg.recovery_mode == "hybrid":
       self._init_hybrid_actuators(env)
 
+    # scripted_step bookkeeping (allocated unconditionally; cheap).
+    leg_name = LEG_NAMES[cfg.affected_leg_idx]
+    _jn = list(self._entity.joint_names)
+    self._step_thigh_jid = _jn.index(f"{leg_name}_thigh_joint")
+    self._step_calf_jid = _jn.index(f"{leg_name}_calf_joint")
+    self._step_p0 = torch.zeros(self.num_envs, 2, device=self.device)
+    self._step_started = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self._step_t0 = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+    _dj = self._entity.data.default_joint_pos
+    self._default_thigh = _dj[0, self._step_thigh_jid].clone()
+    self._default_calf = _dj[0, self._step_calf_jid].clone()
+
     # Lightweight debug state: only print on phase-transition EVENTS (not
     # every step), per the "do not spam logs" requirement.
     self._logged_entry_step: int = -1
@@ -955,6 +1037,23 @@ class ResidualRecoveryAction(ActionTerm):
       (self.num_envs,), -1, device=self.device, dtype=torch.long
     )
 
+    # Contact-gated obstructed-mode state (inert unless
+    # cfg.contact_gated_override).
+    self._override_active = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self._override_prev = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
+    self._override_age = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.long
+    )
+    self._override_clear_count = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.long
+    )
+    self._override_thigh_entry = torch.zeros(self.num_envs, device=self.device)
+    self._in_contact = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+
     self._hybrid_initialized = True
 
   def _apply_hybrid_actuators(self) -> None:
@@ -969,6 +1068,42 @@ class ResidualRecoveryAction(ActionTerm):
 
     enter_ids = self.newly_entangled.nonzero(as_tuple=True)[0]
     exit_ids = self.newly_recovered.nonzero(as_tuple=True)[0]
+
+    override_now = in_recovery
+    if self.cfg.contact_gated_override:
+      thigh_pos = self._entity.data.joint_pos[:, self._hybrid_thigh_joint_id]
+      contact = self._in_contact
+      active = self._override_active
+      # Leave obstructed mode: min hold elapsed and contact clear long enough.
+      self._override_clear_count = torch.where(
+        contact,
+        torch.zeros_like(self._override_clear_count),
+        self._override_clear_count + 1,
+      )
+      self._override_age = self._override_age + 1
+      leave = (
+        active
+        & (self._override_age >= self.cfg.obstructed_min_hold_steps)
+        & (self._override_clear_count >= self.cfg.obstructed_release_steps)
+      )
+      # (Re-)enter obstructed mode on contact while in recovery.
+      enter = in_recovery & (~active) & contact
+      active = (active & ~leave) | enter
+      active = active & in_recovery
+      self._override_age = torch.where(
+        enter, torch.zeros_like(self._override_age), self._override_age
+      )
+      self._override_clear_count = torch.where(
+        enter, torch.zeros_like(self._override_clear_count), self._override_clear_count
+      )
+      self._override_thigh_entry = torch.where(
+        enter, thigh_pos, self._override_thigh_entry
+      )
+      self._override_active = active
+      override_now = active
+      enter_ids = (override_now & ~self._override_prev).nonzero(as_tuple=True)[0]
+      exit_ids = (~override_now & self._override_prev).nonzero(as_tuple=True)[0]
+      self._override_prev = override_now.clone()
 
     if enter_ids.numel() > 0:
       gainprm_width = sim.model.actuator_gainprm.shape[-1]
@@ -1094,10 +1229,17 @@ class ResidualRecoveryAction(ActionTerm):
     # already be physically inert; writing zero here is a second,
     # redundant safeguard).
     thigh_vel_cmd = torch.where(
-      in_recovery,
+      override_now,
       torch.full_like(self.hybrid_thigh_vel_ctrl, -self.cfg.recovery_thigh_velocity),
       torch.zeros_like(self.hybrid_thigh_vel_ctrl),
     )
+    if self.cfg.contact_gated_override and self.cfg.max_thigh_retract > 0:
+      excursion = thigh_pos - self._override_thigh_entry
+      thigh_vel_cmd = torch.where(
+        excursion >= self.cfg.max_thigh_retract,
+        torch.zeros_like(thigh_vel_cmd),
+        thigh_vel_cmd,
+      )
     if self.cfg.experimental_peak_triggered_thigh_stop:
       # ONLY the thigh velocity command is affected -- calf torque,
       # ab/ad, and all FSM/phase logic are untouched. Uses the SAME
@@ -1112,7 +1254,7 @@ class ResidualRecoveryAction(ActionTerm):
         self._peak_triggered, torch.zeros_like(thigh_vel_cmd), thigh_vel_cmd
       )
     calf_torque_cmd = torch.where(
-      in_recovery,
+      override_now,
       torch.full_like(self.hybrid_calf_torque_ctrl, -self.cfg.recovery_calf_torque),
       torch.zeros_like(self.hybrid_calf_torque_ctrl),
     )
@@ -1236,6 +1378,13 @@ class ResidualRecoveryAction(ActionTerm):
       self._stage2_best_potential[env_ids] = 0.0
       self.stage1_progress_reward[env_ids] = 0.0
       self.stage2_progress_reward[env_ids] = 0.0
+    if getattr(self, "_hybrid_initialized", False):
+      # Keep _override_prev so the next step's falling edge restores the
+      # position-actuator gains for any env that reset mid-override.
+      if env_ids is None:
+        self._override_active.zero_()
+      else:
+        self._override_active[env_ids] = False
     self._joint_pos_action.reset(env_ids)
 
   def _update_fsm(self) -> None:
@@ -1252,6 +1401,7 @@ class ResidualRecoveryAction(ActionTerm):
     sensor = self._env.scene.sensors[self.cfg.wire_contact_sensor_name]
     found = sensor.data.found  # [B, P]
     in_contact = (found > 0).any(dim=-1)  # [B]
+    self._in_contact = in_contact
 
     is_normal = self._phase == PHASE_NORMAL_WALK
     is_recovery = self._phase == PHASE_RECOVERY
@@ -1596,6 +1746,63 @@ class ResidualRecoveryAction(ActionTerm):
       dim=-1,
     )
 
+  # ----- scripted_step helpers -----
+  def _leg_fk(self, thigh: torch.Tensor, calf: torch.Tensor) -> torch.Tensor:
+    """Foot (x, z) in the thigh-joint sagittal plane, [B, 2]."""
+    l1, l2 = self.cfg.step_thigh_length, self.cfg.step_calf_length
+    x = -(l1 * torch.sin(thigh) + l2 * torch.sin(thigh + calf))
+    z = -(l1 * torch.cos(thigh) + l2 * torch.cos(thigh + calf))
+    return torch.stack([x, z], dim=-1)
+
+  def _leg_ik(self, p: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    """Inverse of `_leg_fk` (knee-back branch, calf < 0). p: [B, 2]."""
+    l1, l2 = self.cfg.step_thigh_length, self.cfg.step_calf_length
+    d = torch.linalg.norm(p, dim=-1).clamp(0.13, l1 + l2 - 0.01)
+    cos_c = ((d * d - l1 * l1 - l2 * l2) / (2 * l1 * l2)).clamp(-1.0, 1.0)
+    calf = -torch.acos(cos_c)
+    # foot = -2L cos(c/2) * (sin(a), cos(a)) with a = thigh + calf / 2
+    # (equal link lengths), so thigh = a - calf / 2.
+    alpha = torch.atan2(-p[:, 0], -p[:, 1])
+    thigh = alpha - calf / 2.0
+    return thigh, calf
+
+  def _scripted_step_raw(self) -> torch.Tensor:
+    """Raw policy-space (thigh, calf) targets [B, 2] for the current step
+    of the scripted trajectory (valid for envs in RECOVERY)."""
+    cfg = self.cfg
+    k = (self._recovery_elapsed - 1 - self._step_t0).clamp(min=0).float()
+    n1, n2, n3 = cfg.step_lift_steps, cfg.step_advance_steps, cfg.step_descend_steps
+    p0 = self._step_p0
+    z_stand = (
+      self._leg_fk(
+        self._default_thigh.expand(self.num_envs),
+        self._default_calf.expand(self.num_envs),
+      )[:, 1]
+      - cfg.step_land_extra
+    )
+    p1 = torch.stack([p0[:, 0] - cfg.step_back, p0[:, 1] + cfg.step_lift_height], -1)
+    p2 = torch.stack([p0[:, 0] + cfg.step_advance, p1[:, 1]], -1)
+    p3 = torch.stack([p2[:, 0], z_stand], -1)
+
+    def smooth(u: torch.Tensor) -> torch.Tensor:
+      u = u.clamp(0.0, 1.0)
+      return (0.5 * (1.0 - torch.cos(math.pi * u))).unsqueeze(-1)
+
+    s1 = smooth((k + 1.0) / n1)
+    s2 = smooth((k + 1.0 - n1) / n2)
+    s3 = smooth((k + 1.0 - n1 - n2) / n3)
+    p = p0 + s1 * (p1 - p0)
+    p = p + s2 * (p2 - p1)
+    p = p + s3 * (p3 - p2)
+    thigh, calf = self._leg_ik(p)
+    thigh = thigh.clamp(-1.5, 3.4)
+    calf = calf.clamp(-2.65, -0.9)
+    q = torch.stack([thigh, calf], dim=-1)
+    idx = self._affected_idx[1:3]
+    off = torch.as_tensor(self._joint_pos_action._offset)[:, idx]
+    sc = torch.as_tensor(self._joint_pos_action._scale)[:, idx]
+    return (q - off) / sc
+
   def process_actions(self, actions: torch.Tensor) -> None:
     """`actions` is Delta_a, shape [B, 3] (affected leg only, raw
     policy-action-space units). IGNORED entirely when
@@ -1626,6 +1833,27 @@ class ResidualRecoveryAction(ActionTerm):
       self._raw_actions.zero_()
       delta_a = torch.zeros(self.num_envs, 3, device=self.device)
       self._apply_hybrid_actuators()
+    elif self.cfg.recovery_mode == "scripted_step":
+      self._raw_actions.zero_()
+      delta_a = torch.zeros(self.num_envs, 3, device=self.device)
+      ent = self.newly_entangled
+      self._step_started = self._step_started & ~ent
+      in_rec_now = self._phase == PHASE_RECOVERY
+      waited = self._recovery_elapsed - 1
+      if self.cfg.step_wait_for_swing:
+        foot_z = self._entity.data.site_pos_w[:, self._foot_site_idx, 2]
+        go = (foot_z > self.cfg.step_swing_trigger_z) | (
+          waited >= self.cfg.step_max_wait_steps
+        )
+      else:
+        go = torch.ones_like(in_rec_now)
+      trigger = in_rec_now & ~self._step_started & go
+      if bool(trigger.any()):
+        jp = self._entity.data.joint_pos
+        p_now = self._leg_fk(jp[:, self._step_thigh_jid], jp[:, self._step_calf_jid])
+        self._step_p0 = torch.where(trigger.unsqueeze(-1), p_now, self._step_p0)
+        self._step_t0 = torch.where(trigger, waited, self._step_t0)
+        self._step_started = self._step_started | trigger
     elif self.cfg.recovery_mode == "deterministic":
       # D1: no PPO/learned component. `actions` is ignored entirely.
       # `self._raw_actions` still records the deterministic command
@@ -1648,6 +1876,17 @@ class ResidualRecoveryAction(ActionTerm):
 
     final_raw = a_walk_raw.clone()
     final_raw[:, self._affected_idx] = final_raw[:, self._affected_idx] + delta_a
+    if self.cfg.recovery_mode == "scripted_step":
+      c = self.cfg
+      script_raw = self._scripted_step_raw()  # [B, 2]
+      total = c.step_lift_steps + c.step_advance_steps + c.step_descend_steps
+      k = (self._recovery_elapsed - 1 - self._step_t0).clamp(min=0).float()
+      w = ((k + 1.0 - total) / max(c.step_blend_steps, 1)).clamp(0.0, 1.0)
+      w = w.unsqueeze(-1)
+      walk_raw = final_raw[:, self._affected_idx[1:3]]
+      blended = (1.0 - w) * script_raw + w * walk_raw
+      in_rec = ((self._phase == PHASE_RECOVERY) & self._step_started).unsqueeze(-1)
+      final_raw[:, self._affected_idx[1:3]] = torch.where(in_rec, blended, walk_raw)
 
     self.last_a_walk_raw = a_walk_raw.detach().clone()
     self.last_final_raw = final_raw.detach().clone()
