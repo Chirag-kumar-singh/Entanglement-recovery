@@ -415,6 +415,12 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   diagonal-partner pair is planted then), or after `step_max_wait_steps`.
   Until then the leg follows the walking policy. Avoids lifting a leg
   while its neighbours are also leaving the ground (body drop)."""
+  step_freeze_others: bool = False
+  """If True, while the scripted step runs the OTHER 9 joints are held at
+  the default standing pose (raw action 0) instead of following the
+  walking policy, so the three non-stepping legs stay planted; they blend
+  back to the policy over step_blend_steps with the stepping leg. Fixes
+  trot-phase coupling (other legs lifting mid-step -> body drop)."""
   step_swing_trigger_z: float = 0.04
   """Foot-site height (m, world) that counts as swing onset."""
   step_max_wait_steps: int = 14
@@ -1887,6 +1893,12 @@ class ResidualRecoveryAction(ActionTerm):
       blended = (1.0 - w) * script_raw + w * walk_raw
       in_rec = ((self._phase == PHASE_RECOVERY) & self._step_started).unsqueeze(-1)
       final_raw[:, self._affected_idx[1:3]] = torch.where(in_rec, blended, walk_raw)
+      if c.step_freeze_others:
+        keep = torch.ones(12, dtype=torch.bool, device=self.device)
+        keep[self._affected_idx] = False
+        walk_others = final_raw[:, keep]
+        frozen = w * walk_others  # w=0 -> raw 0 (default pose); w=1 -> walk
+        final_raw[:, keep] = torch.where(in_rec, frozen, walk_others)
 
     self.last_a_walk_raw = a_walk_raw.detach().clone()
     self.last_final_raw = final_raw.detach().clone()

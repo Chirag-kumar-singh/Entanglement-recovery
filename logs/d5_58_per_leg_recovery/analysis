@@ -1,0 +1,144 @@
+What changed
+Scripted step: there is a new recovery_mode="scripted_step" in actions.py. When the wire is touched, the leg's thigh and calf targets are replaced by a foot trajectory, converted to joint angles with 2-link inverse kinematics in the leg's sagittal plane. The trajectory has four stages:
+back off 12 cm;
+lift 20 cm;
+advance 30 cm over the wire;
+lower the foot to standing height. The ab/ad joint stays on the walking policy, and the leg blends back over 6 steps afterwards. The same code serves all four legs.
+Plumbing: the new parameters are step_* fields on ResidualRecoveryActionCfg. They are passed through env_cfg_residual.py and exposed as flags on d5_58_per_leg_recovery_window.py. The existing hybrid mode and the contact-gated option from last round are unchanged.
+Logging: the hybrid-only actuator columns in the CSV now read 0.0 in scripted-step mode, instead of crashing.
+Results
+I ran the same default parameters for every leg. Crossing means both crossing latches fired, and "min body height" is the lowest base height during the run.
+
+Leg	Seeds crossing the wire	Min body height (m)	Old hybrid baseline
+RL	3/4 (seed 3 failed)	0.28–0.29	0/3 crossing; body fell to 0.16–0.18
+RR	4/4	0.27–0.30	1/3 crossing
+FR	3/4 (seed 3 failed)	0.21–0.22	1/3 crossing; body fell to 0.10–0.12
+FL	0/2 (best of several settings)	~0.17–0.20	1/1 crossing; body dips to 0.20
+Pass rate and body height: 10 of 12 runs on FR, RL and RR cross the wire. The body stays near standing height, instead of the FR belly-drop you saw.
+Failed seeds: FR and RL fail on seed 3, and I haven't investigated why.
+Foot-forward metric: the fwdFootMax values near 0.9 in my logs are inflated by the robot walking on after the step. Don't read them as step length.
+FL: I left FL on the old hybrid mode, since you'd paused FL work.
+Checks: ruff is clean on the files I touched. ty reports the same 6 errors with and without my changes, so none are new. I haven't run pytest or make check.
+Reverted: ruff --fix also edited 7 unrelated recovery files, which I reverted.
+Commands to view it
+Run these from /home/chirag/robotics/Entanglement-recovery. Adding --debug opens the native MuJoCo viewer. It runs the same deterministic rollout and writes the same CSV.
+
+
+# Rear-left, the leg that failed completely before
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg RL --seed 0 \
+  --recovery-mode scripted_step --max-recovery-steps-override 34 --debug
+
+# Rear-right
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg RR --seed 0 \
+  --recovery-mode scripted_step --max-recovery-steps-override 34 --debug
+
+# Front-right, where the old version belly-dropped
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg FR --seed 0 \
+  --recovery-mode scripted_step --max-recovery-steps-override 34 --debug
+
+# A failing seed, so you can see what failure looks like
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg RL --seed 3 \
+  --recovery-mode scripted_step --max-recovery-steps-override 34 --debug
+
+# For comparison, the old hybrid recovery on the same leg
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg RL --seed 0 --debug
+Without --debug each run writes logs/d5_58_per_leg_recovery/<LEG>_seed<N>/trajectory.csv, overwriting the old baseline logs there. Add --out-dir /some/path to keep them.
+
+If you want to check my table, look for stage1_first_latch_step and stage2_first_latch_step in the printed output. Both are set on a crossing and None on a failure. A good run also prints RECOVERY SUCCESS.
+
+What to check in the viewer
+The leg should back off, lift above the wire, and step forward over it. Please confirm the body doesn't sag or fall.
+I only tuned on RL, FR and RR with 4 seeds, so some of these settings may be overfit to those seeds.
+max_recovery_steps has to cover the whole step plus the blend, at least 32 steps. The commands above use 34.
+After you've looked, I'd investigate the seed-3 failures and decide what to do about FL.
+
+
+---------------------------------------------------------------------------------------------------------------
+
+Why FL stumbled
+The FL step failed because of the walking gait, not the step geometry. I added all four foot heights to the CSV and compared FL and FR at entry:
+
+FL: the wire contact lands at the same moment the trot starts swinging FR and RL. Lifting FL immediately puts three feet in the air, and the body drops from 0.31 m to about 0.19 m. The leg can't fold shorter than about 0.13 m, so the foot only reaches 6–8 cm, below the 10.6 cm wire.
+FR: the other feet stay planted during the lift, which is why FR worked.
+The fix
+What it does: a new step_wait_for_swing option holds the leg on the walking policy until its own foot lifts above 4 cm. That is FL's swing onset, when the diagonal pair is planted. There's a 14-step fallback if the foot never lifts. The step then runs as before.
+Where it lives: the option is in actions.py and is off by default. In d5_58_per_leg_recovery_window.py it auto-enables for FL only.
+Why FL only: the flag hurt the other legs. FR dropped from 3/4 to 0/4 crossing, and RR from 4/4 to 3/4. RL stayed at 3/4.
+FL results (4 seeds, 0–3)
+Old hybrid baseline	Scripted step without waiting	With waiting
+Crossing the wire	1/1 seed logged	0/4	4/4
+Min body height	0.20 m	0.14–0.19 m	0.26–0.28 m
+Foot height at peak	about 19 cm, body carried over	about 8–12 cm	about 22 cm
+Calf clearance above wire	n/a	4–9 cm	18–20 cm
+I also ran 8 of the planned 16 timing sweeps before the session dropped. Even the best of those didn't latch, which led me to find the real cause.
+
+Commands to view it
+Run these from /home/chirag/robotics/Entanglement-recovery. --debug opens the MuJoCo viewer. The wait flag turns on automatically for FL.
+
+
+# FL, new scripted step (watch the pause, then the lift and step over)
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg FL --seed 0 \
+  --recovery-mode scripted_step --debug
+
+# FL, old hybrid recovery, for side-by-side comparison
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg FL --seed 0 --debug
+
+# Other seeds
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg FL --seed 3 \
+  --recovery-mode scripted_step --debug
+For FL in the viewer, expect these:
+
+The wire contact starts recovery around step 44.
+FL then keeps walking normally for about 14 steps, which is the wait.
+FL lifts to about 22 cm and steps over, with FR, RL and RR staying down.
+The RECOVERY SUCCESS line prints.
+What I haven't verified
+FL sample size: 4 seeds on FL is a small sample. I haven't tested other wire positions or entry gaits.
+FL wait: it can stand still while the leg waits for its own swing. If the robot moves faster, 14 steps may be too long.
+RL seed 3: it fails with and without the flag. In the wait run the calf was well above the wire (19 cm) but the crossing latch never fired. That may be a latch problem rather than a motion problem.
+FR seed 3: it also fails without waiting. I haven't investigated either seed-3 failure.
+If FL looks right in the viewer, the next steps are to look into the RL and FR seed-3 failures and to run make check before committing.
+
+---------------------------------------------------------------------------------
+
+What caused the seed-3 failures
+Both failures have the same cause as the FL stumble:
+
+FR seed 3: FL and RR also leave the ground mid-step, so only RL is planted and the body drops to 0.15 m.
+RL seed 3: RL is a supporting leg when the retract starts. The foot never leaves the ground and the body sinks to 0.20 m.
+A step takes about 26 control steps, which is longer than a trot half-period. The other legs keep cycling, so one leg's step can leave too few feet on the ground.
+
+What I added
+A new opt-in step_freeze_others option holds the other nine joints at the standing pose while the step runs, then blends them back to the walking policy.
+
+I tested the option on all four legs, with 4 seeds each:
+
+RL: it fixes RL, from 3/4 to 4/4.
+FL, FR, RR: it breaks all three, each going to 0/4. The body still sags to about 0.23 m, and the calf stays 7–9 cm behind the wire. These legs need the body's forward motion to carry the calf over.
+So the script now picks defaults per leg:
+
+Leg	Setting (default in the script)	Crossing	Min body height
+FL	wait for own swing onset	4/4	0.26–0.28 m
+FR	immediate step	3/4 (seed 3 fails)	0.21–0.22 m (0.15 on the failure)
+RL	other legs frozen	4/4	0.25 m
+RR	immediate step	4/4	0.27–0.30 m
+That is 15 of 16 runs crossing the wire, with FR seed 3 the only failure.
+
+Checks
+ruff format and ruff check are clean on the files I touched. ruff format is the only formatter I ran, and I didn't use ruff check --fix, so no unrelated files changed.
+ty reports the same 6 errors as before my changes.
+tests/test_recovery_env.py passes, 10 of 10.
+I haven't run the full make test.
+Commands to view it
+Run from /home/chirag/robotics/Entanglement-recovery. The per-leg settings apply automatically.
+
+
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg RL --seed 3 --recovery-mode scripted_step --debug   # previously failed; now passes
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg FR --seed 3 --recovery-mode scripted_step --debug   # the one remaining failure
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg FL --seed 0 --recovery-mode scripted_step --debug
+uv run python scripts/d5_58_per_leg_recovery_window.py --leg RR --seed 0 --recovery-mode scripted_step --debug
+Open items
+FR seed 3: it fails in the same way as the FL stumble. With FR's neighbours leaving the ground, it needs something different from "wait" or "freeze". I'd try gating the step on the other three feet being planted.
+Sample size: each leg was tested on only 4 seeds, with one wire position and one gait. I'd widen this before calling it solid, so say if you want me to.
+FL, FR and RR: I haven't made them flawless yet. FR's min body height of 0.21 m is still a visible dip.
+I can commit these changes if you want. I'd add a changelog entry for the new recovery mode first.

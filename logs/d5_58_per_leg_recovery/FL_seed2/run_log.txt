@@ -1,0 +1,18 @@
+leg=FL
+seed=2
+max_steps=200
+ablate_hip_wire=False
+max_recovery_steps_override=48
+recovery_mode=scripted_step
+recovery_thigh_velocity=-2.0
+recovery_calf_torque=5.0
+contact_gated=False max_thigh_retract=0.5
+wire_cfg=BallCableCfg(anchor_start=(0.0, 0.3, 0.1), anchor_end=(0.0, 0.5, 0.1), radius=0.006, aspect_ratio=2.5, condim=4, friction=(0.8, 0.005, 0.0001), geom_solref=(0.01, 1.0), geom_solimp=(0.99, 0.99, 0.01, 0.5, 2.0), priority=1, margin=0.015, eq_solref=(0.02, 1.0), eq_solimp=(0.95, 0.99, 0.001, 0.5, 2.0), rgba=(0.1, 0.9, 0.9, 1.0), contype=1, conaffinity=1)
+spawn_y=0.25
+ENTER RECOVERY step=44
+EXIT RECOVERY step=74 elapsed=32 timeout=False
+stage1_first_latch_step=69
+stage2_first_latch_step=70
+target_leg_wire_contact_steps=17
+other_leg_wire_contact_steps={'FR': 0, 'RL': 0, 'RR': 0}
+ISOLATION_OK=True

@@ -59,6 +59,7 @@ Usage
 from __future__ import annotations
 
 import csv
+import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -117,10 +118,21 @@ class D558Config:
   step_lift_height: float = 0.20
   step_back: float = 0.12
   step_advance: float = 0.30
-  step_lift_steps: int = 8
-  step_advance_steps: int = 10
-  step_descend_steps: int = 8
+  step_lift_steps: int | None = None
+  step_advance_steps: int | None = None
+  step_descend_steps: int | None = None
+  """None = auto (all three phase lengths): 4/5/4 control steps for FL, FR
+  and RR, 8/10/8 for RL. The 26-step 8/10/8 step spans ~2.5 trot
+  half-periods, so FL/RR lift mid-step and the body drops (min body z 0.15
+  on FR seed 4). 4/5/4 keeps the body higher on FL/FR/RR, but RL seed 3
+  fails with it, so RL keeps 8/10/8. FR seed 3 still sidesteps the wire
+  (~0.45 m lateral drift) instead of stepping over it."""
   step_blend_steps: int = 6
+  step_freeze_others: bool | None = None
+  """None = auto: False for every leg (opt-in). Holding the other three legs
+  at the standing pose makes RL seed 3 latch, but on RL seeds 0-2 the robot
+  then stalls (~0 m/s vs ~0.26 m/s walking) after the recovery, and it
+  breaks FL/FR/RR (0/4 each)."""
   step_wait_for_swing: bool | None = None
   """None = auto: True for FL only. FL's wire contact coincides with the
   FR/RL swing onset, so lifting immediately leaves one foot on the ground;
@@ -172,10 +184,23 @@ def build_leg_env(cfg: D558Config, device: str):
       "step_lift_height": cfg.step_lift_height,
       "step_back": cfg.step_back,
       "step_advance": cfg.step_advance,
-      "step_lift_steps": cfg.step_lift_steps,
-      "step_advance_steps": cfg.step_advance_steps,
-      "step_descend_steps": cfg.step_descend_steps,
+      "step_lift_steps": (
+        (8 if cfg.leg == "RL" else 4)
+        if cfg.step_lift_steps is None
+        else cfg.step_lift_steps
+      ),
+      "step_advance_steps": (
+        (10 if cfg.leg == "RL" else 5)
+        if cfg.step_advance_steps is None
+        else cfg.step_advance_steps
+      ),
+      "step_descend_steps": (
+        (8 if cfg.leg == "RL" else 4)
+        if cfg.step_descend_steps is None
+        else cfg.step_descend_steps
+      ),
       "step_blend_steps": cfg.step_blend_steps,
+      "step_freeze_others": bool(cfg.step_freeze_others),
       "step_wait_for_swing": (
         cfg.leg == "FL" if cfg.step_wait_for_swing is None else cfg.step_wait_for_swing
       ),
@@ -376,6 +401,13 @@ def run(cfg: D558Config) -> Path:
       "calf_pos": float(qpos[calf_i]),
       "calf_vel": float(qvel[calf_i]),
       "base_x": float(base_pos[0]),
+      "base_y": float(base_pos[1]),
+      "base_yaw_deg": math.degrees(
+        math.atan2(
+          2.0 * float(base_quat[0] * base_quat[3] + base_quat[1] * base_quat[2]),
+          1.0 - 2.0 * float(base_quat[2] ** 2 + base_quat[3] ** 2),
+        )
+      ),
       "base_z": float(base_pos[2]),
       "base_quat_w": float(base_quat[0]),
       "wire_in_contact": wire_in_contact,
