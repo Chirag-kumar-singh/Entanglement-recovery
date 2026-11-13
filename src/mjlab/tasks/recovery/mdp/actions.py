@@ -405,26 +405,25 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   step_land_extra: float = 0.02
   """Extra downward foot target (m) below the standing foot height, so the
   foot reliably reaches the ground at touchdown."""
-  step_lift_steps: int = 8
-  step_advance_steps: int = 10
-  step_descend_steps: int = 8
+  step_lift_steps: int = 4
+  step_advance_steps: int = 5
+  step_descend_steps: int = 4
   step_blend_steps: int = 6
-  step_wait_for_swing: bool = False
-  """If True, the scripted step starts only once the affected foot lifts
-  above `step_swing_trigger_z` (its own gait swing onset; in a trot the
-  diagonal-partner pair is planted then), or after `step_max_wait_steps`.
-  Until then the leg follows the walking policy. Avoids lifting a leg
-  while its neighbours are also leaving the ground (body drop)."""
+  step_start_delay_steps: int = 0
+  """Control steps after RECOVERY entry before the scripted step starts; the
+  leg follows the walking policy meanwhile. For FL/FR held against the wire
+  the foot stays planted (no natural swing), so this is a pure delay there."""
+  step_max_hold_steps: int = 0
+  """If > 0, the descent phase is held (foot stays lifted) until the calf has
+  crossed the wire above it (the clearance latch), for at most this many extra
+  steps. Makes the descent timing feedback-driven when the body drifts and
+  the calf reaches the wire later than the fixed clock assumes."""
   step_freeze_others: bool = False
   """If True, while the scripted step runs the OTHER 9 joints are held at
   the default standing pose (raw action 0) instead of following the
   walking policy, so the three non-stepping legs stay planted; they blend
   back to the policy over step_blend_steps with the stepping leg. Fixes
   trot-phase coupling (other legs lifting mid-step -> body drop)."""
-  step_swing_trigger_z: float = 0.04
-  """Foot-site height (m, world) that counts as swing onset."""
-  step_max_wait_steps: int = 14
-  """Fallback: start the step after this many RECOVERY steps regardless."""
   step_thigh_length: float = 0.213
   step_calf_length: float = 0.213
 
@@ -880,10 +879,12 @@ class ResidualRecoveryAction(ActionTerm):
     self._step_thigh_jid = _jn.index(f"{leg_name}_thigh_joint")
     self._step_calf_jid = _jn.index(f"{leg_name}_calf_joint")
     self._step_p0 = torch.zeros(self.num_envs, 2, device=self.device)
+    self.last_step_p = torch.zeros(self.num_envs, 2, device=self.device)
     self._step_started = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.bool
     )
     self._step_t0 = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+    self._step_hold = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
     _dj = self._entity.data.default_joint_pos
     self._default_thigh = _dj[0, self._step_thigh_jid].clone()
     self._default_calf = _dj[0, self._step_calf_jid].clone()
@@ -1772,11 +1773,16 @@ class ResidualRecoveryAction(ActionTerm):
     thigh = alpha - calf / 2.0
     return thigh, calf
 
+  def _step_clock(self) -> torch.Tensor:
+    """Steps since the scripted step started, minus steps spent holding."""
+    k = self._recovery_elapsed - 1 - self._step_t0 - self._step_hold
+    return k.clamp(min=0).float()
+
   def _scripted_step_raw(self) -> torch.Tensor:
     """Raw policy-space (thigh, calf) targets [B, 2] for the current step
     of the scripted trajectory (valid for envs in RECOVERY)."""
     cfg = self.cfg
-    k = (self._recovery_elapsed - 1 - self._step_t0).clamp(min=0).float()
+    k = self._step_clock()
     n1, n2, n3 = cfg.step_lift_steps, cfg.step_advance_steps, cfg.step_descend_steps
     p0 = self._step_p0
     z_stand = (
@@ -1800,6 +1806,7 @@ class ResidualRecoveryAction(ActionTerm):
     p = p0 + s1 * (p1 - p0)
     p = p + s2 * (p2 - p1)
     p = p + s3 * (p3 - p2)
+    self.last_step_p = p.detach().clone()
     thigh, calf = self._leg_ik(p)
     thigh = thigh.clamp(-1.5, 3.4)
     calf = calf.clamp(-2.65, -0.9)
@@ -1846,20 +1853,28 @@ class ResidualRecoveryAction(ActionTerm):
       self._step_started = self._step_started & ~ent
       in_rec_now = self._phase == PHASE_RECOVERY
       waited = self._recovery_elapsed - 1
-      if self.cfg.step_wait_for_swing:
-        foot_z = self._entity.data.site_pos_w[:, self._foot_site_idx, 2]
-        go = (foot_z > self.cfg.step_swing_trigger_z) | (
-          waited >= self.cfg.step_max_wait_steps
-        )
-      else:
-        go = torch.ones_like(in_rec_now)
+      go = waited >= self.cfg.step_start_delay_steps
       trigger = in_rec_now & ~self._step_started & go
       if bool(trigger.any()):
         jp = self._entity.data.joint_pos
         p_now = self._leg_fk(jp[:, self._step_thigh_jid], jp[:, self._step_calf_jid])
         self._step_p0 = torch.where(trigger.unsqueeze(-1), p_now, self._step_p0)
         self._step_t0 = torch.where(trigger, waited, self._step_t0)
+        self._step_hold = torch.where(trigger, 0, self._step_hold)
         self._step_started = self._step_started | trigger
+      if self.cfg.step_max_hold_steps > 0:
+        c0 = self.cfg
+        at_descent = (
+          self._step_clock() + 1.0 >= c0.step_lift_steps + c0.step_advance_steps
+        )
+        holding = (
+          in_rec_now
+          & self._step_started
+          & at_descent
+          & ~self._calf_clearance_achieved
+          & (self._step_hold < c0.step_max_hold_steps)
+        )
+        self._step_hold = self._step_hold + holding.long()
     elif self.cfg.recovery_mode == "deterministic":
       # D1: no PPO/learned component. `actions` is ignored entirely.
       # `self._raw_actions` still records the deterministic command
@@ -1886,7 +1901,7 @@ class ResidualRecoveryAction(ActionTerm):
       c = self.cfg
       script_raw = self._scripted_step_raw()  # [B, 2]
       total = c.step_lift_steps + c.step_advance_steps + c.step_descend_steps
-      k = (self._recovery_elapsed - 1 - self._step_t0).clamp(min=0).float()
+      k = self._step_clock()
       w = ((k + 1.0 - total) / max(c.step_blend_steps, 1)).clamp(0.0, 1.0)
       w = w.unsqueeze(-1)
       walk_raw = final_raw[:, self._affected_idx[1:3]]

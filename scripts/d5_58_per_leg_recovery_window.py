@@ -61,7 +61,7 @@ from __future__ import annotations
 import csv
 import math
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import mujoco
@@ -92,6 +92,46 @@ def default_max_steps(leg: str) -> int:
   return 200 if leg in FRONT_LEGS else 320
 
 
+STEP_START_DELAY = {"FL": 23, "FR": 0, "RL": 0, "RR": 14}
+CONTROL_DT = 0.02
+VERDICT_WINDOW_STEPS = 60
+VERDICT_MAX_DRIFT_Y = 0.15
+VERDICT_MIN_BASE_Z = 0.20
+VERDICT_MIN_WALKOFF_SPEED = 0.15
+VERDICT_WALKOFF_STEPS = 40
+
+
+def strict_verdict(rows: list[dict]) -> tuple[bool, str]:
+  """PASS only if both crossing latches fire AND the robot did not sidestep
+  the wire, did not collapse, and keeps walking afterwards. Latches alone
+  count a lateral escape (e.g. FR seed 3) or a post-recovery stall as a
+  success."""
+  entry = next((i for i, r in enumerate(rows) if r["phase"] == 1), None)
+  if entry is None:
+    return False, "no recovery entry"
+  window = rows[entry : entry + VERDICT_WINDOW_STEPS + 1]
+  latched = any(r["calf_clearance_achieved"] for r in rows) and any(
+    r["foot_crossed_achieved"] for r in rows
+  )
+  drift = abs(window[-1]["base_y"] - rows[entry]["base_y"])
+  min_z = min(r["base_z"] for r in window)
+  tail = rows[-(VERDICT_WALKOFF_STEPS + 1) :]
+  speed = (tail[-1]["base_x"] - tail[0]["base_x"]) / ((len(tail) - 1) * CONTROL_DT)
+  failures = []
+  if not latched:
+    failures.append("no crossing latch")
+  if drift > VERDICT_MAX_DRIFT_Y:
+    failures.append(f"sidestep drift {drift:.2f}m")
+  if min_z < VERDICT_MIN_BASE_Z:
+    failures.append(f"body collapse z={min_z:.2f}m")
+  if speed < VERDICT_MIN_WALKOFF_SPEED:
+    failures.append(f"stalled after recovery {speed:.2f}m/s")
+  metrics = f"drift_y={drift:.3f} min_base_z={min_z:.3f} walkoff_vx={speed:.2f}"
+  if failures:
+    return False, "; ".join(failures) + f" ({metrics})"
+  return True, metrics
+
+
 @dataclass
 class D558Config:
   leg: str = "FL"
@@ -118,26 +158,31 @@ class D558Config:
   step_lift_height: float = 0.20
   step_back: float = 0.12
   step_advance: float = 0.30
-  step_lift_steps: int | None = None
-  step_advance_steps: int | None = None
-  step_descend_steps: int | None = None
-  """None = auto (all three phase lengths): 4/5/4 control steps for FL, FR
-  and RR, 8/10/8 for RL. The 26-step 8/10/8 step spans ~2.5 trot
-  half-periods, so FL/RR lift mid-step and the body drops (min body z 0.15
-  on FR seed 4). 4/5/4 keeps the body higher on FL/FR/RR, but RL seed 3
-  fails with it, so RL keeps 8/10/8. FR seed 3 still sidesteps the wire
-  (~0.45 m lateral drift) instead of stepping over it."""
+  step_lift_steps: int = 4
+  step_advance_steps: int = 5
+  step_descend_steps: int = 4
+  """4/5/4 control steps for every leg. The 26-step 8/10/8 step spans ~2.5
+  trot half-periods, so other legs lift mid-step and the body drops. RL:
+  15/16 on seeds 0-15 with either, but 4/5/4 keeps the body higher."""
   step_blend_steps: int = 6
   step_freeze_others: bool | None = None
   """None = auto: False for every leg (opt-in). Holding the other three legs
   at the standing pose makes RL seed 3 latch, but on RL seeds 0-2 the robot
   then stalls (~0 m/s vs ~0.26 m/s walking) after the recovery, and it
   breaks FL/FR/RR (0/4 each)."""
-  step_wait_for_swing: bool | None = None
-  """None = auto: True for FL only. FL's wire contact coincides with the
-  FR/RL swing onset, so lifting immediately leaves one foot on the ground;
-  waiting for FL's own swing onset fixes that (4/4 seeds). It hurt FR
-  (0/4) and RR (3/4 vs 4/4), so those keep the immediate step."""
+  step_start_delay_steps: int | None = None
+  """None = auto per leg (STEP_START_DELAY), control steps after wire contact.
+  Strict-verdict passes on seeds 0-7 by delay: FL 0/8 at 0, 6/8 at 14, 8/8 at
+  20, 23 and 26. FR 7/8 at 0, 6/8 at 2, 0/8 at 4 or more. RR 7/8 at 12-18
+  (5/8 at 0, 3/8 at 8). RL is best with no delay (15/16 on seeds 0-15); a
+  swing-onset trigger tuned on seeds 0-7 gave only 12/16."""
+  step_max_hold_steps: int = 0
+  spawn_y_offset: float = 0.0
+  """Shift the robot's lateral start (m) relative to the wire, on top of the
+  per-seed jitter (+-0.03 m). Robustness test only."""
+  wire_height_offset: float = 0.0
+  """Raise (+) or lower (-) the wire (m). Robustness test only; the default
+  wire centreline is 0.10 m."""
   contact_gated: bool = False
   """Enable the contact-gated obstructed-swing override (opt-in)."""
   max_thigh_retract: float = 0.5
@@ -168,6 +213,18 @@ def build_leg_env(cfg: D558Config, device: str):
   """
   leg = cfg.leg
   wire = PER_LEG_WIRE_CFG[leg]
+  if cfg.wire_height_offset:
+    dz = cfg.wire_height_offset
+    wire = replace(
+      wire,
+      anchor_start=(
+        wire.anchor_start[0],
+        wire.anchor_start[1],
+        wire.anchor_start[2] + dz,
+      ),
+      anchor_end=(wire.anchor_end[0], wire.anchor_end[1], wire.anchor_end[2] + dz),
+    )
+  spawn_y = PER_LEG_SPAWN_Y + cfg.spawn_y_offset
   env_cfg = go2_wire_recovery_residual_env_cfg(
     affected_leg_idx=LEG_IDX[leg],
     num_envs=1,
@@ -175,7 +232,7 @@ def build_leg_env(cfg: D558Config, device: str):
     policy_device=device,
     play=True,
     wire_cfg=wire,
-    spawn_y_override=PER_LEG_SPAWN_Y,
+    spawn_y_override=spawn_y,
     max_recovery_steps=cfg.max_recovery_steps_override,
     recovery_thigh_velocity=cfg.recovery_thigh_velocity,
     recovery_calf_torque=cfg.recovery_calf_torque,
@@ -184,26 +241,15 @@ def build_leg_env(cfg: D558Config, device: str):
       "step_lift_height": cfg.step_lift_height,
       "step_back": cfg.step_back,
       "step_advance": cfg.step_advance,
-      "step_lift_steps": (
-        (8 if cfg.leg == "RL" else 4)
-        if cfg.step_lift_steps is None
-        else cfg.step_lift_steps
+      "step_lift_steps": cfg.step_lift_steps,
+      "step_advance_steps": cfg.step_advance_steps,
+      "step_descend_steps": cfg.step_descend_steps,
+      "step_start_delay_steps": (
+        STEP_START_DELAY[cfg.leg]
+        if cfg.step_start_delay_steps is None
+        else cfg.step_start_delay_steps
       ),
-      "step_advance_steps": (
-        (10 if cfg.leg == "RL" else 5)
-        if cfg.step_advance_steps is None
-        else cfg.step_advance_steps
-      ),
-      "step_descend_steps": (
-        (8 if cfg.leg == "RL" else 4)
-        if cfg.step_descend_steps is None
-        else cfg.step_descend_steps
-      ),
-      "step_blend_steps": cfg.step_blend_steps,
-      "step_freeze_others": bool(cfg.step_freeze_others),
-      "step_wait_for_swing": (
-        cfg.leg == "FL" if cfg.step_wait_for_swing is None else cfg.step_wait_for_swing
-      ),
+      "step_max_hold_steps": cfg.step_max_hold_steps,
     },
     max_thigh_retract=cfg.max_thigh_retract,
     obstructed_release_steps=cfg.obstructed_release_steps,
@@ -331,6 +377,11 @@ def run(cfg: D558Config) -> Path:
 
     qpos = entity.data.joint_pos[0]
     qvel = entity.data.joint_vel[0]
+    q_cmd = act._joint_pos_action._processed_actions[0, act._affected_idx[1:3]]
+    fk_cmd = act._leg_fk(q_cmd[0:1], q_cmd[1:2])[0]
+    fk_act = act._leg_fk(qpos[thigh_i : thigh_i + 1], qpos[calf_i : calf_i + 1])[0]
+    step_started = bool(act._step_started[0])
+    step_k = int(act._recovery_elapsed[0] - 1 - act._step_t0[0]) if step_started else -1
     foot_pos = entity.data.site_pos_w[0, act._foot_site_idx, :].clone()
     base_pos = entity.data.root_link_pos_w[0]
     base_quat = entity.data.root_link_quat_w[0]
@@ -409,6 +460,16 @@ def run(cfg: D558Config) -> Path:
         )
       ),
       "base_z": float(base_pos[2]),
+      "step_started": step_started,
+      "step_k": step_k,
+      "step_p0_x": float(act._step_p0[0, 0]),
+      "step_p0_z": float(act._step_p0[0, 1]),
+      "step_tgt_x": float(act.last_step_p[0, 0]),
+      "step_tgt_z": float(act.last_step_p[0, 1]),
+      "step_cmd_x": float(fk_cmd[0]),
+      "step_cmd_z": float(fk_cmd[1]),
+      "step_act_x": float(fk_act[0]),
+      "step_act_z": float(fk_act[1]),
       "base_quat_w": float(base_quat[0]),
       "wire_in_contact": wire_in_contact,
       "target_ground_contact": ground_found,
@@ -521,7 +582,8 @@ def run(cfg: D558Config) -> Path:
     f"recovery_calf_torque={cfg.recovery_calf_torque}",
     f"contact_gated={cfg.contact_gated} max_thigh_retract={cfg.max_thigh_retract}",
     f"wire_cfg={PER_LEG_WIRE_CFG[leg]}",
-    f"spawn_y={PER_LEG_SPAWN_Y}",
+    f"spawn_y={PER_LEG_SPAWN_Y + cfg.spawn_y_offset}",
+    f"wire_height_offset={cfg.wire_height_offset}",
     f"{state['enter_line']}",
     f"{state['exit_line']}",
     f"stage1_first_latch_step={state['stage1_first_step']}",
@@ -530,6 +592,9 @@ def run(cfg: D558Config) -> Path:
     f"other_leg_wire_contact_steps={leakage}",
     "ISOLATION_OK=" + str(all(v == 0 for v in leakage.values())),
   ]
+  passed, detail = strict_verdict(rows)
+  label = "SKIP" if detail == "no recovery entry" else ("PASS" if passed else "FAIL")
+  lines.append(f"VERDICT={label} {detail}")
   summary = "\n".join(lines)
   (out_dir / "run_log.txt").write_text(summary + "\n")
   print(f"[D5.58] wrote {csv_path}")

@@ -142,3 +142,80 @@ FR seed 3: it fails in the same way as the FL stumble. With FR's neighbours leav
 Sample size: each leg was tested on only 4 seeds, with one wire position and one gait. I'd widen this before calling it solid, so say if you want me to.
 FL, FR and RR: I haven't made them flawless yet. FR's min body height of 0.21 m is still a visible dip.
 I can commit these changes if you want. I'd add a changelog entry for the new recovery mode first.
+
+--------------------------------------------------------
+
+The default settings now pass 30 of 32 runs under the strict verdict (sideways drift, body height and walk-off checked as well as the latches). FL and RL pass all 8 seeds. FR seed 3 and RR seed 3 still fail.
+
+After the crash, the code in actions.py and d5_58_per_leg_recovery_window.py was intact. The scratchpad and the other session's delay-scan results were gone, so I reran the scan myself, and no other Claude session is running now. I kept to 3–4 parallel lanes after the earlier out-of-memory crash.
+
+What the scan found. Where the step starts after wire contact matters a lot for each leg:
+
+Leg	Setting now	Seeds 0–7	Notes
+FL	wait 23 steps	8/8	Also 8/8 at 20 and 26, 7/8 at 17. With no wait it fails every seed, which was the original FL stumble.
+FR	start immediately	7/8	Seed 3 still sidesteps. A delay of 2 gives 6/8 and 4 or more gives 0/8.
+RL	start when its own foot begins to swing, capped at 14 steps	8/8	Fixed delays only give 5–7/8.
+RR	wait 14 steps	7/8	Seed 3 fails. 12, 16 and 18 also give 7/8, with the failing seed moving between 1 and 3.
+A mistake of mine, now fixed. I had replaced RL's swing trigger with a fixed 14-step delay and assumed it was the same thing. It isn't, because RL's foot really does swing during the wait. That dropped RL to 6/8 until I restored the trigger as an option, enabled for RL only. The foot-speed trigger fires early for RL and gives 8/8. FL and FR never swing while held at the wire, so for them it was only ever a fixed delay.
+
+Caveats.
+
+RL's fixed-delay results are fragile: 5/8 to 7/8 across neighbouring delays. Its 8/8 relies on the swing trigger, so it deserves a wider seed test.
+The four settings above are tuned on seeds 0–7 and one wire placement, so they may be overfit to those starts.
+The 10 recovery tests pass. make check and make test haven't been run, and nothing is committed.
+The tracked baseline logs in logs/d5_58_per_leg_recovery/ are still overwritten from earlier runs. Say if you want me to restore them. I haven't touched them.
+
+Next. I'd look at the two failing seeds, since both fail differently. FR seed 3 sidesteps because the robot is pushed sideways during the step. RR seed 3 never latches, and its drift is 0.10 m. Then I'd widen the test to seeds 8–15 and other wire positions before committing. Should I start with FR seed 3?
+
+
+------------------------------------------------
+
+I found out why FR seed 3 and RR seed 3 fail, but I haven't fixed either. The defaults still pass 30 of 32 runs (seeds 0–7, four legs), and the 10 recovery tests pass.
+
+Logs: nothing to restore. Those files were already committed in 5c8f779 on Nov 12, so I left them alone. My sweeps now write to the scratchpad only.
+
+FR seed 3 (sidestep).
+
+Cause: the walking policy keeps cycling FL and RR, and they lift at k=4–8 while FR is also up. That leaves only RL on the ground. The body falls sideways at up to 1.2 m/s. In the passing seeds FL and RR stay planted through the whole step.
+Holding FL and RR in place: I tried holding them at their step-start pose. It removes the sidestep and the dip (body ≥ 0.25 m), but then 0 of 24 runs cross, with the 4/5/4, 6/8/6 and 8/10/8 timings. Crossing needs the body to move forward, and the held legs stop it. I removed that option.
+Holding the foot up until the calf has crossed: this is a new opt-in step_max_hold_steps (default 0, so nothing changes unless you ask). With 6 extra steps it changes no other seed. FR seed 3 loses the sidestep (drift 0.06 m instead of 0.45 m), but the body still dips to 0.193 m, just under my 0.20 m pass threshold. So it's a milder failure rather than a pass.
+RR seed 3 (never latches).
+
+Cause: the body drifts backward (−0.09 m), so the calf only reaches the wire at k≈9–10. By then the scripted descent has started, and the calf crosses at or below the wire's 2 cm margin.
+Not fixed: holding the descent didn't fix it. A taller lift (0.26 m) didn't either, and it made FR worse (seed 3 sidesteps again and seed 4 fails). So neither trick works for RR seed 3.
+Both remaining failures are gait-phase problems that a fixed step handles badly, so more tuning of the same step is unlikely to get 8/8.
+
+What I'd do next:
+
+Widen the test before anything else. Run seeds 8–15 and a shifted wire position with the current defaults, to see how much of the 30 of 32 is overfit to seeds 0–7. RL's single good setting makes me suspect some of it is.
+Then decide how to handle the last two seeds. One option is to pick the step per start phase, such as a different step shape when the body is drifting back. The other is to accept 30 of 32 for now and move to the other legs' quality, such as the body dips.
+Should I start with the wider seed and wire-position test?
+
+The step_max_hold_steps option can stay opt-in, or I can enable it for FR. It changes no pass count on seeds 0–7 but replaces FR seed 3's sidestep with a smaller dip. I'd leave it off until the wider test.
+
+Nothing is committed. make check, the full make test, and the changelog entry are still to do before a commit.
+
+--------------------------------------------------------
+
+The switch is verified. RL with an immediate start and the 4/5/4 step passes 15 of 16 on seeds 0–15. In the shifted-start and wire-height tests it passes 12 of the 13 runs where the leg touched the wire. The old swing-trigger default got 12 of 16 and 10 of 13 on the same checks. I also removed the swing-trigger option, since no leg uses it any more.
+
+Confirmation on the new defaults (all four legs, seeds 0–15, no flags, 64 runs under the strict verdict):
+
+Leg	Start after wire contact	Step (lift/advance/descend)	Passes
+FL	wait 23 steps	4/5/4	16/16
+FR	immediately	4/5/4	15/16 (seed 3 fails)
+RL	immediately	4/5/4	15/16 (seed 3 fails)
+RR	wait 14 steps	4/5/4	15/16 (seed 3 fails)
+That is 61 of 64. The shared 4/5/4 step also simplified the script, since the per-leg step lengths are gone.
+
+One pattern stands out. All three failures are seed 3: FR sidesteps, and RL and RR never latch. FL passes it. Seed 3 is the same random start in every leg, so its start jitter probably puts the robot in an awkward gait phase when it reaches the wire. That would explain the failures better than three separate leg problems. I'd check what is special about seed 3 next, comparing its start position, yaw and gait phase at contact against the passing seeds.
+
+Still open:
+
+Seed 3 for FR, RL and RR, as above.
+Open-loop waits: FL's 23-step and RR's 14-step waits remain fixed timers, as I described. I'd test them with different walking speeds.
+Unfinished housekeeping: nothing is committed, and make check, the full make test and the changelog entry are still to do.
+Should I start with what is special about seed 3?
+
+
+
