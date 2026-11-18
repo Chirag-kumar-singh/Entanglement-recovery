@@ -217,5 +217,119 @@ Open-loop waits: FL's 23-step and RR's 14-step waits remain fixed timers, as I d
 Unfinished housekeeping: nothing is committed, and make check, the full make test and the changelog entry are still to do.
 Should I start with what is special about seed 3?
 
+----------------------------------------------------------------
+
+I found out why FR seed 3 and RR seed 3 fail, but I haven't fixed either. The defaults still pass 30 of 32 runs (seeds 0–7, four legs), and the 10 recovery tests pass.
+
+Logs: nothing to restore. Those files were already committed in 5c8f779 on Nov 12, so I left them alone. My sweeps now write to the scratchpad only.
+
+FR seed 3 (sidestep).
+
+Cause: the walking policy keeps cycling FL and RR, and they lift at k=4–8 while FR is also up. That leaves only RL on the ground. The body falls sideways at up to 1.2 m/s. In the passing seeds FL and RR stay planted through the whole step.
+Holding FL and RR in place: I tried holding them at their step-start pose. It removes the sidestep and the dip (body ≥ 0.25 m), but then 0 of 24 runs cross, with the 4/5/4, 6/8/6 and 8/10/8 timings. Crossing needs the body to move forward, and the held legs stop it. I removed that option.
+Holding the foot up until the calf has crossed: this is a new opt-in step_max_hold_steps (default 0, so nothing changes unless you ask). With 6 extra steps it changes no other seed. FR seed 3 loses the sidestep (drift 0.06 m instead of 0.45 m), but the body still dips to 0.193 m, just under my 0.20 m pass threshold. So it's a milder failure rather than a pass.
+RR seed 3 (never latches).
+
+Cause: the body drifts backward (−0.09 m), so the calf only reaches the wire at k≈9–10. By then the scripted descent has started, and the calf crosses at or below the wire's 2 cm margin.
+Not fixed: holding the descent didn't fix it. A taller lift (0.26 m) didn't either, and it made FR worse (seed 3 sidesteps again and seed 4 fails). So neither trick works for RR seed 3.
+Both remaining failures are gait-phase problems that a fixed step handles badly, so more tuning of the same step is unlikely to get 8/8.
+
+What I'd do next:
+
+Widen the test before anything else. Run seeds 8–15 and a shifted wire position with the current defaults, to see how much of the 30 of 32 is overfit to seeds 0–7. RL's single good setting makes me suspect some of it is.
+Then decide how to handle the last two seeds. One option is to pick the step per start phase, such as a different step shape when the body is drifting back. The other is to accept 30 of 32 for now and move to the other legs' quality, such as the body dips.
+Should I start with the wider seed and wire-position test?
+
+The step_max_hold_steps option can stay opt-in, or I can enable it for FR. It changes no pass count on seeds 0–7 but replaces FR seed 3's sidestep with a smaller dip. I'd leave it off until the wider test.
+
+Nothing is committed. make check, the full make test, and the changelog entry are still to do before a commit.
 
 
+---------------------------------------------------------------
+Result of that last step. I compared two RL start strategies across 16 seeds (0–15):
+
+RL start strategy	Passes (seeds 0–15)	Failing
+Current default (swing trigger, capped at 14 steps)	12/16	4 of seeds 8–15
+Immediate start, 8/10/8 step	15/16	seed 3 only
+Immediate start, 4/5/4 step	15/16	seed 3 only
+So the swing-trigger setting I enabled for RL was overfit to seeds 0–7. Starting immediately is much better on the larger sample and needs no tuned delay, which makes it less likely to be overfit.
+
+Other changes since the last report:
+
+Verdict label: it now prints SKIP when the leg never touches the wire, instead of a false FAIL.
+Script flags: I added --spawn-y-offset and --wire-height-offset for the robustness tests.
+
+he switch is verified. RL with an immediate start and the 4/5/4 step passes 15 of 16 on seeds 0–15. In the shifted-start and wire-height tests it passes 12 of the 13 runs where the leg touched the wire. The old swing-trigger default got 12 of 16 and 10 of 13 on the same checks. I also removed the swing-trigger option, since no leg uses it any more.
+
+Confirmation on the new defaults (all four legs, seeds 0–15, no flags, 64 runs under the strict verdict):
+
+Leg	Start after wire contact	Step (lift/advance/descend)	Passes
+FL	wait 23 steps	4/5/4	16/16
+FR	immediately	4/5/4	15/16 (seed 3 fails)
+RL	immediately	4/5/4	15/16 (seed 3 fails)
+RR	wait 14 steps	4/5/4	15/16 (seed 3 fails)
+That is 61 of 64. The shared 4/5/4 step also simplified the script, since the per-leg step lengths are gone.
+
+One pattern stands out. All three failures are seed 3: FR sidesteps, and RL and RR never latch. FL passes it. Seed 3 is the same random start in every leg, so its start jitter probably puts the robot in an awkward gait phase when it reaches the wire. That would explain the failures better than three separate leg problems. I'd check what is special about seed 3 next, comparing its start position, yaw and gait phase at contact against the passing seeds.
+
+Still open:
+
+Seed 3 for FR, RL and RR, as above.
+Open-loop waits: FL's 23-step and RR's 14-step waits remain fixed timers, as I described. I'd test them with different walking speeds.
+Unfinished housekeeping: nothing is committed, and make check, the full make test and the changelog entry are still to do.
+Should I start with what is special about seed 3?
+---------------------------------------------------------
+
+Seed 3 is not a one-off, but it is also not random. Over 40 seeds the failures sit in a narrow corner of the start range.
+
+Pass rates, seeds 0–39 (default settings):
+
+Leg	Passes	Failing seeds
+FL	16/16 (only seeds 0–15 run)	none
+FR	37/40	3, 16, 35 (all sidesteps)
+RL	38/39 (1 no-contact skip)	3
+RR	37/40	3, 35, 27
+What the failing seeds have in common. Seeds 3, 16 and 35 share two traits:
+
+Far-back start: x of −0.359 to −0.370 m, at the far end of the ±0.02 m jitter.
+Negative start yaw: about −2.5° to −2.9°, so the robot arrives at the wire turned slightly to one side.
+Each trait alone is not enough:
+
+Six other far-back seeds, such as 13, 11 and 39, have positive or near-zero yaw and pass.
+Seeds 4 and 5, with similar negative yaw but a nearer start, pass.
+In this sample the combination of both is a 3 out of 3 failure rate for FR, and it also hits RR on seeds 3 and 35 and RL on seed 3. That is suggestive, but it is only three seeds, not proof.
+
+RR seed 27 (x = −0.331, yaw +1.7°) fails for a different reason, so RR has a second weak spot that isn't explained yet.
+
+Caveats. The seed jitter only moves the start by ±2 cm and ±3°, so these failures are in a small corner. That also means a real wire encounter, with a different approach angle, could look worse than my 92–97%. My step is purely in the leg's forward-and-up plane, so it has no way to correct a leg that meets the wire at an angle.
+
+Next: to confirm the corner and design a fix, I need many samples from it instead of waiting for random seeds to land there. I'd add start-x and start-yaw overrides to the environment config, test a grid of starts, and then try steering the leg's hip sideways during the step. Should I go ahead with that, or would you rather commit and clean up now? That means running make check and the full tests, and adding the changelog entry.
+
+------------------------------------------------
+
+You're right: the solution as it stands only works for wires close to the current height, and I have now measured how quickly it degrades. The wire's centreline is 10 cm by default, and I raised it for all four legs (seeds 0–3 each):
+
+Wire raise	Wire top	Result
++1 cm	about 11.6 cm	mostly passes (earlier test)
++2 cm	about 12.6 cm	FL 3/4, FR 1/4, RL 3/3, RR 3/4
++4 cm	about 14.6 cm	0 passes; many runs never touch the wire
++6 cm	about 16.6 cm	0 passes; the calf never touches the wire at all
+Why it fails, in two parts:
+
+Detection: the recovery only starts when the calf touches the wire. A higher wire hits the thigh or body instead, so the recovery never starts, however good the step is. In the +6 cm runs the front-leg robots stop at the wire (base x ≈ 0 for the whole run) and the rear-leg robots just walk on. I didn't investigate why, and note that this test only lets the target leg interact with the wire, so high-wire results are not realistic.
+Reach: the step lifts the foot a fixed 20 cm command above where it starts, but the foot only reaches about 14–16 cm above its start. Calf clearance in passing runs is about 8–12 cm above a 10.6 cm wire. The leg's geometry also caps the height: the hip is about 30 cm high and the foot can't come closer than about 11–13 cm to it, so the foot tops out near 18–20 cm off the ground. My rough estimate is that a wire above about 15 cm can't be stepped over by this leg alone. The robot would need a different strategy, such as lowering the body, jumping or going around. That is my estimate, not something I've tested.
+Adapting the scripted approach. This is cheap and I'd try it first:
+
+Make the lift depend on the wire height: lift = wire height + margin, not a fixed 20 cm. The leg's own joint angles at contact already tell us roughly how high the wire is.
+Start recovery on contact with the thigh and body as well as the calf.
+Re-tune the start delays per wire height, since I tuned them at one height.
+This would probably extend the range up to the geometric limit, maybe a wire of 13–15 cm. It would not go beyond it.
+
+Can training help? Yes, but for variety, not for beating the geometry:
+
+What it's good for: a policy trained with randomized wire heights, positions, speeds and approach angles could learn when to start and how high to lift from what it senses, instead of fixed numbers I tuned by hand. That would remove my open-loop timers.
+What it can't do: it can't lift a foot higher than the leg can physically reach.
+Our history: the earlier learned attempt failed because the walking policy overrode its corrections.
+A safer way: keep the scripted step as the base. Let the learned part pick only a few numbers, such as lift height, advance and start time, from what the robot senses. Start it from the successful scripted runs, and score it with the same strict pass rule. I'd also randomize the wire height widely during training.
+Risks: a learned policy can find loopholes. We already saw one, a robot that fell sideways past the wire counted as a success. And everything is simulation only.
+Should I first try the cheap fix, scaling the lift with wire height and adding thigh contact? I'd rather learn how far that goes before deciding whether training is worth the cost.
