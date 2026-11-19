@@ -1,0 +1,21 @@
+seed=0 FAIL FL not across; stalled 0.03m/s (drift_y=0.047 min_base_z=0.240 walkoff_vx=0.03) {'FL_contact': 40, 'FL_enter': 41, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=1 FAIL stalled 0.04m/s (drift_y=0.029 min_base_z=0.266 walkoff_vx=0.04) {'FL_contact': 38, 'FL_enter': 39, 'FR_contact': 49, 'FR_enter': 50, 'FR_step': 50, 'FR_calf_latch': 58, 'FR_foot_latch': 58}
+seed=2 FAIL FL not across; stalled 0.01m/s (drift_y=0.011 min_base_z=0.277 walkoff_vx=0.01) {'FL_contact': 41, 'FL_enter': 42, 'FR_contact': 49, 'FR_enter': 50, 'FR_step': 50, 'FR_calf_latch': 58, 'FR_foot_latch': 58}
+seed=3 FAIL FL not across; stalled -0.01m/s (drift_y=0.053 min_base_z=0.248 walkoff_vx=-0.01) {'FL_contact': 44, 'FL_enter': 45, 'FR_contact': 51, 'FR_enter': 52, 'FR_step': 52, 'FR_calf_latch': 130, 'FR_foot_latch': 130}
+seed=4 FAIL FL not across; stalled 0.03m/s (drift_y=0.075 min_base_z=0.250 walkoff_vx=0.03) {'FL_contact': 38, 'FL_enter': 39, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=5 FAIL stalled 0.02m/s (drift_y=0.019 min_base_z=0.289 walkoff_vx=0.02) {'FL_contact': 37, 'FL_enter': 38, 'FR_contact': 49, 'FR_enter': 50, 'FR_step': 50, 'FR_calf_latch': 58, 'FR_foot_latch': 58}
+seed=6 FAIL FL not across; stalled 0.03m/s (drift_y=0.054 min_base_z=0.248 walkoff_vx=0.03) {'FL_contact': 41, 'FL_enter': 42, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=7 FAIL stalled 0.01m/s (drift_y=0.000 min_base_z=0.268 walkoff_vx=0.01) {'FL_contact': 41, 'FL_enter': 42, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 59, 'FR_foot_latch': 59}
+seed=8 FAIL FL not across; stalled 0.01m/s (drift_y=0.045 min_base_z=0.270 walkoff_vx=0.01) {'FL_contact': 41, 'FL_enter': 42, 'FR_contact': 49, 'FR_enter': 50, 'FR_step': 50, 'FR_calf_latch': 58, 'FR_foot_latch': 58}
+seed=9 FAIL stalled 0.04m/s (drift_y=0.029 min_base_z=0.265 walkoff_vx=0.04) {'FL_contact': 41, 'FL_enter': 42, 'FR_contact': 49, 'FR_enter': 50, 'FR_step': 50, 'FR_calf_latch': 58, 'FR_foot_latch': 58}
+seed=10 FAIL FL not across; stalled 0.02m/s (drift_y=0.085 min_base_z=0.248 walkoff_vx=0.02) {'FL_contact': 39, 'FL_enter': 40, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=11 FAIL FL not across; stalled 0.03m/s (drift_y=0.077 min_base_z=0.246 walkoff_vx=0.03) {'FL_contact': 45, 'FL_enter': 46, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=12 FAIL FL not across; stalled -0.00m/s (drift_y=0.076 min_base_z=0.259 walkoff_vx=-0.00) {'FL_contact': 45, 'FL_enter': 46, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=13 FAIL FL not across; stalled -0.01m/s (drift_y=0.102 min_base_z=0.246 walkoff_vx=-0.01) {'FL_contact': 45, 'FL_enter': 46, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=14 FAIL FL not across; stalled 0.00m/s (drift_y=0.018 min_base_z=0.284 walkoff_vx=0.00) {'FL_contact': 39, 'FL_enter': 40, 'FR_contact': 49, 'FR_enter': 50, 'FR_step': 50, 'FR_calf_latch': 58, 'FR_foot_latch': 58}
+seed=15 FAIL FL not across; stalled 0.00m/s (drift_y=0.075 min_base_z=0.253 walkoff_vx=0.00) {'FL_contact': 42, 'FL_enter': 43, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=16 FAIL sidestep drift 0.19m (drift_y=0.187 min_base_z=0.253 walkoff_vx=0.26) {'FL_contact': 42, 'FL_enter': 43, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51}
+seed=17 FAIL FL not across; stalled 0.01m/s (drift_y=0.061 min_base_z=0.246 walkoff_vx=0.01) {'FL_contact': 42, 'FL_enter': 43, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 76, 'FR_foot_latch': 76}
+seed=18 FAIL FL not across; stalled 0.04m/s (drift_y=0.054 min_base_z=0.248 walkoff_vx=0.04) {'FL_contact': 43, 'FL_enter': 44, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 60, 'FR_foot_latch': 60}
+seed=19 FAIL stalled 0.00m/s (drift_y=0.016 min_base_z=0.288 walkoff_vx=0.00) {'FL_contact': 37, 'FL_enter': 38, 'FR_contact': 49, 'FR_enter': 50, 'FR_step': 50, 'FR_calf_latch': 58, 'FR_foot_latch': 58}
+PASS 0/20 (SKIP 0)

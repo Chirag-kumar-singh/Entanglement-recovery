@@ -1,0 +1,760 @@
+sweep,seed,result,reason
+all_a1,0,FAIL_FRONT,FL not across; rear legs never reached the wire
+all_a1,1,PASS,drift_y=0.065 min_base_z=0.245 walkoff_vx=0.27
+all_a1,2,PASS,drift_y=0.031 min_base_z=0.281 walkoff_vx=0.27
+all_a1,3,FAIL_FRONT,fell over at step 69 before the rear legs reached the wire
+all_a1,4,FAIL_FRONT,fell over at step 87 before the rear legs reached the wire
+all_a1,5,PASS,drift_y=0.048 min_base_z=0.251 walkoff_vx=0.26
+all_a1,6,FAIL_FRONT,FL not across; rear legs never reached the wire
+all_a1,7,PASS,drift_y=0.004 min_base_z=0.263 walkoff_vx=0.27
+all_a1,8,FAIL_FRONT,sidestep drift 0.16m
+all_a1,9,PASS,drift_y=0.034 min_base_z=0.250 walkoff_vx=0.27
+all_a1,10,FAIL_FRONT,FL not across; rear legs never reached the wire
+all_a1,11,FAIL_FRONT,FL not across; rear legs never reached the wire
+all_a1,12,FAIL_FRONT,FL not across; rear legs never reached the wire
+all_a1,13,FAIL_FRONT,FR not across; sidestep drift 0.21m; rear legs never reached the wire
+all_a1,14,PASS,drift_y=0.031 min_base_z=0.288 walkoff_vx=0.27
+all_a1,15,FAIL_FRONT,fell over at step 89 before the rear legs reached the wire
+all_a1,16,FAIL_FRONT,fell over at step 86 before the rear legs reached the wire
+all_a1,17,FAIL_FRONT,FR not across; sidestep drift 0.32m; rear legs never reached the wire
+all_a1,18,FAIL_FRONT,FL not across; rear legs never reached the wire
+all_a1,19,PASS,drift_y=0.035 min_base_z=0.272 walkoff_vx=0.26
+all_a2,0,PASS,drift_y=0.017 min_base_z=0.264 walkoff_vx=0.25
+all_a2,1,PASS,drift_y=0.065 min_base_z=0.245 walkoff_vx=0.27
+all_a2,2,PASS,drift_y=0.031 min_base_z=0.281 walkoff_vx=0.27
+all_a2,3,FAIL_FRONT,fell over at step 69 before the rear legs reached the wire
+all_a2,4,FAIL_FRONT,fell over at step 87 before the rear legs reached the wire
+all_a2,5,PASS,drift_y=0.048 min_base_z=0.251 walkoff_vx=0.26
+all_a2,6,FAIL_REAR,RL not across; stalled -0.03m/s
+all_a2,7,PASS,drift_y=0.004 min_base_z=0.263 walkoff_vx=0.27
+all_a2,8,FAIL_FRONT,sidestep drift 0.16m
+all_a2,9,PASS,drift_y=0.034 min_base_z=0.250 walkoff_vx=0.27
+all_a2,10,FAIL_REAR,RL not across; RR not across; stalled 0.06m/s
+all_a2,11,FAIL_REAR,RL not across; RR not across; stalled 0.08m/s
+all_a2,12,FAIL_REAR,RL not across; body collapse z=0.20m; stalled -0.02m/s
+all_a2,13,FAIL_FRONT,FR not across; sidestep drift 0.22m; rear legs never reached the wire
+all_a2,14,PASS,drift_y=0.031 min_base_z=0.288 walkoff_vx=0.27
+all_a2,15,FAIL_FRONT,fell over at step 89 before the rear legs reached the wire
+all_a2,16,FAIL_FRONT,fell over at step 86 before the rear legs reached the wire
+all_a2,17,FAIL_FRONT,FR not across; sidestep drift 0.34m; rear legs never reached the wire
+all_a2,18,PASS,drift_y=0.080 min_base_z=0.250 walkoff_vx=0.26
+all_a2,19,PASS,drift_y=0.035 min_base_z=0.272 walkoff_vx=0.26
+cap96_nogate,0,FAIL,FL not across; stalled 0.05m/s
+cap96_nogate,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+cap96_nogate,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+cap96_nogate,3,FELL,fell over at step 69
+cap96_nogate,4,FELL,fell over at step 87
+cap96_nogate,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+cap96_nogate,6,FAIL,FL not across; stalled -0.00m/s
+cap96_nogate,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+cap96_nogate,8,FAIL,sidestep drift 0.16m
+cap96_nogate,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+cap96_nogate,10,FAIL,FL not across; stalled 0.02m/s
+cap96_nogate,11,FAIL,FL not across; stalled -0.00m/s
+cap96_nogate,12,FAIL,FL not across; stalled 0.00m/s
+cap96_nogate,13,FAIL,FR not across; sidestep drift 0.21m; stalled 0.00m/s
+cap96_nogate,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+cap96_nogate,15,FELL,fell over at step 89
+cap96_nogate,16,FELL,fell over at step 86
+cap96_nogate,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.09m/s
+cap96_nogate,18,FAIL,FL not across; stalled -0.00m/s
+cap96_nogate,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+cap96_vx010,0,PASS,drift_y=0.042 min_base_z=0.240 walkoff_vx=0.27
+cap96_vx010,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+cap96_vx010,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+cap96_vx010,3,FELL,fell over at step 69
+cap96_vx010,4,FAIL,FL not across; stalled -0.02m/s
+cap96_vx010,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+cap96_vx010,6,PASS,drift_y=0.055 min_base_z=0.225 walkoff_vx=0.27
+cap96_vx010,7,PASS,drift_y=0.033 min_base_z=0.259 walkoff_vx=0.27
+cap96_vx010,8,FAIL,sidestep drift 0.16m
+cap96_vx010,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+cap96_vx010,10,FAIL,FL not across; FR not across; body collapse z=0.20m
+cap96_vx010,11,FAIL,FL not across; FR not across
+cap96_vx010,12,FAIL,FL not across; FR not across
+cap96_vx010,13,FAIL,FL not across; FR not across; stalled -0.00m/s
+cap96_vx010,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+cap96_vx010,15,FAIL,FL not across; FR not across; stalled 0.07m/s
+cap96_vx010,16,FAIL,body collapse z=0.20m
+cap96_vx010,17,PASS,drift_y=0.110 min_base_z=0.246 walkoff_vx=0.26
+cap96_vx010,18,PASS,drift_y=0.012 min_base_z=0.227 walkoff_vx=0.27
+cap96_vx010,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+cap96_vx015,0,PASS,drift_y=0.054 min_base_z=0.240 walkoff_vx=0.27
+cap96_vx015,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+cap96_vx015,2,PASS,drift_y=0.025 min_base_z=0.277 walkoff_vx=0.27
+cap96_vx015,3,FELL,fell over at step 69
+cap96_vx015,4,FAIL,FL not across; stalled -0.02m/s
+cap96_vx015,5,PASS,drift_y=0.081 min_base_z=0.242 walkoff_vx=0.27
+cap96_vx015,6,FAIL,FL not across; stalled -0.01m/s
+cap96_vx015,7,PASS,drift_y=0.058 min_base_z=0.255 walkoff_vx=0.27
+cap96_vx015,8,FAIL,sidestep drift 0.16m
+cap96_vx015,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+cap96_vx015,10,FAIL,FL not across; body collapse z=0.20m; stalled 0.05m/s
+cap96_vx015,11,FAIL,FL not across; FR not across
+cap96_vx015,12,FAIL,FL not across; FR not across
+cap96_vx015,13,FAIL,FL not across; FR not across; stalled 0.11m/s
+cap96_vx015,14,PASS,drift_y=0.074 min_base_z=0.267 walkoff_vx=0.27
+cap96_vx015,15,FAIL,FL not across; FR not across
+cap96_vx015,16,FAIL,body collapse z=0.18m
+cap96_vx015,17,PASS,drift_y=0.093 min_base_z=0.237 walkoff_vx=0.26
+cap96_vx015,18,PASS,drift_y=0.012 min_base_z=0.227 walkoff_vx=0.27
+cap96_vx015,19,PASS,drift_y=0.079 min_base_z=0.247 walkoff_vx=0.27
+cap96_vx020,0,PASS,drift_y=0.062 min_base_z=0.234 walkoff_vx=0.26
+cap96_vx020,1,PASS,drift_y=0.076 min_base_z=0.266 walkoff_vx=0.27
+cap96_vx020,2,FAIL,FL not across; stalled 0.01m/s
+cap96_vx020,3,FELL,fell over at step 69
+cap96_vx020,4,FAIL,FL not across; stalled -0.02m/s
+cap96_vx020,5,FAIL,body collapse z=0.17m; stalled -0.00m/s
+cap96_vx020,6,FAIL,FL not across; stalled -0.01m/s
+cap96_vx020,7,FAIL,stalled 0.01m/s
+cap96_vx020,8,FAIL,FL not across; stalled 0.01m/s
+cap96_vx020,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+cap96_vx020,10,FAIL,FL not across; stalled 0.11m/s
+cap96_vx020,11,FAIL,FL not across; FR not across
+cap96_vx020,12,FAIL,FL not across; FR not across; stalled 0.10m/s
+cap96_vx020,13,PASS,drift_y=0.063 min_base_z=0.209 walkoff_vx=0.23
+cap96_vx020,14,PASS,drift_y=0.093 min_base_z=0.249 walkoff_vx=0.26
+cap96_vx020,15,FAIL,FL not across; FR not across
+cap96_vx020,16,FAIL,body collapse z=0.18m
+cap96_vx020,17,PASS,drift_y=0.077 min_base_z=0.229 walkoff_vx=0.25
+cap96_vx020,18,FAIL,FL not across; stalled 0.04m/s
+cap96_vx020,19,FAIL,stalled 0.00m/s
+diag_fall,3,FELL,fell over at step 69
+diag_fall,4,FELL,fell over at step 87
+diag_fall,15,FELL,fell over at step 89
+diag_pass,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.28
+diag_pass,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.24
+diag_pass,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.21
+diag_pass,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.26
+diag_pass,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+diag_pass,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+fl_delay_0,10,FAIL,FL not across; FR not across; stalled 0.00m/s
+fl_delay_0,11,FAIL,FL not across; FR not across; body collapse z=0.19m; stalled 0.08m/s
+fl_delay_0,12,FAIL,FL not across; FR not across; body collapse z=0.19m; stalled 0.06m/s
+fl_delay_0,13,FAIL,FL not across; FR not across; body collapse z=0.19m; stalled 0.03m/s
+fl_delay_0,14,FAIL,FL not across; FR not across; stalled 0.02m/s
+fl_delay_0,15,FAIL,FL not across; FR not across; stalled -0.02m/s
+fl_delay_0,16,FAIL,FL not across; FR not across; stalled 0.03m/s
+fl_delay_0,17,FAIL,FL not across; FR not across; stalled 0.01m/s
+fl_delay_0,18,FAIL,FL not across; stalled -0.01m/s
+fl_delay_0,19,FAIL,FR not across; body collapse z=0.13m; stalled 0.01m/s
+fl_delay_14,10,FAIL,FL not across; stalled 0.02m/s
+fl_delay_14,11,FELL,fell over at step 92
+fl_delay_14,12,FAIL,FL not across; FR not across; sidestep drift 0.51m; body collapse z=0.18m; stalled 0.09m/s
+fl_delay_14,13,FELL,fell over at step 92
+fl_delay_14,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+fl_delay_14,15,FAIL,FL not across; FR not across; sidestep drift 0.30m; body collapse z=0.19m; stalled 0.14m/s
+fl_delay_14,16,FELL,fell over at step 84
+fl_delay_14,17,FAIL,FL not across; FR not across; sidestep drift 0.18m; stalled 0.00m/s
+fl_delay_14,18,FAIL,FL not across; stalled -0.00m/s
+fl_delay_14,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+fl_delay_18,10,FAIL,FL not across; stalled 0.02m/s
+fl_delay_18,11,FELL,fell over at step 92
+fl_delay_18,12,FAIL,FL not across; FR not across; sidestep drift 0.51m; body collapse z=0.18m; stalled 0.09m/s
+fl_delay_18,13,FELL,fell over at step 92
+fl_delay_18,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+fl_delay_18,15,FAIL,FL not across; FR not across; sidestep drift 0.30m; body collapse z=0.19m; stalled 0.14m/s
+fl_delay_18,16,FELL,fell over at step 84
+fl_delay_18,17,FAIL,FL not across; FR not across; sidestep drift 0.18m; stalled 0.00m/s
+fl_delay_18,18,FAIL,FL not across; stalled -0.00m/s
+fl_delay_18,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+fl_delay_20,10,FAIL,FL not across; stalled 0.02m/s
+fl_delay_20,11,FAIL,FL not across; stalled -0.02m/s
+fl_delay_20,12,FELL,fell over at step 88
+fl_delay_20,13,FELL,fell over at step 100
+fl_delay_20,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+fl_delay_20,15,FAIL,FL not across; FR not across; sidestep drift 0.30m; body collapse z=0.19m; stalled 0.14m/s
+fl_delay_20,16,FELL,fell over at step 84
+fl_delay_20,17,FAIL,FL not across; FR not across; sidestep drift 0.18m; stalled 0.00m/s
+fl_delay_20,18,FAIL,FL not across; stalled -0.00m/s
+fl_delay_20,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+fl_delay_26,10,FAIL,stalled 0.14m/s
+fl_delay_26,11,PASS,drift_y=0.099 min_base_z=0.244 walkoff_vx=0.25
+fl_delay_26,12,PASS,drift_y=0.106 min_base_z=0.228 walkoff_vx=0.25
+fl_delay_26,13,PASS,drift_y=0.111 min_base_z=0.228 walkoff_vx=0.26
+fl_delay_26,14,PASS,drift_y=0.074 min_base_z=0.267 walkoff_vx=0.27
+fl_delay_26,15,FAIL,FL not across; stalled 0.00m/s
+fl_delay_26,16,FAIL,sidestep drift 0.20m
+fl_delay_26,17,FAIL,FL not across; FR not across; stalled 0.07m/s
+fl_delay_26,18,FAIL,FL not across; stalled 0.04m/s
+fl_delay_26,19,PASS,drift_y=0.071 min_base_z=0.265 walkoff_vx=0.27
+fl_delay_30,10,FAIL,FL not across; stalled -0.00m/s
+fl_delay_30,11,FAIL,FL not across; stalled -0.01m/s
+fl_delay_30,12,FAIL,FL not across; stalled 0.01m/s
+fl_delay_30,13,FAIL,FL not across; stalled 0.05m/s
+fl_delay_30,14,PASS,drift_y=0.105 min_base_z=0.205 walkoff_vx=0.26
+fl_delay_30,15,FAIL,sidestep drift 0.16m
+fl_delay_30,16,FAIL,FL not across; FR not across; stalled 0.04m/s
+fl_delay_30,17,FAIL,FL not across; stalled -0.01m/s
+fl_delay_30,18,FAIL,FL not across; body collapse z=0.19m; stalled -0.01m/s
+fl_delay_30,19,FAIL,body collapse z=0.20m
+fl_delay_8,10,FAIL,FL not across; FR not across; body collapse z=0.18m; stalled 0.11m/s
+fl_delay_8,11,FELL,fell over at step 92
+fl_delay_8,12,FAIL,FL not across; FR not across; sidestep drift 0.51m; body collapse z=0.18m; stalled 0.09m/s
+fl_delay_8,13,FELL,fell over at step 92
+fl_delay_8,14,FAIL,FL not across; FR not across; body collapse z=0.18m; stalled 0.02m/s
+fl_delay_8,15,FAIL,FL not across; FR not across; body collapse z=0.18m
+fl_delay_8,16,FAIL,FL not across; FR not across; body collapse z=0.18m; stalled 0.02m/s
+fl_delay_8,17,FAIL,FL not across; FR not across; body collapse z=0.18m
+fl_delay_8,18,FAIL,FL not across; stalled -0.00m/s
+fl_delay_8,19,FAIL,FL not across; FR not across; body collapse z=0.19m; stalled 0.15m/s
+fl_gate3_d23,0,PASS,drift_y=0.073 min_base_z=0.240 walkoff_vx=0.27
+fl_gate3_d23,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+fl_gate3_d23,2,PASS,drift_y=0.008 min_base_z=0.277 walkoff_vx=0.27
+fl_gate3_d23,3,FELL,fell over at step 69
+fl_gate3_d23,4,FAIL,FL not across; FR not across
+fl_gate3_d23,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+fl_gate3_d23,6,PASS,drift_y=0.038 min_base_z=0.246 walkoff_vx=0.27
+fl_gate3_d23,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+fl_gate3_d23,8,FAIL,sidestep drift 0.16m
+fl_gate3_d23,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+fl_gate3_d23,10,FAIL,FL not across; stalled 0.02m/s
+fl_gate3_d23,11,FAIL,FL not across; FR not across
+fl_gate3_d23,12,FAIL,FL not across; FR not across; stalled 0.15m/s
+fl_gate3_d23,13,FAIL,FL not across; FR not across
+fl_gate3_d23,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+fl_gate3_d23,15,FAIL,FL not across; FR not across; stalled 0.06m/s
+fl_gate3_d23,16,FAIL,sidestep drift 0.20m
+fl_gate3_d23,17,FAIL,stalled 0.13m/s
+fl_gate3_d23,18,PASS,drift_y=0.079 min_base_z=0.246 walkoff_vx=0.26
+fl_gate3_d23,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+fl_gate6_d14,0,FAIL,FL not across; stalled 0.05m/s
+fl_gate6_d14,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+fl_gate6_d14,2,PASS,drift_y=0.042 min_base_z=0.277 walkoff_vx=0.27
+fl_gate6_d14,3,FELL,fell over at step 69
+fl_gate6_d14,4,FAIL,FL not across; FR not across
+fl_gate6_d14,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+fl_gate6_d14,6,FAIL,FL not across; stalled -0.00m/s
+fl_gate6_d14,7,PASS,drift_y=0.032 min_base_z=0.255 walkoff_vx=0.26
+fl_gate6_d14,8,FAIL,sidestep drift 0.15m
+fl_gate6_d14,9,PASS,drift_y=0.069 min_base_z=0.261 walkoff_vx=0.27
+fl_gate6_d14,10,FAIL,FL not across; stalled 0.02m/s
+fl_gate6_d14,11,FAIL,FL not across; FR not across
+fl_gate6_d14,12,FAIL,FL not across; FR not across; sidestep drift 0.51m; body collapse z=0.18m; stalled 0.09m/s
+fl_gate6_d14,13,FAIL,FL not across; FR not across
+fl_gate6_d14,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+fl_gate6_d14,15,FAIL,FL not across; FR not across; stalled 0.06m/s
+fl_gate6_d14,16,FAIL,sidestep drift 0.20m
+fl_gate6_d14,17,FAIL,FL not across; FR not across; sidestep drift 0.18m; stalled 0.00m/s
+fl_gate6_d14,18,FAIL,FL not across; stalled -0.00m/s
+fl_gate6_d14,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+fl_gate6_d23,0,FAIL,FL not across; stalled 0.05m/s
+fl_gate6_d23,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+fl_gate6_d23,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+fl_gate6_d23,3,FELL,fell over at step 69
+fl_gate6_d23,4,FAIL,FL not across; FR not across
+fl_gate6_d23,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+fl_gate6_d23,6,FAIL,FL not across; stalled -0.00m/s
+fl_gate6_d23,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+fl_gate6_d23,8,FAIL,sidestep drift 0.16m
+fl_gate6_d23,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+fl_gate6_d23,10,FAIL,FL not across; stalled 0.02m/s
+fl_gate6_d23,11,FAIL,FL not across; FR not across
+fl_gate6_d23,12,FAIL,FL not across; FR not across; stalled 0.15m/s
+fl_gate6_d23,13,FAIL,FL not across; FR not across
+fl_gate6_d23,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+fl_gate6_d23,15,FAIL,FL not across; FR not across; stalled 0.06m/s
+fl_gate6_d23,16,FAIL,sidestep drift 0.20m
+fl_gate6_d23,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.09m/s
+fl_gate6_d23,18,FAIL,FL not across; stalled -0.00m/s
+fl_gate6_d23,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+fr_adv012,0,FAIL,FL not across; stalled -0.01m/s
+fr_adv012,1,PASS,drift_y=0.022 min_base_z=0.246 walkoff_vx=0.27
+fr_adv012,2,PASS,drift_y=0.033 min_base_z=0.247 walkoff_vx=0.27
+fr_adv012,3,FAIL,FL not across; FR not across; stalled 0.15m/s
+fr_adv012,4,FAIL,FL not across; stalled 0.04m/s
+fr_adv012,5,PASS,drift_y=0.076 min_base_z=0.254 walkoff_vx=0.27
+fr_adv012,6,FAIL,FL not across; body collapse z=0.19m; stalled 0.00m/s
+fr_adv012,7,PASS,drift_y=0.014 min_base_z=0.247 walkoff_vx=0.27
+fr_adv012,8,PASS,drift_y=0.036 min_base_z=0.246 walkoff_vx=0.27
+fr_adv012,9,PASS,drift_y=0.032 min_base_z=0.247 walkoff_vx=0.27
+fr_adv012,10,FAIL,FL not across; sidestep drift 0.16m; body collapse z=0.19m; stalled 0.01m/s
+fr_adv012,11,FAIL,FL not across; stalled 0.01m/s
+fr_adv012,12,PASS,drift_y=0.011 min_base_z=0.233 walkoff_vx=0.26
+fr_adv012,13,PASS,drift_y=0.056 min_base_z=0.208 walkoff_vx=0.21
+fr_adv012,14,PASS,drift_y=0.074 min_base_z=0.249 walkoff_vx=0.27
+fr_adv012,15,FAIL,FL not across; FR not across; stalled -0.00m/s
+fr_adv012,16,FAIL,FL not across; stalled -0.00m/s
+fr_adv012,17,FAIL,FL not across; stalled -0.01m/s
+fr_adv012,18,FAIL,FL not across; stalled -0.01m/s
+fr_adv012,19,PASS,drift_y=0.055 min_base_z=0.251 walkoff_vx=0.27
+fr_adv018,0,PASS,drift_y=0.100 min_base_z=0.214 walkoff_vx=0.26
+fr_adv018,1,PASS,drift_y=0.010 min_base_z=0.257 walkoff_vx=0.27
+fr_adv018,2,PASS,drift_y=0.007 min_base_z=0.258 walkoff_vx=0.27
+fr_adv018,3,FELL,fell over at step 74
+fr_adv018,4,FAIL,FL not across; stalled 0.01m/s
+fr_adv018,5,PASS,drift_y=0.069 min_base_z=0.265 walkoff_vx=0.27
+fr_adv018,6,FAIL,sidestep drift 0.17m
+fr_adv018,7,PASS,drift_y=0.007 min_base_z=0.257 walkoff_vx=0.27
+fr_adv018,8,PASS,drift_y=0.059 min_base_z=0.257 walkoff_vx=0.27
+fr_adv018,9,PASS,drift_y=0.030 min_base_z=0.258 walkoff_vx=0.27
+fr_adv018,10,FAIL,FL not across; stalled 0.01m/s
+fr_adv018,11,FAIL,FL not across; stalled -0.00m/s
+fr_adv018,12,PASS,drift_y=0.006 min_base_z=0.242 walkoff_vx=0.27
+fr_adv018,13,FAIL,FL not across; stalled -0.01m/s
+fr_adv018,14,PASS,drift_y=0.053 min_base_z=0.259 walkoff_vx=0.27
+fr_adv018,15,PASS,drift_y=0.085 min_base_z=0.213 walkoff_vx=0.25
+fr_adv018,16,FAIL,FL not across; stalled -0.00m/s
+fr_adv018,17,FAIL,FL not across; stalled 0.01m/s
+fr_adv018,18,FAIL,FL not across; stalled 0.00m/s
+fr_adv018,19,PASS,drift_y=0.049 min_base_z=0.263 walkoff_vx=0.27
+fr_adv024,0,FAIL,FL not across; stalled 0.02m/s
+fr_adv024,1,PASS,drift_y=0.056 min_base_z=0.259 walkoff_vx=0.27
+fr_adv024,2,PASS,drift_y=0.032 min_base_z=0.270 walkoff_vx=0.27
+fr_adv024,3,FELL,fell over at step 70
+fr_adv024,4,FAIL,FL not across; stalled 0.01m/s
+fr_adv024,5,PASS,drift_y=0.043 min_base_z=0.279 walkoff_vx=0.27
+fr_adv024,6,PASS,drift_y=0.010 min_base_z=0.240 walkoff_vx=0.27
+fr_adv024,7,PASS,drift_y=0.007 min_base_z=0.264 walkoff_vx=0.27
+fr_adv024,8,PASS,drift_y=0.085 min_base_z=0.271 walkoff_vx=0.27
+fr_adv024,9,PASS,drift_y=0.036 min_base_z=0.265 walkoff_vx=0.27
+fr_adv024,10,FAIL,FL not across; stalled 0.01m/s
+fr_adv024,11,FAIL,FL not across; stalled -0.00m/s
+fr_adv024,12,FAIL,FL not across; FR not across; stalled 0.03m/s
+fr_adv024,13,FAIL,FL not across; stalled 0.03m/s
+fr_adv024,14,PASS,drift_y=0.027 min_base_z=0.272 walkoff_vx=0.27
+fr_adv024,15,FAIL,FL not across; stalled 0.01m/s
+fr_adv024,16,FELL,fell over at step 88
+fr_adv024,17,FAIL,FL not across; stalled 0.02m/s
+fr_adv024,18,PASS,drift_y=0.019 min_base_z=0.240 walkoff_vx=0.27
+fr_adv024,19,PASS,drift_y=0.035 min_base_z=0.276 walkoff_vx=0.27
+hold_cmd0_af,0,FAIL,FL not across; stalled -0.00m/s
+hold_cmd0_af,1,PASS,drift_y=0.045 min_base_z=0.257 walkoff_vx=0.27
+hold_cmd0_af,2,PASS,drift_y=0.021 min_base_z=0.277 walkoff_vx=0.27
+hold_cmd0_af,3,FELL,fell over at step 69
+hold_cmd0_af,4,FELL,fell over at step 89
+hold_cmd0_af,5,PASS,drift_y=0.053 min_base_z=0.203 walkoff_vx=0.27
+hold_cmd0_af,6,FAIL,FL not across; stalled -0.01m/s
+hold_cmd0_af,7,PASS,drift_y=0.018 min_base_z=0.222 walkoff_vx=0.27
+hold_cmd0_af,8,PASS,drift_y=0.132 min_base_z=0.267 walkoff_vx=0.27
+hold_cmd0_af,9,PASS,drift_y=0.055 min_base_z=0.264 walkoff_vx=0.27
+hold_cmd0_af,10,FAIL,FL not across; stalled 0.00m/s
+hold_cmd0_af,11,FAIL,FL not across; stalled 0.04m/s
+hold_cmd0_af,12,FAIL,FL not across; FR not across; stalled 0.03m/s
+hold_cmd0_af,13,PASS,drift_y=0.116 min_base_z=0.230 walkoff_vx=0.25
+hold_cmd0_af,14,PASS,drift_y=0.063 min_base_z=0.264 walkoff_vx=0.27
+hold_cmd0_af,15,FAIL,FR not across; sidestep drift 0.26m; body collapse z=0.19m; stalled 0.03m/s
+hold_cmd0_af,16,FELL,fell over at step 86
+hold_cmd0_af,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.09m/s
+hold_cmd0_af,18,FAIL,FL not across; stalled 0.01m/s
+hold_cmd0_af,19,PASS,drift_y=0.071 min_base_z=0.257 walkoff_vx=0.26
+hold_freeze_af_r1,0,FAIL,FL not across; stalled 0.01m/s
+hold_freeze_af_r1,1,FAIL,FL not across; stalled 0.03m/s
+hold_freeze_af_r1,2,FAIL,stalled 0.02m/s
+hold_freeze_af_r1,3,FELL,fell over at step 69
+hold_freeze_af_r1,4,FELL,fell over at step 167
+hold_freeze_af_r1,5,FELL,fell over at step 118
+hold_freeze_af_r1,6,FAIL,FL not across; stalled 0.08m/s
+hold_freeze_af_r1,7,FAIL,stalled 0.02m/s
+hold_freeze_af_r1,8,FAIL,FL not across; stalled 0.02m/s
+hold_freeze_af_r1,9,PASS,drift_y=0.056 min_base_z=0.241 walkoff_vx=0.27
+hold_freeze_af_r1,10,FELL,fell over at step 153
+hold_freeze_af_r1,11,FELL,fell over at step 128
+hold_freeze_af_r1,12,FAIL,FL not across; stalled 0.01m/s
+hold_freeze_af_r1,13,FAIL,FL not across; stalled -0.00m/s
+hold_freeze_af_r1,14,FELL,fell over at step 114
+hold_freeze_af_r1,15,FAIL,sidestep drift 0.16m
+hold_freeze_af_r1,16,FELL,fell over at step 86
+hold_freeze_af_r1,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.09m/s
+hold_freeze_af_r1,18,FAIL,FL not across; stalled -0.00m/s
+hold_freeze_af_r1,19,FELL,fell over at step 140
+hold_freeze_af_r4,0,PASS,drift_y=0.046 min_base_z=0.220 walkoff_vx=0.26
+hold_freeze_af_r4,1,FELL,fell over at step 140
+hold_freeze_af_r4,2,FAIL,stalled 0.03m/s
+hold_freeze_af_r4,3,FELL,fell over at step 69
+hold_freeze_af_r4,4,PASS,drift_y=0.147 min_base_z=0.223 walkoff_vx=0.27
+hold_freeze_af_r4,5,FELL,fell over at step 149
+hold_freeze_af_r4,6,FAIL,FL not across; stalled 0.06m/s
+hold_freeze_af_r4,7,FAIL,FL not across; stalled 0.02m/s
+hold_freeze_af_r4,8,FAIL,FL not across; stalled 0.04m/s
+hold_freeze_af_r4,9,PASS,drift_y=0.054 min_base_z=0.246 walkoff_vx=0.26
+hold_freeze_af_r4,10,FELL,fell over at step 143
+hold_freeze_af_r4,11,FAIL,FL not across; stalled -0.00m/s
+hold_freeze_af_r4,12,FELL,fell over at step 111
+hold_freeze_af_r4,13,FELL,fell over at step 163
+hold_freeze_af_r4,14,FELL,fell over at step 147
+hold_freeze_af_r4,15,PASS,drift_y=0.135 min_base_z=0.231 walkoff_vx=0.27
+hold_freeze_af_r4,16,FELL,fell over at step 86
+hold_freeze_af_r4,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.09m/s
+hold_freeze_af_r4,18,FELL,fell over at step 135
+hold_freeze_af_r4,19,FELL,fell over at step 143
+hold_freeze_ent_r4,0,FAIL,body collapse z=0.19m
+hold_freeze_ent_r4,1,FAIL,FR not across; stalled 0.02m/s
+hold_freeze_ent_r4,2,PASS,drift_y=0.059 min_base_z=0.207 walkoff_vx=0.26
+hold_freeze_ent_r4,3,FAIL,FL not across; FR not across; body collapse z=0.20m; stalled 0.04m/s
+hold_freeze_ent_r4,4,FAIL,body collapse z=0.20m
+hold_freeze_ent_r4,5,FAIL,FR not across; stalled 0.01m/s
+hold_freeze_ent_r4,6,FAIL,FL not across; FR not across; stalled 0.11m/s
+hold_freeze_ent_r4,7,PASS,drift_y=0.082 min_base_z=0.221 walkoff_vx=0.25
+hold_freeze_ent_r4,8,PASS,drift_y=0.009 min_base_z=0.212 walkoff_vx=0.18
+hold_freeze_ent_r4,9,FAIL,FR not across; stalled 0.03m/s
+hold_freeze_ent_r4,10,PASS,drift_y=0.031 min_base_z=0.201 walkoff_vx=0.26
+hold_freeze_ent_r4,11,FAIL,FL not across; stalled -0.02m/s
+hold_freeze_ent_r4,12,PASS,drift_y=0.091 min_base_z=0.290 walkoff_vx=0.26
+hold_freeze_ent_r4,13,FAIL,FL not across; stalled -0.03m/s
+hold_freeze_ent_r4,14,FAIL,FR not across; stalled -0.00m/s
+hold_freeze_ent_r4,15,FAIL,FL not across; stalled 0.14m/s
+hold_freeze_ent_r4,16,FAIL,FL not across; stalled 0.01m/s
+hold_freeze_ent_r4,17,FAIL,FL not across; body collapse z=0.20m; stalled 0.06m/s
+hold_freeze_ent_r4,18,FAIL,FL not across; stalled 0.01m/s
+hold_freeze_ent_r4,19,FAIL,FR not across; stalled -0.00m/s
+r2_flfirst_a,0,FAIL,FL not across; FR not across; body collapse z=0.18m; stalled 0.13m/s
+r2_flfirst_a,1,FELL,fell over at step 184
+r2_flfirst_a,2,FAIL,FL not across; FR not across; body collapse z=0.19m; stalled 0.09m/s
+r2_flfirst_a,3,FAIL,sidestep drift 0.16m
+r2_flfirst_a,4,FAIL,FL not across; FR not across; body collapse z=0.18m
+r2_flfirst_a,5,FAIL,FL not across; FR not across; body collapse z=0.18m
+r2_flfirst_a,6,FAIL,body collapse z=0.19m
+r2_flfirst_a,7,FAIL,FL not across; FR not across; body collapse z=0.18m; stalled 0.02m/s
+r2_flfirst_a,8,FAIL,FL not across; FR not across; body collapse z=0.19m
+r2_flfirst_a,9,FAIL,FL not across; FR not across; body collapse z=0.19m
+r2_flfirst_a,10,FAIL,FL not across; FR not across; body collapse z=0.18m
+r2_flfirst_a,11,PASS,drift_y=0.021 min_base_z=0.254 walkoff_vx=0.27
+r2_flfirst_a,12,FAIL,sidestep drift 0.16m; body collapse z=0.19m
+r2_flfirst_a,13,PASS,drift_y=0.004 min_base_z=0.247 walkoff_vx=0.27
+r2_flfirst_a,14,FAIL,FL not across; body collapse z=0.18m; stalled -0.01m/s
+r2_flfirst_a,15,FAIL,FL not across; FR not across; body collapse z=0.19m
+r2_flfirst_a,16,PASS,drift_y=0.005 min_base_z=0.263 walkoff_vx=0.27
+r2_flfirst_a,17,FAIL,FL not across; FR not across; body collapse z=0.19m
+r2_flfirst_a,18,FAIL,FL not across; FR not across; body collapse z=0.20m
+r2_flfirst_a,19,FAIL,FL not across; FR not across; body collapse z=0.18m
+r2_flfirst_b,0,FAIL,body collapse z=0.18m; stalled 0.10m/s
+r2_flfirst_b,1,FAIL,body collapse z=0.19m
+r2_flfirst_b,2,PASS,drift_y=0.004 min_base_z=0.249 walkoff_vx=0.27
+r2_flfirst_b,3,FAIL,FL not across; stalled -0.03m/s
+r2_flfirst_b,4,FAIL,FR not across; body collapse z=0.17m; stalled 0.01m/s
+r2_flfirst_b,5,FAIL,FL not across; body collapse z=0.20m; stalled -0.01m/s
+r2_flfirst_b,6,FAIL,FR not across; stalled 0.01m/s
+r2_flfirst_b,7,PASS,drift_y=0.032 min_base_z=0.247 walkoff_vx=0.26
+r2_flfirst_b,8,PASS,drift_y=0.009 min_base_z=0.236 walkoff_vx=0.26
+r2_flfirst_b,9,PASS,drift_y=0.022 min_base_z=0.243 walkoff_vx=0.27
+r2_flfirst_b,10,FAIL,FR not across; body collapse z=0.18m; stalled 0.02m/s
+r2_flfirst_b,11,FAIL,FL not across; body collapse z=0.18m; stalled 0.14m/s
+r2_flfirst_b,12,PASS,drift_y=0.027 min_base_z=0.245 walkoff_vx=0.27
+r2_flfirst_b,13,FAIL,FL not across; FR not across
+r2_flfirst_b,14,PASS,drift_y=0.072 min_base_z=0.245 walkoff_vx=0.26
+r2_flfirst_b,15,FAIL,FR not across; stalled 0.01m/s
+r2_flfirst_b,16,FAIL,FL not across; body collapse z=0.19m; stalled 0.03m/s
+r2_flfirst_b,17,PASS,drift_y=0.016 min_base_z=0.222 walkoff_vx=0.26
+r2_flfirst_b,18,PASS,drift_y=0.002 min_base_z=0.240 walkoff_vx=0.26
+r2_flfirst_b,19,FAIL,FL not across; body collapse z=0.20m; stalled -0.03m/s
+r2_fradv012,0,FAIL,FL not across; stalled -0.00m/s
+r2_fradv012,1,PASS,drift_y=0.022 min_base_z=0.246 walkoff_vx=0.27
+r2_fradv012,2,PASS,drift_y=0.033 min_base_z=0.247 walkoff_vx=0.27
+r2_fradv012,3,FAIL,FL not across; FR not across; body collapse z=0.18m; stalled 0.01m/s
+r2_fradv012,4,FAIL,FL not across; stalled -0.00m/s
+r2_fradv012,5,PASS,drift_y=0.076 min_base_z=0.254 walkoff_vx=0.27
+r2_fradv012,6,FAIL,FL not across; body collapse z=0.19m; stalled 0.02m/s
+r2_fradv012,7,PASS,drift_y=0.014 min_base_z=0.247 walkoff_vx=0.27
+r2_fradv012,8,PASS,drift_y=0.036 min_base_z=0.246 walkoff_vx=0.27
+r2_fradv012,9,PASS,drift_y=0.032 min_base_z=0.247 walkoff_vx=0.27
+r2_fradv012,10,FAIL,FL not across; FR not across; sidestep drift 0.17m; body collapse z=0.19m
+r2_fradv012,11,PASS,drift_y=0.051 min_base_z=0.206 walkoff_vx=0.26
+r2_fradv012,12,PASS,drift_y=0.011 min_base_z=0.233 walkoff_vx=0.26
+r2_fradv012,13,PASS,drift_y=0.075 min_base_z=0.208 walkoff_vx=0.24
+r2_fradv012,14,PASS,drift_y=0.074 min_base_z=0.249 walkoff_vx=0.27
+r2_fradv012,15,FAIL,FL not across; FR not across; stalled 0.00m/s
+r2_fradv012,16,FAIL,FL not across; stalled -0.00m/s
+r2_fradv012,17,FAIL,FL not across; stalled 0.01m/s
+r2_fradv012,18,PASS,drift_y=0.071 min_base_z=0.212 walkoff_vx=0.25
+r2_fradv012,19,PASS,drift_y=0.055 min_base_z=0.251 walkoff_vx=0.27
+r2_fradv018,0,PASS,drift_y=0.126 min_base_z=0.214 walkoff_vx=0.25
+r2_fradv018,1,PASS,drift_y=0.010 min_base_z=0.257 walkoff_vx=0.27
+r2_fradv018,2,PASS,drift_y=0.007 min_base_z=0.258 walkoff_vx=0.27
+r2_fradv018,3,FELL,fell over at step 74
+r2_fradv018,4,PASS,drift_y=0.046 min_base_z=0.204 walkoff_vx=0.27
+r2_fradv018,5,PASS,drift_y=0.069 min_base_z=0.265 walkoff_vx=0.27
+r2_fradv018,6,FAIL,sidestep drift 0.17m
+r2_fradv018,7,PASS,drift_y=0.007 min_base_z=0.257 walkoff_vx=0.27
+r2_fradv018,8,PASS,drift_y=0.059 min_base_z=0.257 walkoff_vx=0.27
+r2_fradv018,9,PASS,drift_y=0.030 min_base_z=0.258 walkoff_vx=0.27
+r2_fradv018,10,PASS,drift_y=0.047 min_base_z=0.203 walkoff_vx=0.27
+r2_fradv018,11,FAIL,FL not across; stalled 0.02m/s
+r2_fradv018,12,PASS,drift_y=0.006 min_base_z=0.242 walkoff_vx=0.27
+r2_fradv018,13,FAIL,FL not across; stalled 0.02m/s
+r2_fradv018,14,PASS,drift_y=0.053 min_base_z=0.259 walkoff_vx=0.27
+r2_fradv018,15,PASS,drift_y=0.112 min_base_z=0.213 walkoff_vx=0.26
+r2_fradv018,16,FAIL,FL not across; FR not across; body collapse z=0.16m
+r2_fradv018,17,PASS,drift_y=0.045 min_base_z=0.217 walkoff_vx=0.26
+r2_fradv018,18,PASS,drift_y=0.040 min_base_z=0.220 walkoff_vx=0.24
+r2_fradv018,19,PASS,drift_y=0.049 min_base_z=0.263 walkoff_vx=0.27
+r2_roll10,0,PASS,drift_y=0.116 min_base_z=0.235 walkoff_vx=0.26
+r2_roll10,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+r2_roll10,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+r2_roll10,3,FELL,fell over at step 69
+r2_roll10,4,FELL,fell over at step 87
+r2_roll10,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+r2_roll10,6,PASS,drift_y=0.052 min_base_z=0.246 walkoff_vx=0.27
+r2_roll10,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+r2_roll10,8,FAIL,sidestep drift 0.16m
+r2_roll10,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+r2_roll10,10,PASS,drift_y=0.120 min_base_z=0.221 walkoff_vx=0.26
+r2_roll10,11,PASS,drift_y=0.084 min_base_z=0.230 walkoff_vx=0.25
+r2_roll10,12,PASS,drift_y=0.083 min_base_z=0.213 walkoff_vx=0.27
+r2_roll10,13,FAIL,FL not across; FR not across; body collapse z=0.18m
+r2_roll10,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+r2_roll10,15,FELL,fell over at step 89
+r2_roll10,16,FAIL,body collapse z=0.19m
+r2_roll10,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.07m/s
+r2_roll10,18,PASS,drift_y=0.123 min_base_z=0.227 walkoff_vx=0.26
+r2_roll10,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+r2_roll6,0,FAIL,stalled 0.09m/s
+r2_roll6,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+r2_roll6,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+r2_roll6,3,FELL,fell over at step 69
+r2_roll6,4,FAIL,FL not across; stalled 0.10m/s
+r2_roll6,5,PASS,drift_y=0.081 min_base_z=0.242 walkoff_vx=0.27
+r2_roll6,6,FAIL,body collapse z=0.19m
+r2_roll6,7,PASS,drift_y=0.035 min_base_z=0.262 walkoff_vx=0.27
+r2_roll6,8,FAIL,sidestep drift 0.16m
+r2_roll6,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+r2_roll6,10,PASS,drift_y=0.079 min_base_z=0.200 walkoff_vx=0.26
+r2_roll6,11,FAIL,FL not across; FR not across; stalled 0.04m/s
+r2_roll6,12,FAIL,FL not across; FR not across; body collapse z=0.20m; stalled 0.03m/s
+r2_roll6,13,FAIL,FL not across; FR not across; stalled 0.13m/s
+r2_roll6,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+r2_roll6,15,FAIL,FL not across; FR not across; body collapse z=0.19m
+r2_roll6,16,FAIL,sidestep drift 0.20m; body collapse z=0.19m
+r2_roll6,17,FAIL,FR not across; stalled 0.02m/s
+r2_roll6,18,FAIL,body collapse z=0.19m
+r2_roll6,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+rear_a1,0,PASS,drift_y=0.027 min_base_z=0.285 walkoff_vx=0.27
+rear_a1,1,PASS,drift_y=0.034 min_base_z=0.287 walkoff_vx=0.27
+rear_a1,2,PASS,drift_y=0.030 min_base_z=0.285 walkoff_vx=0.27
+rear_a1,3,PASS,drift_y=0.034 min_base_z=0.278 walkoff_vx=0.27
+rear_a1,4,PASS,drift_y=0.041 min_base_z=0.286 walkoff_vx=0.26
+rear_a1,5,PASS,drift_y=0.034 min_base_z=0.291 walkoff_vx=0.26
+rear_a1,6,PASS,drift_y=0.039 min_base_z=0.287 walkoff_vx=0.26
+rear_a1,7,PASS,drift_y=0.026 min_base_z=0.288 walkoff_vx=0.27
+rear_a1,8,PASS,drift_y=0.018 min_base_z=0.285 walkoff_vx=0.27
+rear_a1,9,PASS,drift_y=0.027 min_base_z=0.285 walkoff_vx=0.27
+rear_a1,10,PASS,drift_y=0.053 min_base_z=0.285 walkoff_vx=0.27
+rear_a1,11,PASS,drift_y=0.039 min_base_z=0.285 walkoff_vx=0.27
+rear_a1,12,PASS,drift_y=0.064 min_base_z=0.267 walkoff_vx=0.27
+rear_a1,13,PASS,drift_y=0.044 min_base_z=0.285 walkoff_vx=0.27
+rear_a1,14,PASS,drift_y=0.032 min_base_z=0.286 walkoff_vx=0.27
+rear_a1,15,PASS,drift_y=0.046 min_base_z=0.284 walkoff_vx=0.27
+rear_a1,16,PASS,drift_y=0.049 min_base_z=0.286 walkoff_vx=0.27
+rear_a1,17,PASS,drift_y=0.043 min_base_z=0.283 walkoff_vx=0.27
+rear_a1,18,PASS,drift_y=0.040 min_base_z=0.283 walkoff_vx=0.27
+rear_a1,19,PASS,drift_y=0.040 min_base_z=0.290 walkoff_vx=0.27
+rear_a1_s20_59,20,PASS,drift_y=0.031 min_base_z=0.287 walkoff_vx=0.27
+rear_a1_s20_59,21,PASS,drift_y=0.051 min_base_z=0.285 walkoff_vx=0.27
+rear_a1_s20_59,22,PASS,drift_y=0.053 min_base_z=0.284 walkoff_vx=0.27
+rear_a1_s20_59,23,PASS,drift_y=0.038 min_base_z=0.256 walkoff_vx=0.26
+rear_a1_s20_59,24,PASS,drift_y=0.005 min_base_z=0.289 walkoff_vx=0.26
+rear_a1_s20_59,25,PASS,drift_y=0.002 min_base_z=0.290 walkoff_vx=0.26
+rear_a1_s20_59,26,PASS,drift_y=0.007 min_base_z=0.289 walkoff_vx=0.26
+rear_a1_s20_59,27,PASS,drift_y=0.024 min_base_z=0.288 walkoff_vx=0.27
+rear_a1_s20_59,28,PASS,drift_y=0.037 min_base_z=0.286 walkoff_vx=0.26
+rear_a1_s20_59,29,PASS,drift_y=0.044 min_base_z=0.282 walkoff_vx=0.27
+rear_a1_s20_59,30,PASS,drift_y=0.008 min_base_z=0.287 walkoff_vx=0.27
+rear_a1_s20_59,31,PASS,drift_y=0.049 min_base_z=0.285 walkoff_vx=0.27
+rear_a1_s20_59,32,PASS,drift_y=0.035 min_base_z=0.287 walkoff_vx=0.27
+rear_a1_s20_59,33,PASS,drift_y=0.033 min_base_z=0.287 walkoff_vx=0.27
+rear_a1_s20_59,34,PASS,drift_y=0.031 min_base_z=0.274 walkoff_vx=0.26
+rear_a1_s20_59,35,PASS,drift_y=0.062 min_base_z=0.247 walkoff_vx=0.26
+rear_a1_s20_59,36,PASS,drift_y=0.049 min_base_z=0.288 walkoff_vx=0.26
+rear_a1_s20_59,37,PASS,drift_y=0.019 min_base_z=0.287 walkoff_vx=0.27
+rear_a1_s20_59,38,PASS,drift_y=0.040 min_base_z=0.285 walkoff_vx=0.27
+rear_a1_s20_59,39,PASS,drift_y=0.002 min_base_z=0.273 walkoff_vx=0.27
+rear_a1_s20_59,40,PASS,drift_y=0.035 min_base_z=0.284 walkoff_vx=0.27
+rear_a1_s20_59,41,PASS,drift_y=0.038 min_base_z=0.284 walkoff_vx=0.27
+rear_a1_s20_59,42,PASS,drift_y=0.017 min_base_z=0.288 walkoff_vx=0.27
+rear_a1_s20_59,43,PASS,drift_y=0.042 min_base_z=0.253 walkoff_vx=0.26
+rear_a1_s20_59,44,PASS,drift_y=0.027 min_base_z=0.287 walkoff_vx=0.27
+rear_a1_s20_59,45,PASS,drift_y=0.042 min_base_z=0.282 walkoff_vx=0.27
+rear_a1_s20_59,46,PASS,drift_y=0.033 min_base_z=0.285 walkoff_vx=0.27
+rear_a1_s20_59,47,PASS,drift_y=0.045 min_base_z=0.282 walkoff_vx=0.27
+rear_a1_s20_59,48,PASS,drift_y=0.036 min_base_z=0.286 walkoff_vx=0.27
+rear_a1_s20_59,49,PASS,drift_y=0.002 min_base_z=0.280 walkoff_vx=0.27
+rear_a1_s20_59,50,PASS,drift_y=0.029 min_base_z=0.287 walkoff_vx=0.27
+rear_a1_s20_59,51,PASS,drift_y=0.016 min_base_z=0.278 walkoff_vx=0.27
+rear_a1_s20_59,52,PASS,drift_y=0.011 min_base_z=0.288 walkoff_vx=0.27
+rear_a1_s20_59,53,PASS,drift_y=0.021 min_base_z=0.286 walkoff_vx=0.27
+rear_a1_s20_59,54,PASS,drift_y=0.016 min_base_z=0.284 walkoff_vx=0.27
+rear_a1_s20_59,55,PASS,drift_y=0.003 min_base_z=0.287 walkoff_vx=0.26
+rear_a1_s20_59,56,PASS,drift_y=0.024 min_base_z=0.288 walkoff_vx=0.27
+rear_a1_s20_59,57,PASS,drift_y=0.051 min_base_z=0.284 walkoff_vx=0.27
+rear_a1_s20_59,58,PASS,drift_y=0.042 min_base_z=0.286 walkoff_vx=0.27
+rear_a1_s20_59,59,PASS,drift_y=0.015 min_base_z=0.285 walkoff_vx=0.27
+rear_a2,0,PASS,drift_y=0.027 min_base_z=0.285 walkoff_vx=0.27
+rear_a2,1,PASS,drift_y=0.034 min_base_z=0.287 walkoff_vx=0.27
+rear_a2,2,PASS,drift_y=0.030 min_base_z=0.285 walkoff_vx=0.27
+rear_a2,3,PASS,drift_y=0.034 min_base_z=0.278 walkoff_vx=0.27
+rear_a2,4,PASS,drift_y=0.041 min_base_z=0.286 walkoff_vx=0.26
+rear_a2,5,PASS,drift_y=0.034 min_base_z=0.291 walkoff_vx=0.26
+rear_a2,6,PASS,drift_y=0.039 min_base_z=0.287 walkoff_vx=0.26
+rear_a2,7,PASS,drift_y=0.026 min_base_z=0.288 walkoff_vx=0.27
+rear_a2,8,PASS,drift_y=0.018 min_base_z=0.285 walkoff_vx=0.27
+rear_a2,9,PASS,drift_y=0.027 min_base_z=0.285 walkoff_vx=0.27
+rear_a2,10,PASS,drift_y=0.053 min_base_z=0.285 walkoff_vx=0.27
+rear_a2,11,PASS,drift_y=0.039 min_base_z=0.285 walkoff_vx=0.27
+rear_a2,12,PASS,drift_y=0.064 min_base_z=0.267 walkoff_vx=0.27
+rear_a2,13,PASS,drift_y=0.044 min_base_z=0.285 walkoff_vx=0.27
+rear_a2,14,PASS,drift_y=0.032 min_base_z=0.286 walkoff_vx=0.27
+rear_a2,15,PASS,drift_y=0.046 min_base_z=0.284 walkoff_vx=0.27
+rear_a2,16,PASS,drift_y=0.049 min_base_z=0.286 walkoff_vx=0.27
+rear_a2,17,PASS,drift_y=0.043 min_base_z=0.283 walkoff_vx=0.27
+rear_a2,18,PASS,drift_y=0.040 min_base_z=0.283 walkoff_vx=0.27
+rear_a2,19,PASS,drift_y=0.040 min_base_z=0.290 walkoff_vx=0.27
+retry2,0,PASS,drift_y=0.116 min_base_z=0.235 walkoff_vx=0.26
+retry2,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+retry2,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+retry2,3,FELL,fell over at step 69
+retry2,4,FELL,fell over at step 87
+retry2,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+retry2,6,PASS,drift_y=0.052 min_base_z=0.246 walkoff_vx=0.27
+retry2,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+retry2,8,FAIL,sidestep drift 0.16m
+retry2,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+retry2,10,PASS,drift_y=0.146 min_base_z=0.248 walkoff_vx=0.26
+retry2,11,PASS,drift_y=0.084 min_base_z=0.230 walkoff_vx=0.25
+retry2,12,PASS,drift_y=0.083 min_base_z=0.213 walkoff_vx=0.27
+retry2,13,FAIL,FR not across; sidestep drift 0.22m; stalled 0.03m/s
+retry2,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+retry2,15,FELL,fell over at step 89
+retry2,16,FELL,fell over at step 86
+retry2,17,FAIL,FR not across; sidestep drift 0.34m
+retry2,18,PASS,drift_y=0.123 min_base_z=0.227 walkoff_vx=0.26
+retry2,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+retry2_s20_59,20,PASS,drift_y=0.012 min_base_z=0.279 walkoff_vx=0.26
+retry2_s20_59,21,FELL,fell over at step 91
+retry2_s20_59,22,FELL,fell over at step 92
+retry2_s20_59,23,FAIL,sidestep drift 0.19m
+retry2_s20_59,24,PASS,drift_y=0.004 min_base_z=0.275 walkoff_vx=0.27
+retry2_s20_59,25,PASS,drift_y=0.051 min_base_z=0.277 walkoff_vx=0.27
+retry2_s20_59,26,PASS,drift_y=0.024 min_base_z=0.276 walkoff_vx=0.27
+retry2_s20_59,27,PASS,drift_y=0.048 min_base_z=0.256 walkoff_vx=0.27
+retry2_s20_59,28,FELL,fell over at step 82
+retry2_s20_59,29,PASS,drift_y=0.100 min_base_z=0.239 walkoff_vx=0.26
+retry2_s20_59,30,PASS,drift_y=0.125 min_base_z=0.254 walkoff_vx=0.26
+retry2_s20_59,31,PASS,drift_y=0.147 min_base_z=0.248 walkoff_vx=0.27
+retry2_s20_59,32,PASS,drift_y=0.059 min_base_z=0.262 walkoff_vx=0.27
+retry2_s20_59,33,PASS,drift_y=0.092 min_base_z=0.270 walkoff_vx=0.27
+retry2_s20_59,34,PASS,drift_y=0.088 min_base_z=0.255 walkoff_vx=0.27
+retry2_s20_59,35,FELL,fell over at step 71
+retry2_s20_59,36,FELL,fell over at step 98
+retry2_s20_59,37,PASS,drift_y=0.131 min_base_z=0.257 walkoff_vx=0.26
+retry2_s20_59,38,PASS,drift_y=0.069 min_base_z=0.245 walkoff_vx=0.27
+retry2_s20_59,39,FAIL,sidestep drift 0.22m
+retry2_s20_59,40,PASS,drift_y=0.149 min_base_z=0.232 walkoff_vx=0.27
+retry2_s20_59,41,FELL,fell over at step 136
+retry2_s20_59,42,PASS,drift_y=0.140 min_base_z=0.259 walkoff_vx=0.26
+retry2_s20_59,43,PASS,drift_y=0.056 min_base_z=0.234 walkoff_vx=0.23
+retry2_s20_59,44,PASS,drift_y=0.119 min_base_z=0.262 walkoff_vx=0.27
+retry2_s20_59,45,FELL,fell over at step 127
+retry2_s20_59,46,PASS,drift_y=0.074 min_base_z=0.263 walkoff_vx=0.27
+retry2_s20_59,47,FAIL,FR not across; sidestep drift 0.19m; stalled 0.02m/s
+retry2_s20_59,48,PASS,drift_y=0.020 min_base_z=0.265 walkoff_vx=0.27
+retry2_s20_59,49,PASS,drift_y=0.123 min_base_z=0.225 walkoff_vx=0.27
+retry2_s20_59,50,PASS,drift_y=0.016 min_base_z=0.268 walkoff_vx=0.26
+retry2_s20_59,51,PASS,drift_y=0.118 min_base_z=0.264 walkoff_vx=0.27
+retry2_s20_59,52,PASS,drift_y=0.128 min_base_z=0.259 walkoff_vx=0.26
+retry2_s20_59,53,PASS,drift_y=0.132 min_base_z=0.258 walkoff_vx=0.26
+retry2_s20_59,54,PASS,drift_y=0.130 min_base_z=0.271 walkoff_vx=0.27
+retry2_s20_59,55,FAIL,sidestep drift 0.16m
+retry2_s20_59,56,PASS,drift_y=0.109 min_base_z=0.256 walkoff_vx=0.26
+retry2_s20_59,57,FELL,fell over at step 92
+retry2_s20_59,58,PASS,drift_y=0.141 min_base_z=0.226 walkoff_vx=0.27
+retry2_s20_59,59,PASS,drift_y=0.126 min_base_z=0.271 walkoff_vx=0.27
+retry3,0,PASS,drift_y=0.116 min_base_z=0.235 walkoff_vx=0.25
+retry3,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+retry3,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+retry3,3,FELL,fell over at step 69
+retry3,4,FELL,fell over at step 87
+retry3,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+retry3,6,PASS,drift_y=0.052 min_base_z=0.246 walkoff_vx=0.27
+retry3,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+retry3,8,FAIL,sidestep drift 0.16m
+retry3,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+retry3,10,FELL,fell over at step 147
+retry3,11,FELL,fell over at step 145
+retry3,12,PASS,drift_y=0.083 min_base_z=0.213 walkoff_vx=0.27
+retry3,13,FAIL,FR not across; sidestep drift 0.22m; stalled 0.15m/s
+retry3,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+retry3,15,FELL,fell over at step 89
+retry3,16,FELL,fell over at step 86
+retry3,17,FAIL,FL not across; FR not across; sidestep drift 0.34m; stalled 0.02m/s
+retry3,18,PASS,drift_y=0.123 min_base_z=0.227 walkoff_vx=0.26
+retry3,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+retry4,0,PASS,drift_y=0.116 min_base_z=0.235 walkoff_vx=0.26
+retry4,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+retry4,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+retry4,3,FELL,fell over at step 69
+retry4,4,FELL,fell over at step 87
+retry4,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.27
+retry4,6,PASS,drift_y=0.052 min_base_z=0.246 walkoff_vx=0.27
+retry4,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.26
+retry4,8,FAIL,sidestep drift 0.16m
+retry4,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+retry4,10,FELL,fell over at step 158
+retry4,11,FELL,fell over at step 175
+retry4,12,PASS,drift_y=0.083 min_base_z=0.213 walkoff_vx=0.26
+retry4,13,FAIL,FR not across; sidestep drift 0.22m; stalled 0.04m/s
+retry4,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+retry4,15,FELL,fell over at step 89
+retry4,16,FELL,fell over at step 86
+retry4,17,FAIL,FL not across; FR not across; sidestep drift 0.34m
+retry4,18,PASS,drift_y=0.123 min_base_z=0.227 walkoff_vx=0.27
+retry4,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+retryc2,0,FAIL,FL not across; stalled 0.05m/s
+retryc2,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+retryc2,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+retryc2,3,FELL,fell over at step 69
+retryc2,4,FELL,fell over at step 87
+retryc2,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+retryc2,6,FAIL,FL not across; stalled -0.00m/s
+retryc2,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+retryc2,8,FAIL,sidestep drift 0.16m
+retryc2,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+retryc2,10,FAIL,FL not across; stalled 0.02m/s
+retryc2,11,FAIL,FL not across; stalled -0.00m/s
+retryc2,12,FAIL,FL not across; stalled 0.00m/s
+retryc2,13,FAIL,FR not across; sidestep drift 0.21m; stalled 0.00m/s
+retryc2,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+retryc2,15,FELL,fell over at step 89
+retryc2,16,FELL,fell over at step 86
+retryc2,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.09m/s
+retryc2,18,FAIL,FL not across; stalled -0.00m/s
+retryc2,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+retryc3,0,FAIL,FL not across; stalled 0.05m/s
+retryc3,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+retryc3,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+retryc3,3,FELL,fell over at step 69
+retryc3,4,FELL,fell over at step 87
+retryc3,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+retryc3,6,FAIL,FL not across; stalled -0.00m/s
+retryc3,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+retryc3,8,FAIL,sidestep drift 0.16m
+retryc3,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+retryc3,10,FAIL,FL not across; stalled 0.02m/s
+retryc3,11,FAIL,FL not across; stalled -0.00m/s
+retryc3,12,FAIL,FL not across; stalled 0.00m/s
+retryc3,13,FAIL,FR not across; sidestep drift 0.21m; stalled 0.00m/s
+retryc3,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+retryc3,15,FELL,fell over at step 89
+retryc3,16,FELL,fell over at step 86
+retryc3,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.09m/s
+retryc3,18,FAIL,FL not across; stalled -0.00m/s
+retryc3,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27
+retryc4,0,FAIL,FL not across; stalled 0.05m/s
+retryc4,1,PASS,drift_y=0.066 min_base_z=0.263 walkoff_vx=0.27
+retryc4,2,PASS,drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27
+retryc4,3,FELL,fell over at step 69
+retryc4,4,FELL,fell over at step 87
+retryc4,5,PASS,drift_y=0.069 min_base_z=0.264 walkoff_vx=0.26
+retryc4,6,FAIL,FL not across; stalled -0.00m/s
+retryc4,7,PASS,drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
+retryc4,8,FAIL,sidestep drift 0.16m
+retryc4,9,PASS,drift_y=0.081 min_base_z=0.265 walkoff_vx=0.27
+retryc4,10,FAIL,FL not across; stalled 0.02m/s
+retryc4,11,FAIL,FL not across; stalled -0.00m/s
+retryc4,12,FAIL,FL not across; stalled 0.00m/s
+retryc4,13,FAIL,FR not across; sidestep drift 0.21m; stalled 0.00m/s
+retryc4,14,PASS,drift_y=0.039 min_base_z=0.279 walkoff_vx=0.27
+retryc4,15,FELL,fell over at step 89
+retryc4,16,FELL,fell over at step 86
+retryc4,17,FAIL,FR not across; sidestep drift 0.32m; stalled 0.09m/s
+retryc4,18,FAIL,FL not across; stalled -0.00m/s
+retryc4,19,PASS,drift_y=0.063 min_base_z=0.274 walkoff_vx=0.27

@@ -1,0 +1,2 @@
+legs=FL+FR seed=3 serialize=True start_delay={} min_body_vx={} max_recovery_steps=96 events={'FL_contact': 44, 'FL_enter': 45, 'FR_contact': 51, 'FR_enter': 52, 'FR_step': 52, 'FL_step': 68, 'FR_calf_latch': 130, 'FR_foot_latch': 130}
+VERDICT=FAIL FL not across; FR not across (drift_y=0.053 min_base_z=0.248 walkoff_vx=0.26)

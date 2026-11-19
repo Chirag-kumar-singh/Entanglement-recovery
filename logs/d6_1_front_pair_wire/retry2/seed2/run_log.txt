@@ -1,0 +1,2 @@
+legs=FL+FR seed=2 serialize=True start_delay={} step_advance={} step_gate={} step_gate_timeout=60 max_attempts={'FL': 2, 'FR': 2} retry_delay=0 min_body_vx={} max_recovery_steps=96 hold_mode=off hold_cmd_vx=0.0 hold_window=after_first hold_ramp_steps=1 hold_max_steps=40 hold_steps=0 events={'FL_contact': 41, 'FL_enter': 42, 'FR_contact': 49, 'FR_enter': 50, 'FR_step': 50, 'FR_calf_latch': 58, 'FR_foot_latch': 58, 'FL_step': 65, 'FL_calf_latch': 72, 'FL_foot_latch': 72}
+VERDICT=PASS drift_y=0.033 min_base_z=0.277 walkoff_vx=0.27

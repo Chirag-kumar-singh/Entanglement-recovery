@@ -1,0 +1,2 @@
+legs=FL+FR seed=7 serialize=True start_delay={} min_body_vx={} max_recovery_steps=96 events={'FL_contact': 41, 'FL_enter': 42, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FR_calf_latch': 59, 'FR_foot_latch': 59, 'FL_step': 65, 'FL_calf_latch': 72, 'FL_foot_latch': 73}
+VERDICT=PASS drift_y=0.017 min_base_z=0.239 walkoff_vx=0.27
