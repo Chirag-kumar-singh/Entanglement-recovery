@@ -413,6 +413,34 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   """Control steps after RECOVERY entry before the scripted step starts; the
   leg follows the walking policy meanwhile. For FL/FR held against the wire
   the foot stays planted (no natural swing), so this is a pure delay there."""
+  step_gate_max_age: int = 0
+  """If > 0, gait-phase start gate (opt-in, default off). The step is held on
+  the walking policy until the two feet that are neither the stepping leg nor
+  its trot-diagonal partner (the pair that lifts next) have JUST landed, i.e.
+  have been below step_gate_planted_z for 1..step_gate_max_age consecutive
+  control steps. That leaves the longest time before they lift again. The
+  step_start_delay_steps still applies as a minimum wait."""
+  step_gate_planted_z: float = 0.026
+  """Foot-site height (m) below which a foot counts as planted (standing
+  height is ~0.021 m)."""
+  step_gate_timeout_steps: int = 30
+  """Start the step anyway after this many steps in RECOVERY if the gate
+  never opens."""
+  step_max_attempts: int = 1
+  """Scripted-step attempts per RECOVERY entry. 1 = current behavior (one
+  step). If > 1, a leg whose step has finished (including the blend back to the
+  walking policy) while still in RECOVERY and not yet across the wire (the
+  two-stage crossing latch) re-arms and steps again, up to this many times.
+  Logic from Yim et al. 2023: stuck/free is re-evaluated each swing and a leg
+  that is still stuck retracts again."""
+  step_retry_delay_steps: int = 0
+  """Control steps to wait after a finished attempt before re-arming."""
+  step_retry_on: str = "uncrossed"
+  """When to retry a finished attempt. "uncrossed": the leg has not latched
+  both crossing stages (checked every step until it retries). "contact": the
+  leg is still touching the wire at the moment its attempt finishes (checked
+  once, so a leg that is free then is not retried), like the paper's
+  stuck/free state at the end of the swing."""
   step_max_hold_steps: int = 0
   """If > 0, the descent phase is held (foot stays lifted) until the calf has
   crossed the wire above it (the clearance latch), for at most this many extra
@@ -885,6 +913,21 @@ class ResidualRecoveryAction(ActionTerm):
     )
     self._step_t0 = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
     self._step_hold = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+    _diag = {0: 3, 1: 2, 2: 1, 3: 0}[cfg.affected_leg_idx]
+    self._gate_site_idx = [
+      list(self._entity.site_names).index(LEG_NAMES[i])
+      for i in range(4)
+      if i not in (cfg.affected_leg_idx, _diag)
+    ]
+    self._gate_planted_age = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.long
+    )
+    self._step_attempts = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.long
+    )
+    self._step_done_age = torch.zeros(
+      self.num_envs, device=self.device, dtype=torch.long
+    )
     _dj = self._entity.data.default_joint_pos
     self._default_thigh = _dj[0, self._step_thigh_jid].clone()
     self._default_calf = _dj[0, self._step_calf_jid].clone()
@@ -892,6 +935,14 @@ class ResidualRecoveryAction(ActionTerm):
     # Lightweight debug state: only print on phase-transition EVENTS (not
     # every step), per the "do not spam logs" requirement.
     self._logged_entry_step: int = -1
+
+    # Optional [B] bool mask set externally (MultiLegRecoveryAction) to hold
+    # back the scripted step's start while another leg is mid-step. None = no
+    # effect.
+    self.step_block: torch.Tensor | None = None
+    # Optional [B, 3] command fed to the walking policy instead of the command
+    # manager's (MultiLegRecoveryAction's body hold). None = no effect.
+    self.walk_command_override: torch.Tensor | None = None
 
   def _find_actuator_ctrl_id(self, joint_name: str, actuator_cls=None) -> int:
     """Resolve the global MuJoCo ctrl id of the actuator targeting
@@ -1345,6 +1396,9 @@ class ResidualRecoveryAction(ActionTerm):
   def reset(self, env_ids: torch.Tensor | slice | None = None) -> None:
     if env_ids is None:
       self._last_walk_raw_action.zero_()
+      self._gate_planted_age.zero_()
+      self._step_attempts.zero_()
+      self._step_done_age.zero_()
       self._phase.fill_(PHASE_NORMAL_WALK)
       self._recovery_elapsed.zero_()
       self._release_counter.zero_()
@@ -1366,6 +1420,9 @@ class ResidualRecoveryAction(ActionTerm):
       self.stage2_progress_reward.zero_()
     else:
       self._last_walk_raw_action[env_ids] = 0.0
+      self._gate_planted_age[env_ids] = 0
+      self._step_attempts[env_ids] = 0
+      self._step_done_age[env_ids] = 0
       self._phase[env_ids] = PHASE_NORMAL_WALK
       self._recovery_elapsed[env_ids] = 0
       self._release_counter[env_ids] = 0
@@ -1739,6 +1796,8 @@ class ResidualRecoveryAction(ActionTerm):
       f"ResidualRecoveryAction requires a '{self.cfg.command_name}' command "
       f"term to reconstruct pi_walk's observation."
     )
+    if self.walk_command_override is not None:
+      command = self.walk_command_override
 
     return torch.cat(
       [
@@ -1851,10 +1910,28 @@ class ResidualRecoveryAction(ActionTerm):
       delta_a = torch.zeros(self.num_envs, 3, device=self.device)
       ent = self.newly_entangled
       self._step_started = self._step_started & ~ent
+      self._step_attempts = torch.where(
+        ent, torch.zeros_like(self._step_attempts), self._step_attempts
+      )
+      self._step_done_age = torch.where(
+        ent, torch.zeros_like(self._step_done_age), self._step_done_age
+      )
       in_rec_now = self._phase == PHASE_RECOVERY
       waited = self._recovery_elapsed - 1
       go = waited >= self.cfg.step_start_delay_steps
+      if self.cfg.step_gate_max_age > 0:
+        feet_z = self._entity.data.site_pos_w[:, self._gate_site_idx, 2]
+        planted = (feet_z < self.cfg.step_gate_planted_z).all(dim=-1)
+        self._gate_planted_age = torch.where(
+          planted, self._gate_planted_age + 1, torch.zeros_like(self._gate_planted_age)
+        )
+        gate_open = (self._gate_planted_age >= 1) & (
+          self._gate_planted_age <= self.cfg.step_gate_max_age
+        )
+        go = go & (gate_open | (waited >= self.cfg.step_gate_timeout_steps))
       trigger = in_rec_now & ~self._step_started & go
+      if self.step_block is not None:
+        trigger = trigger & ~self.step_block
       if bool(trigger.any()):
         jp = self._entity.data.joint_pos
         p_now = self._leg_fk(jp[:, self._step_thigh_jid], jp[:, self._step_calf_jid])
@@ -1862,6 +1939,37 @@ class ResidualRecoveryAction(ActionTerm):
         self._step_t0 = torch.where(trigger, waited, self._step_t0)
         self._step_hold = torch.where(trigger, 0, self._step_hold)
         self._step_started = self._step_started | trigger
+        self._step_attempts = self._step_attempts + trigger.long()
+        self._step_done_age = torch.where(
+          trigger, torch.zeros_like(self._step_done_age), self._step_done_age
+        )
+      if self.cfg.step_max_attempts > 1:
+        c1 = self.cfg
+        finished = (
+          in_rec_now
+          & self._step_started
+          & (
+            self._step_clock() + 1.0
+            >= c1.step_lift_steps
+            + c1.step_advance_steps
+            + c1.step_descend_steps
+            + c1.step_blend_steps
+          )
+        )
+        self._step_done_age = torch.where(
+          finished, self._step_done_age + 1, torch.zeros_like(self._step_done_age)
+        )
+        if c1.step_retry_on == "contact":
+          stuck = self._in_contact & (
+            self._step_done_age == c1.step_retry_delay_steps + 1
+          )
+        else:
+          stuck = ~self._crossing_achieved & (
+            self._step_done_age > c1.step_retry_delay_steps
+          )
+        retry = finished & stuck & (self._step_attempts < c1.step_max_attempts)
+        # Re-arm: the trigger above fires on the next control step.
+        self._step_started = self._step_started & ~retry
       if self.cfg.step_max_hold_steps > 0:
         c0 = self.cfg
         at_descent = (

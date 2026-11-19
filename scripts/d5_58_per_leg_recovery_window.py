@@ -92,7 +92,11 @@ def default_max_steps(leg: str) -> int:
   return 200 if leg in FRONT_LEGS else 320
 
 
-STEP_START_DELAY = {"FL": 23, "FR": 0, "RL": 0, "RR": 14}
+STEP_START_DELAY = {"FL": 23, "FR": 0, "RL": 0, "RR": 0}
+# Gait-phase start gate (0 = off). RR: 80/80 on seeds 0-79 vs 76/80 for a fixed
+# 14-step wait. Hurts FR/RL (they need an immediate start; 0-1/15 on the start
+# grid) and FL (36/40 vs 39/40 for the 23-step wait on seeds 0-39).
+STEP_GATE_MAX_AGE = {"FL": 0, "FR": 0, "RL": 0, "RR": 6}
 CONTROL_DT = 0.02
 VERDICT_WINDOW_STEPS = 60
 VERDICT_MAX_DRIFT_Y = 0.15
@@ -176,10 +180,20 @@ class D558Config:
   20, 23 and 26. FR 7/8 at 0, 6/8 at 2, 0/8 at 4 or more. RR 7/8 at 12-18
   (5/8 at 0, 3/8 at 8). RL is best with no delay (15/16 on seeds 0-15); a
   swing-onset trigger tuned on seeds 0-7 gave only 12/16."""
+  step_gate_max_age: int | None = None
+  """None = auto per leg (STEP_GATE_MAX_AGE); 0 = off; >0 enables the
+  gait-phase start gate (see ResidualRecoveryActionCfg)."""
+  step_gate_planted_z: float = 0.026
+  step_gate_timeout_steps: int = 30
   step_max_hold_steps: int = 0
   spawn_y_offset: float = 0.0
   """Shift the robot's lateral start (m) relative to the wire, on top of the
   per-seed jitter (+-0.03 m). Robustness test only."""
+  start_x: float | None = None
+  """Pin the start x (m, world frame), replacing the per-seed +-0.02 m jitter.
+  Default spawn is wire anchor x - 0.35. Used to sweep the failure corner."""
+  start_yaw: float | None = None
+  """Pin the start yaw (rad), replacing the per-seed +-0.05 rad jitter."""
   wire_height_offset: float = 0.0
   """Raise (+) or lower (-) the wire (m). Robustness test only; the default
   wire centreline is 0.10 m."""
@@ -250,6 +264,13 @@ def build_leg_env(cfg: D558Config, device: str):
         else cfg.step_start_delay_steps
       ),
       "step_max_hold_steps": cfg.step_max_hold_steps,
+      "step_gate_max_age": (
+        STEP_GATE_MAX_AGE[cfg.leg]
+        if cfg.step_gate_max_age is None
+        else cfg.step_gate_max_age
+      ),
+      "step_gate_planted_z": cfg.step_gate_planted_z,
+      "step_gate_timeout_steps": cfg.step_gate_timeout_steps,
     },
     max_thigh_retract=cfg.max_thigh_retract,
     obstructed_release_steps=cfg.obstructed_release_steps,
@@ -257,6 +278,11 @@ def build_leg_env(cfg: D558Config, device: str):
   )
   env_cfg.seed = cfg.seed
   env_cfg.sim.device = device
+  pose_range = env_cfg.events["reset_base"].params["pose_range"]
+  if cfg.start_x is not None:
+    pose_range["x"] = (cfg.start_x, cfg.start_x)
+  if cfg.start_yaw is not None:
+    pose_range["yaw"] = (cfg.start_yaw, cfg.start_yaw)
 
   from mjlab.envs import ManagerBasedRlEnv
   from mjlab.sensor import ContactMatch, ContactSensorCfg
