@@ -426,6 +426,21 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   step_gate_timeout_steps: int = 30
   """Start the step anyway after this many steps in RECOVERY if the gate
   never opens."""
+  step_td_age_min: int = 0
+  step_td_age_max: int = 0
+  """If step_td_age_max > 0 (opt-in), the step starts only when the leg's OWN
+  foot touched down between step_td_age_min and step_td_age_max control steps
+  ago, i.e. at a fixed point of the leg's own stride (the age keeps counting
+  through the swing and resets at each touchdown, when the foot height drops
+  below step_gate_planted_z). step_gate_timeout_steps still applies. In
+  single-leg runs a step started within 12 steps of the touchdown never passed
+  (0 of 84), and 17-19 steps passed 25 of 28, for both FR and FL. With a ~25
+  step stride that is just after the foot lifts off."""
+  step_own_planted: bool = False
+  """If True (opt-in), the step also waits until this leg's OWN foot is planted
+  (below step_gate_planted_z). A step started with the leg's foot in the air
+  fails (D6.1 benchmark: 3 of 29 pass, against 10 of 10 when planted); the
+  step_gate_timeout_steps timeout still applies."""
   step_max_attempts: int = 1
   """Scripted-step attempts per RECOVERY entry. 1 = current behavior (one
   step). If > 1, a leg whose step has finished (including the blend back to the
@@ -922,6 +937,10 @@ class ResidualRecoveryAction(ActionTerm):
     self._gate_planted_age = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.long
     )
+    self._own_td_age = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+    self._own_prev_planted = torch.ones(
+      self.num_envs, device=self.device, dtype=torch.bool
+    )
     self._step_attempts = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.long
     )
@@ -1397,6 +1416,8 @@ class ResidualRecoveryAction(ActionTerm):
     if env_ids is None:
       self._last_walk_raw_action.zero_()
       self._gate_planted_age.zero_()
+      self._own_td_age.zero_()
+      self._own_prev_planted.fill_(True)
       self._step_attempts.zero_()
       self._step_done_age.zero_()
       self._phase.fill_(PHASE_NORMAL_WALK)
@@ -1421,6 +1442,8 @@ class ResidualRecoveryAction(ActionTerm):
     else:
       self._last_walk_raw_action[env_ids] = 0.0
       self._gate_planted_age[env_ids] = 0
+      self._own_td_age[env_ids] = 0
+      self._own_prev_planted[env_ids] = True
       self._step_attempts[env_ids] = 0
       self._step_done_age[env_ids] = 0
       self._phase[env_ids] = PHASE_NORMAL_WALK
@@ -1929,6 +1952,24 @@ class ResidualRecoveryAction(ActionTerm):
           self._gate_planted_age <= self.cfg.step_gate_max_age
         )
         go = go & (gate_open | (waited >= self.cfg.step_gate_timeout_steps))
+      if self.cfg.step_td_age_max > 0:
+        own_z0 = self._entity.data.site_pos_w[:, self._foot_site_idx, 2]
+        planted_now = own_z0 < self.cfg.step_gate_planted_z
+        touchdown = planted_now & ~self._own_prev_planted
+        self._own_td_age = torch.where(
+          touchdown, torch.zeros_like(self._own_td_age), self._own_td_age + 1
+        )
+        self._own_prev_planted = planted_now
+        in_window = (self._own_td_age >= self.cfg.step_td_age_min) & (
+          self._own_td_age <= self.cfg.step_td_age_max
+        )
+        go = go & (in_window | (waited >= self.cfg.step_gate_timeout_steps))
+      if self.cfg.step_own_planted:
+        own_z = self._entity.data.site_pos_w[:, self._foot_site_idx, 2]
+        go = go & (
+          (own_z < self.cfg.step_gate_planted_z)
+          | (waited >= self.cfg.step_gate_timeout_steps)
+        )
       trigger = in_rec_now & ~self._step_started & go
       if self.step_block is not None:
         trigger = trigger & ~self.step_block

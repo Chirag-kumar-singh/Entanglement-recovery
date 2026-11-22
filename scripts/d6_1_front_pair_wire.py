@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import csv
 import dataclasses
+import math
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -62,6 +63,11 @@ from mjlab.tasks.recovery.mdp.multi_leg import (  # noqa: E402
 )
 
 FRONT_LEGS = ("FL", "FR")
+# Per-leg default scripted-step reach (m) when it differs from the D5.58 value
+# (0.30). FR 0.18: on 60 seeds (front legs on the wire, 2 attempts) falls drop
+# 12 -> 2 and the front stage clears 68% -> 80%; single-leg FR is unchanged
+# (37/40 at both reaches). Override with --step-advance.
+DEFAULT_STEP_ADVANCE = {"FR": 0.18}
 REAR_LEGS = ("RL", "RR")
 PAIRS = {"front": FRONT_LEGS, "rear": REAR_LEGS, "all": FRONT_LEGS + REAR_LEGS}
 WIRE_SPAWN_Y = 0.25
@@ -97,7 +103,8 @@ class D61Config:
   legs use the D5.58 value."""
   step_advance: dict[str, float] = field(default_factory=dict)
   """Per-leg scripted-step forward reach (m) from the foot's start, e.g.
-  --step-advance FR 0.18. Missing legs use the D5.58 value (0.30)."""
+  --step-advance FR 0.30. Missing legs use DEFAULT_STEP_ADVANCE, else the
+  D5.58 value (0.30)."""
   max_attempts: dict[str, int] = field(default_factory=dict)
   """Per-leg scripted-step attempts per recovery, e.g. --max-attempts FL 3
   (see ResidualRecoveryActionCfg.step_max_attempts). Missing legs: 1."""
@@ -110,6 +117,13 @@ class D61Config:
   6: the step waits until the two feet that are neither this leg nor its
   diagonal partner have just landed (see ResidualRecoveryActionCfg). 0 = off.
   Missing legs use the D5.58 value (off for FL/FR)."""
+  td_window: tuple[int, int] | None = None
+  """Leg-independent start rule: every leg in the pair starts its step when its
+  own foot has been planted between LO and HI steps (e.g. --td-window 17 19).
+  Sets every start delay to 0 and turns the RR gait gate off unless given."""
+  own_planted: dict[str, bool] = field(default_factory=dict)
+  """Per-leg: hold the step start until the leg's own foot is planted, e.g.
+  --own-planted FL True (see ResidualRecoveryActionCfg.step_own_planted)."""
   step_gate_timeout: int = 60
   """Start anyway after this many steps in RECOVERY if the gate never opens."""
   max_roll_deg: dict[str, float] = field(default_factory=dict)
@@ -119,6 +133,10 @@ class D61Config:
   min_body_vx: dict[str, float] = field(default_factory=dict)
   """Per-leg body forward-velocity start gate (m/s), e.g. --min-body-vx FL
   0.15. Missing legs have no gate."""
+  partner_hold: bool = False
+  """Hold the stepping leg's trot-diagonal partner at the standing pose during
+  the step (see MultiLegRecoveryActionCfg.partner_hold)."""
+  partner_hold_ramp_steps: int = 2
   hold_mode: str = "off"
   """Body hold (option 2): "off", "cmd" or "freeze" (see multi_leg.py)."""
   hold_cmd_vx: float = 0.0
@@ -128,6 +146,17 @@ class D61Config:
   hold_ramp_steps: int = 1
   hold_max_steps: int = 40
   spawn_y_offset: float = 0.0
+  start_x: float | None = None
+  """Pin the start x (m, world frame), replacing the +-0.02 m jitter. The default
+  spawn is wire x - 0.35; moving it changes the gait phase at wire contact and
+  so which leg touches first."""
+  start_yaw: float | None = None
+  """Pin the start yaw (rad), replacing the +-0.05 rad jitter."""
+  start_x_range: tuple[float, float] | None = None
+  """Benchmark mode: give every seed its own start x in [lo, hi] (m), spread
+  evenly over seeds (golden-ratio sequence), so a sweep covers many approach
+  phases. One gait cycle is about 0.135 m of travel, so e.g. -0.485 -0.35.
+  Ignored if --start-x is set."""
   out_dir: str = ""
   debug: bool = False
 
@@ -137,18 +166,40 @@ def _step_overrides(leg: str, cfg: D61Config) -> dict:
   return {
     "step_lift_height": base.step_lift_height,
     "step_back": base.step_back,
-    "step_advance": cfg.step_advance.get(leg, base.step_advance),
+    "step_advance": cfg.step_advance.get(
+      leg, DEFAULT_STEP_ADVANCE.get(leg, base.step_advance)
+    ),
     "step_lift_steps": base.step_lift_steps,
     "step_advance_steps": base.step_advance_steps,
     "step_descend_steps": base.step_descend_steps,
     "step_blend_steps": base.step_blend_steps,
-    "step_start_delay_steps": cfg.start_delay.get(leg, STEP_START_DELAY[leg]),
-    "step_gate_max_age": cfg.step_gate.get(leg, STEP_GATE_MAX_AGE[leg]),
+    "step_start_delay_steps": cfg.start_delay.get(
+      leg, 0 if cfg.td_window else STEP_START_DELAY[leg]
+    ),
+    "step_gate_max_age": cfg.step_gate.get(
+      leg, 0 if cfg.td_window else STEP_GATE_MAX_AGE[leg]
+    ),
+    "step_td_age_min": cfg.td_window[0] if cfg.td_window else 0,
+    "step_td_age_max": cfg.td_window[1] if cfg.td_window else 0,
     "step_gate_timeout_steps": cfg.step_gate_timeout,
+    "step_own_planted": cfg.own_planted.get(leg, False),
     "step_max_attempts": cfg.max_attempts.get(leg, 1),
     "step_retry_delay_steps": cfg.retry_delay,
     "step_retry_on": cfg.retry_on,
   }
+
+
+GOLDEN = 0.6180339887498949
+
+
+def effective_start_x(cfg: D61Config, seed: int) -> float | None:
+  """Start x used for `seed`, or None for the default +-0.02 m jitter."""
+  if cfg.start_x is not None:
+    return cfg.start_x
+  if cfg.start_x_range is not None:
+    lo, hi = cfg.start_x_range
+    return lo + (hi - lo) * ((seed * GOLDEN) % 1.0)
+  return None
 
 
 def build_env(cfg: D61Config, seed: int, device: str):
@@ -167,6 +218,12 @@ def build_env(cfg: D61Config, seed: int, device: str):
   )
   env_cfg.seed = seed
   env_cfg.sim.device = device
+  pose_range = env_cfg.events["reset_base"].params["pose_range"]
+  start_x = effective_start_x(cfg, seed)
+  if start_x is not None:
+    pose_range["x"] = (start_x, start_x)
+  if cfg.start_yaw is not None:
+    pose_range["yaw"] = (cfg.start_yaw, cfg.start_yaw)
 
   base_action = env_cfg.actions["joint_pos"]
   leg_cfgs = []
@@ -204,6 +261,8 @@ def build_env(cfg: D61Config, seed: int, device: str):
     step_min_body_vx=tuple(cfg.min_body_vx.get(leg) for leg in pair),
     step_max_roll_deg=tuple(cfg.max_roll_deg.get(leg) for leg in pair),
     roll_gate_max_steps=cfg.roll_gate_max_steps,
+    partner_hold=cfg.partner_hold,
+    partner_hold_ramp_steps=cfg.partner_hold_ramp_steps,
     hold_mode=cfg.hold_mode,
     hold_cmd_vx=cfg.hold_cmd_vx,
     hold_window=cfg.hold_window,
@@ -375,6 +434,7 @@ def run(cfg: D61Config, seed: int, quiet: bool = False) -> tuple[str, str, dict]
       "base_y": float(base[1]),
       "base_z": float(base[2]),
       "hold_level": float(term.hold_level[0]),
+      "partner_level_max": float(term.partner_level[:, 0].max()),
     }
     grav = entity.data.projected_gravity_b[0]
     angvel = entity.data.root_link_ang_vel_b[0]
@@ -397,8 +457,19 @@ def run(cfg: D61Config, seed: int, quiet: bool = False) -> tuple[str, str, dict]
       foot_wx, _ = wire_geometry.local_wire_xz_at_y(seg, foot[:, 1])
       sensor = env.scene.sensors[c.cfg.wire_contact_sensor_name]
       started = bool(c._step_started[0])
+      jp = entity.data.joint_pos[:1]
+      thigh_q = jp[:, c._step_thigh_jid]
+      calf_q = jp[:, c._step_calf_jid]
+      fk = c._leg_fk(thigh_q, calf_q)[0]
       row.update(
         {
+          f"{g}_thigh": float(thigh_q[0]),
+          f"{g}_calf_q": float(calf_q[0]),
+          # Foot in the thigh-joint sagittal plane (x forward, z up, metres) and
+          # the leg's angle from vertical (deg, positive = foot ahead of the hip).
+          f"{g}_fk_x": float(fk[0]),
+          f"{g}_fk_z": float(fk[1]),
+          f"{g}_leg_angle_deg": math.degrees(math.atan2(float(fk[0]), -float(fk[1]))),
           f"{g}_phase": int(c.phase[0]),
           f"{g}_contact": bool((sensor.data.found[0] > 0).any()),
           f"{g}_calf_dx": float(calf[0, 0] - calf_wx[0]),
@@ -461,8 +532,11 @@ def run(cfg: D61Config, seed: int, quiet: bool = False) -> tuple[str, str, dict]
     label, detail = staged_verdict(rows)
   summary = (
     f"legs={tag} seed={seed} serialize={cfg.serialize_steps} "
+    f"start_x={effective_start_x(cfg, seed)} start_yaw={cfg.start_yaw} "
     f"start_delay={cfg.start_delay} step_advance={cfg.step_advance} "
     f"step_gate={cfg.step_gate} step_gate_timeout={cfg.step_gate_timeout} "
+    f"own_planted={cfg.own_planted} td_window={cfg.td_window} "
+    f"partner_hold={cfg.partner_hold}/{cfg.partner_hold_ramp_steps} "
     f"max_roll_deg={cfg.max_roll_deg} roll_gate_max_steps={cfg.roll_gate_max_steps} "
     f"max_attempts={cfg.max_attempts} retry_on={cfg.retry_on} "
     f"retry_delay={cfg.retry_delay} "

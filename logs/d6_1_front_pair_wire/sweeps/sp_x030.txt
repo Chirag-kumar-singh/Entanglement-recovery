@@ -1,0 +1,5 @@
+seed=0 FAIL FR not across; body collapse z=0.19m; stalled -0.03m/s (drift_y=0.000 min_base_z=0.194 walkoff_vx=-0.03) {'FR_contact': 29, 'FR_enter': 30, 'FR_step': 30, 'FL_contact': 34, 'FL_enter': 35, 'FL_step': 63, 'FL_calf_latch': 91, 'FL_foot_latch': 91}
+seed=1 FAIL FR not across; stalled 0.02m/s (drift_y=0.027 min_base_z=0.200 walkoff_vx=0.02) {'FR_contact': 29, 'FR_enter': 30, 'FR_step': 30, 'FL_contact': 34, 'FL_enter': 35, 'FL_step': 63, 'FL_calf_latch': 91, 'FL_foot_latch': 91}
+seed=2 FAIL FR not across; body collapse z=0.17m; stalled 0.09m/s (drift_y=0.094 min_base_z=0.167 walkoff_vx=0.09) {'FR_contact': 35, 'FL_contact': 36, 'FR_enter': 36, 'FR_step': 36, 'FL_enter': 37, 'FL_step': 69}
+seed=3 FAIL FR not across; body collapse z=0.17m; stalled -0.02m/s (drift_y=0.093 min_base_z=0.167 walkoff_vx=-0.02) {'FL_contact': 35, 'FL_enter': 36, 'FR_contact': 41, 'FR_enter': 42, 'FR_step': 42, 'FL_step': 59}
+seed=4 FAIL FR not across; body collapse z=0.17m; stalled 0.10m/s (drift_y=0.072 min_base_z=0.169 walkoff_vx=0.10) {'FL_contact': 35, 'FR_contact': 35, 'FL_enter': 36, 'FR_enter': 36, 'FR_step': 36, 'FL_step': 69}

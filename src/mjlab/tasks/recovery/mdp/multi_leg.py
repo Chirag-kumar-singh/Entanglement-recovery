@@ -26,6 +26,15 @@ Neither fixes the FL+FR case (D6.1, 20 seeds, baseline 8/20): "cmd" at 0 m/s
 gave 10/20, "freeze" 1-5/20. The body still slides back during the second
 leg's step with every other joint frozen and no wire contact, so the slide is
 not caused by the walking policy or the wire. Both modes are off by default.
+
+With ``partner_hold`` the trot-diagonal partner of a leg that is mid-step (FL
+with RR, FR with RL) is driven to the standing pose for the duration of the
+step, so three feet support the body instead of the trot's two. Idea from
+Johnson et al. 2010 (gait transition to a statically stabler gait), our values.
+D6.1 falls are roll instabilities during a step; earlier tests froze all joints
+or all three other legs, never just the partner. Result (front pair, 2 attempts,
+seeds 0-19): falls 4 -> 1 but clean passes 13 -> 7; the held partner fights the
+walking policy and the body collapses. Off by default.
 """
 
 from __future__ import annotations
@@ -37,10 +46,14 @@ import torch
 
 from mjlab.managers.action_manager import ActionTerm, ActionTermCfg
 from mjlab.tasks.recovery.mdp.actions import (
+  LEG_NAMES,
   PHASE_RECOVERY,
+  WALK_JOINT_ORDER,
   ResidualRecoveryAction,
   ResidualRecoveryActionCfg,
 )
+
+DIAGONAL_PARTNER = {"FL": "RR", "FR": "RL", "RL": "FR", "RR": "FL"}
 
 if TYPE_CHECKING:
   from mjlab.envs import ManagerBasedRlEnv
@@ -83,6 +96,11 @@ class MultiLegRecoveryActionCfg(ActionTermCfg):
   hold_max_steps: int = 40
   """Release the hold after this many steps even if a leg has not crossed
   (0 = never), so a stuck leg does not freeze the robot for good."""
+  partner_hold: bool = False
+  """While a leg is mid-step, hold its trot-diagonal partner at the standing
+  pose (see module docstring)."""
+  partner_hold_ramp_steps: int = 2
+  """Control steps to blend the partner into / out of the standing pose."""
 
   def __getattr__(self, name: str) -> Any:
     # Single-leg observation/reward terms read `term.cfg.<field>`.
@@ -111,12 +129,30 @@ class MultiLegRecoveryAction(ActionTerm):
     self._roll_wait = torch.zeros(
       len(self.legs), self.num_envs, device=self.device, dtype=torch.long
     )
+    self._gap_left = torch.zeros(
+      len(self.legs), self.num_envs, device=self.device, dtype=torch.long
+    )
     self.hold_level = torch.zeros(self.num_envs, device=self.device)
     """0 = normal command, 1 = full hold; ramps by 1/hold_ramp_steps."""
     self._hold_prev = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
     self._hold_steps = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
     self._latched_raw = torch.zeros(self.num_envs, 12, device=self.device)
     self._prev_final = torch.zeros(self.num_envs, 12, device=self.device)
+    self._partner_idx = [
+      torch.tensor(
+        [
+          WALK_JOINT_ORDER.index(
+            f"{DIAGONAL_PARTNER[LEG_NAMES[c.affected_leg_idx]]}_{part}_joint"
+          )
+          for part in ("hip", "thigh", "calf")
+        ],
+        device=self.device,
+        dtype=torch.long,
+      )
+      for c in cfg.leg_cfgs
+    ]
+    self.partner_level = torch.zeros(len(self.legs), self.num_envs, device=self.device)
+    """Per leg: 0 = partner on the walking policy, 1 = partner fully held."""
     if cfg.hold_mode not in ("off", "cmd", "freeze"):
       raise ValueError(f"Unknown hold_mode {cfg.hold_mode!r}.")
     if cfg.hold_window not in ("after_first", "entangled"):
@@ -145,7 +181,25 @@ class MultiLegRecoveryAction(ActionTerm):
     c = leg.cfg
     swing = c.step_lift_steps + c.step_advance_steps + c.step_descend_steps
     in_step = (leg.phase == PHASE_RECOVERY) & leg._step_started
-    return in_step & (leg._step_clock() < swing + self.cfg.serialize_gap_steps)
+    busy = in_step & (leg._step_clock() < swing)
+    gap = self._gap_left[self.legs.index(leg)] > 0
+    return busy | gap
+
+  def _update_gap(self) -> None:
+    """Keep each leg 'busy' for `serialize_gap_steps` after its swing ends, even
+    if the leg has already left RECOVERY (crossing latched)."""
+    for i, leg in enumerate(self.legs):
+      if leg.cfg.recovery_mode != "scripted_step":
+        continue
+      c = leg.cfg
+      swing = c.step_lift_steps + c.step_advance_steps + c.step_descend_steps
+      in_step = (leg.phase == PHASE_RECOVERY) & leg._step_started
+      busy = in_step & (leg._step_clock() < swing)
+      self._gap_left[i] = torch.where(
+        busy,
+        torch.full_like(self._gap_left[i], self.cfg.serialize_gap_steps),
+        (self._gap_left[i] - 1).clamp(min=0),
+      )
 
   def hold_active(self) -> torch.Tensor:
     """[B] True while the body should be held (uses each leg's FSM state as
@@ -185,6 +239,7 @@ class MultiLegRecoveryAction(ActionTerm):
   def process_actions(self, actions: torch.Tensor) -> None:
     self._raw[:] = actions
     self._update_hold()
+    self._update_gap()
     a = self.cfg.body_vx_smoothing
     vx = self._entity.data.root_link_lin_vel_b[:, 0]
     self.body_vx = a * vx + (1.0 - a) * self.body_vx
@@ -228,6 +283,16 @@ class MultiLegRecoveryAction(ActionTerm):
         frozen[:, idx] = torch.where(busy, final[:, idx], frozen[:, idx])
       lvl = self.hold_level.unsqueeze(-1)
       final = lvl * frozen + (1.0 - lvl) * final
+    if self.cfg.partner_hold:
+      ramp = 1.0 / max(self.cfg.partner_hold_ramp_steps, 1)
+      for i, leg in enumerate(self.legs):
+        target = self.leg_busy(leg).float()
+        lvl = self.partner_level[i]
+        lvl = lvl + (target - lvl).clamp(-ramp, ramp)
+        self.partner_level[i] = lvl
+        idx = self._partner_idx[i]
+        # Raw action 0 is the default (standing) joint pose.
+        final[:, idx] = (1.0 - lvl.unsqueeze(-1)) * final[:, idx]
     self._prev_final = final.clone()
     self.last_final_raw = final
     first._joint_pos_action.process_actions(final)
@@ -240,7 +305,9 @@ class MultiLegRecoveryAction(ActionTerm):
     self.body_vx[ids] = 0.0
     self.hold_level[ids] = 0.0
     self._roll_wait[:, ids] = 0
+    self._gap_left[:, ids] = 0
     self._hold_prev[ids] = False
     self._hold_steps[ids] = 0
+    self.partner_level[:, ids] = 0.0
     for leg in self.legs:
       leg.reset(env_ids)

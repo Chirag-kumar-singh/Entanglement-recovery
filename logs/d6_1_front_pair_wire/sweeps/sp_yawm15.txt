@@ -1,0 +1,5 @@
+seed=0 FELL fell over at step 105 (episode reset) {'FL_contact': 42, 'FL_enter': 43, 'FR_contact': 51, 'FR_enter': 52, 'FR_step': 52, 'FL_step': 66}
+seed=1 FELL fell over at step 77 (episode reset) {'FL_contact': 37, 'FL_enter': 38, 'FR_contact': 50, 'FR_enter': 51, 'FR_step': 51, 'FL_step': 65, 'FR_calf_latch': 73, 'FR_foot_latch': 73}
+seed=2 FAIL FL not across; FR not across; stalled 0.04m/s (drift_y=0.009 min_base_z=0.227 walkoff_vx=0.04) {'FL_contact': 37, 'FL_enter': 38, 'FR_contact': 51, 'FR_enter': 52, 'FR_step': 52, 'FL_step': 66}
+seed=3 FAIL FL not across; FR not across; body collapse z=0.19m; stalled 0.11m/s (drift_y=0.012 min_base_z=0.187 walkoff_vx=0.11) {'FL_contact': 45, 'FL_enter': 46, 'FR_contact': 52, 'FR_enter': 53, 'FR_step': 53, 'FL_step': 69}
+seed=4 FAIL FL not across; FR not across; body collapse z=0.19m; stalled 0.13m/s (drift_y=0.141 min_base_z=0.191 walkoff_vx=0.13) {'FL_contact': 37, 'FL_enter': 38, 'FR_contact': 51, 'FR_enter': 52, 'FR_step': 52, 'FL_step': 66}

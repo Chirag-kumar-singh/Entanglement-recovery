@@ -1,0 +1,5 @@
+seed=0 FAIL FR not across; sidestep drift 0.26m; stalled 0.04m/s (drift_y=0.257 min_base_z=0.214 walkoff_vx=0.04) {'FR_contact': 52, 'FR_enter': 53, 'FR_step': 53, 'FL_contact': 57, 'FL_enter': 58, 'FL_step': 86}
+seed=1 FAIL FR not across; sidestep drift 0.25m; stalled 0.02m/s (drift_y=0.247 min_base_z=0.214 walkoff_vx=0.02) {'FR_contact': 52, 'FR_enter': 53, 'FR_step': 53, 'FL_contact': 57, 'FL_enter': 58, 'FL_step': 86}
+seed=2 FAIL sidestep drift 0.38m (drift_y=0.379 min_base_z=0.221 walkoff_vx=0.27) {'FR_contact': 52, 'FR_enter': 53, 'FR_step': 53, 'FL_contact': 57, 'FL_enter': 58, 'FL_step': 86}
+seed=3 FAIL FL not across; body collapse z=0.18m; stalled 0.12m/s (drift_y=0.124 min_base_z=0.180 walkoff_vx=0.12) {'FR_contact': 53, 'FR_enter': 54, 'FR_step': 54, 'FL_contact': 58, 'FL_enter': 59, 'FL_step': 87}
+seed=4 FAIL FL not across; FR not across; body collapse z=0.19m; stalled -0.00m/s (drift_y=0.012 min_base_z=0.195 walkoff_vx=-0.00) {'FR_contact': 53, 'FR_enter': 54, 'FR_step': 54, 'FL_contact': 58, 'FL_enter': 59, 'FL_step': 87}

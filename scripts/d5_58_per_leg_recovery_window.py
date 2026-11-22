@@ -183,6 +183,11 @@ class D558Config:
   step_gate_max_age: int | None = None
   """None = auto per leg (STEP_GATE_MAX_AGE); 0 = off; >0 enables the
   gait-phase start gate (see ResidualRecoveryActionCfg)."""
+  step_td_age_min: int = 0
+  step_td_age_max: int = 0
+  """>0 max enables the own-touchdown-age start gate (see
+  ResidualRecoveryActionCfg.step_td_age_max); use with --step-start-delay-steps 0
+  --step-gate-max-age 0."""
   step_gate_planted_z: float = 0.026
   step_gate_timeout_steps: int = 30
   step_max_hold_steps: int = 0
@@ -269,6 +274,8 @@ def build_leg_env(cfg: D558Config, device: str):
         if cfg.step_gate_max_age is None
         else cfg.step_gate_max_age
       ),
+      "step_td_age_min": cfg.step_td_age_min,
+      "step_td_age_max": cfg.step_td_age_max,
       "step_gate_planted_z": cfg.step_gate_planted_z,
       "step_gate_timeout_steps": cfg.step_gate_timeout_steps,
     },
