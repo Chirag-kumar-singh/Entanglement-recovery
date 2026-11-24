@@ -556,6 +556,12 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   this small margin is a qualitative, unambiguous improvement over that
   failure mode."""
 
+  crossing_fallback_steps: int = 0
+  """If > 0, latch both crossing stages once the calf is on the far side, the
+  foot is past the wire by the crossing margin and the wire has not touched the
+  leg for this many consecutive steps, even if the calf never rose above the
+  wire (the strict stage 1 requires a lifted calf). 0 = off (old behaviour)."""
+
   foot_crossing_margin: float = 0.02
   """Minimum forward distance (meters, along the robot's own latched
   forward direction) the toe/foot must be past the wire's local
@@ -847,6 +853,7 @@ class ResidualRecoveryAction(ActionTerm):
     self._foot_crossed_achieved = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.bool
     )
+    self._far_hold = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
     # Backward-compat alias: `crossing_achieved` now means the FULL
     # two-stage condition (calf clearance AND foot crossed).
     self._crossing_achieved = torch.zeros(
@@ -1425,6 +1432,7 @@ class ResidualRecoveryAction(ActionTerm):
       self._release_counter.zero_()
       self._calf_clearance_achieved.zero_()
       self._foot_crossed_achieved.zero_()
+      self._far_hold.zero_()
       self._crossing_achieved.zero_()
       self._prev_calf_side_far.zero_()
       self._recovery_failed_timeout.zero_()
@@ -1451,6 +1459,7 @@ class ResidualRecoveryAction(ActionTerm):
       self._release_counter[env_ids] = 0
       self._calf_clearance_achieved[env_ids] = False
       self._foot_crossed_achieved[env_ids] = False
+      self._far_hold[env_ids] = 0
       self._crossing_achieved[env_ids] = False
       self._prev_calf_side_far[env_ids] = False
       self._recovery_failed_timeout[env_ids] = False
@@ -1630,6 +1639,20 @@ class ResidualRecoveryAction(ActionTerm):
       & calf_side_far
       & calf_lifted
     )
+    if self.cfg.crossing_fallback_steps > 0:
+      far_now = (
+        still_recovery_after_entry
+        & calf_side_far
+        & (foot_forward_dist > self._effective_foot_crossing_margin)
+        & ~in_contact
+      )
+      self._far_hold = torch.where(
+        far_now, self._far_hold + 1, torch.zeros_like(self._far_hold)
+      )
+      calf_clearance_event = calf_clearance_event | (
+        (self._far_hold >= self.cfg.crossing_fallback_steps)
+        & ~self._calf_clearance_achieved
+      )
     self.calf_clearance_event = calf_clearance_event
     self._calf_clearance_achieved = self._calf_clearance_achieved | calf_clearance_event
 

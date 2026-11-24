@@ -98,6 +98,12 @@ class D61Config:
   max_recovery_steps: int = 48
   serialize_steps: bool = True
   serialize_gap_steps: int = 0
+  support_gate_z: float = 0.0
+  crossing_fallback: int = 0
+  new_legs: tuple[str, ...] = LEG_NAMES
+  """Legs that use the new settings (touchdown window, crossing fallback, support
+  gate and gap). The other legs keep the D5.58 settings."""
+  support_diagonal: bool = False
   start_delay: dict[str, int] = field(default_factory=dict)
   """Per-leg start delay override, e.g. --start-delay FL 23 FR 0. Missing
   legs use the D5.58 value."""
@@ -105,6 +111,10 @@ class D61Config:
   """Per-leg scripted-step forward reach (m) from the foot's start, e.g.
   --step-advance FR 0.30. Missing legs use DEFAULT_STEP_ADVANCE, else the
   D5.58 value (0.30)."""
+  step_back: dict[str, float] = field(default_factory=dict)
+  """Per-leg backward travel (m) of the lift phase, e.g. --step-back FL -0.04.
+  Zero or negative = lift-and-slide: the foot rises with a forward press instead
+  of retracting first (Yim et al. 2023). Missing legs use the D5.58 value."""
   max_attempts: dict[str, int] = field(default_factory=dict)
   """Per-leg scripted-step attempts per recovery, e.g. --max-attempts FL 3
   (see ResidualRecoveryActionCfg.step_max_attempts). Missing legs: 1."""
@@ -137,6 +147,14 @@ class D61Config:
   """Hold the stepping leg's trot-diagonal partner at the standing pose during
   the step (see MultiLegRecoveryActionCfg.partner_hold)."""
   partner_hold_ramp_steps: int = 2
+  support_lift_thigh: float = 0.0
+  support_lift_calf: float = 0.0
+  """Body support (D7): thigh/calf offset (rad) on the standing legs while a leg
+  steps (see MultiLegRecoveryActionCfg.support_lift_thigh)."""
+  support_lift_ramp_steps: int = 3
+  support_lift_trigger: tuple[str, ...] = ()
+  """Legs whose steps trigger the support lift, e.g. --support-lift-trigger FL FR.
+  Empty = any stepping leg."""
   hold_mode: str = "off"
   """Body hold (option 2): "off", "cmd" or "freeze" (see multi_leg.py)."""
   hold_cmd_vx: float = 0.0
@@ -163,9 +181,10 @@ class D61Config:
 
 def _step_overrides(leg: str, cfg: D61Config) -> dict:
   base = D558Config()
+  use_td = bool(cfg.td_window) and leg in cfg.new_legs
   return {
     "step_lift_height": base.step_lift_height,
-    "step_back": base.step_back,
+    "step_back": cfg.step_back.get(leg, base.step_back),
     "step_advance": cfg.step_advance.get(
       leg, DEFAULT_STEP_ADVANCE.get(leg, base.step_advance)
     ),
@@ -174,13 +193,14 @@ def _step_overrides(leg: str, cfg: D61Config) -> dict:
     "step_descend_steps": base.step_descend_steps,
     "step_blend_steps": base.step_blend_steps,
     "step_start_delay_steps": cfg.start_delay.get(
-      leg, 0 if cfg.td_window else STEP_START_DELAY[leg]
+      leg, 0 if use_td else STEP_START_DELAY[leg]
     ),
     "step_gate_max_age": cfg.step_gate.get(
-      leg, 0 if cfg.td_window else STEP_GATE_MAX_AGE[leg]
+      leg, 0 if use_td else STEP_GATE_MAX_AGE[leg]
     ),
-    "step_td_age_min": cfg.td_window[0] if cfg.td_window else 0,
-    "step_td_age_max": cfg.td_window[1] if cfg.td_window else 0,
+    "crossing_fallback_steps": cfg.crossing_fallback if leg in cfg.new_legs else 0,
+    "step_td_age_min": cfg.td_window[0] if use_td else 0,
+    "step_td_age_max": cfg.td_window[1] if use_td else 0,
     "step_gate_timeout_steps": cfg.step_gate_timeout,
     "step_own_planted": cfg.own_planted.get(leg, False),
     "step_max_attempts": cfg.max_attempts.get(leg, 1),
@@ -258,11 +278,18 @@ def build_env(cfg: D61Config, seed: int, device: str):
     leg_cfgs=tuple(leg_cfgs),
     serialize_steps=cfg.serialize_steps,
     serialize_gap_steps=cfg.serialize_gap_steps,
+    support_mask=tuple(leg in cfg.new_legs for leg in pair),
+    support_gate_z=cfg.support_gate_z,
+    support_diagonal=cfg.support_diagonal,
     step_min_body_vx=tuple(cfg.min_body_vx.get(leg) for leg in pair),
     step_max_roll_deg=tuple(cfg.max_roll_deg.get(leg) for leg in pair),
     roll_gate_max_steps=cfg.roll_gate_max_steps,
     partner_hold=cfg.partner_hold,
     partner_hold_ramp_steps=cfg.partner_hold_ramp_steps,
+    support_lift_thigh=cfg.support_lift_thigh,
+    support_lift_calf=cfg.support_lift_calf,
+    support_lift_ramp_steps=cfg.support_lift_ramp_steps,
+    support_lift_trigger=cfg.support_lift_trigger,
     hold_mode=cfg.hold_mode,
     hold_cmd_vx=cfg.hold_cmd_vx,
     hold_window=cfg.hold_window,
@@ -435,6 +462,7 @@ def run(cfg: D61Config, seed: int, quiet: bool = False) -> tuple[str, str, dict]
       "base_z": float(base[2]),
       "hold_level": float(term.hold_level[0]),
       "partner_level_max": float(term.partner_level[:, 0].max()),
+      "lift_level_max": float(term.lift_level[:, 0].max()),
     }
     grav = entity.data.projected_gravity_b[0]
     angvel = entity.data.root_link_ang_vel_b[0]
@@ -546,6 +574,7 @@ def run(cfg: D61Config, seed: int, quiet: bool = False) -> tuple[str, str, dict]
     f"hold_window={cfg.hold_window} hold_ramp_steps={cfg.hold_ramp_steps} "
     f"hold_max_steps={cfg.hold_max_steps} "
     f"hold_steps={sum(r['hold_level'] > 0 for r in rows)} events={events}\n"
+    f"FULL_CONFIG={dataclasses.asdict(cfg)}\n"
     f"VERDICT={label} {detail}"
   )
   (out_dir / "run_log.txt").write_text(summary + "\n")

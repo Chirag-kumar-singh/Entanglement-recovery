@@ -69,6 +69,18 @@ class MultiLegRecoveryActionCfg(ActionTermCfg):
   serialize_steps: bool = True
   """Hold a leg's step start while another leg is mid-step."""
   serialize_gap_steps: int = 0
+  support_mask: tuple[bool, ...] = ()
+  """Which legs take part in the support gate and the serialization gap (empty =
+  all). Other legs ignore both."""
+  support_gate_z: float = 0.0
+  """If > 0, a leg's step waits while any other leg's foot is higher than this
+  (it is not planted), so two feet are never lifted together."""
+  support_diagonal: bool = False
+  """Gate on the support pair (the two feet that are neither the stepping leg nor
+  its trot-diagonal partner), including legs outside this wrapper, and count the
+  serialization gap from the stepping foot's touchdown."""
+  support_gate_max_steps: int = 40
+  """Give up waiting for the other feet after this many steps."""
   """Extra control steps after the other leg's touchdown before releasing."""
   step_min_body_vx: tuple[float | None, ...] = ()
   """Per leg (same order as ``leg_cfgs``): hold the step start until the
@@ -101,6 +113,18 @@ class MultiLegRecoveryActionCfg(ActionTermCfg):
   pose (see module docstring)."""
   partner_hold_ramp_steps: int = 2
   """Control steps to blend the partner into / out of the standing pose."""
+  support_lift_thigh: float = 0.0
+  support_lift_calf: float = 0.0
+  """Body support (D7): while a leg is mid-step, add these joint offsets (rad, on
+  top of the walking policy's target) to the thigh and calf of every other leg,
+  to hold the body up. Negative thigh and positive calf straighten the leg. The
+  frozen policy does not carry weight on three legs (D7.0: the body sags 0.10 m
+  with no wire at all). 0 = off."""
+  support_lift_ramp_steps: int = 3
+  """Control steps to blend the offset in and out."""
+  support_lift_trigger: tuple[str, ...] = ()
+  """Legs whose steps trigger the support lift (e.g. ("FL", "FR")). Empty = any
+  stepping leg. D7.3: lifting during the rear legs' steps hurt the rear stage."""
 
   def __getattr__(self, name: str) -> Any:
     # Single-leg observation/reward terms read `term.cfg.<field>`.
@@ -129,6 +153,9 @@ class MultiLegRecoveryAction(ActionTerm):
     self._roll_wait = torch.zeros(
       len(self.legs), self.num_envs, device=self.device, dtype=torch.long
     )
+    self._support_wait = torch.zeros(
+      len(self.legs), self.num_envs, device=self.device, dtype=torch.long
+    )
     self._gap_left = torch.zeros(
       len(self.legs), self.num_envs, device=self.device, dtype=torch.long
     )
@@ -151,6 +178,8 @@ class MultiLegRecoveryAction(ActionTerm):
       )
       for c in cfg.leg_cfgs
     ]
+    self.lift_level = torch.zeros(len(LEG_NAMES), self.num_envs, device=self.device)
+    """Per leg of LEG_NAMES: 0 = no offset, 1 = full support-lift offset."""
     self.partner_level = torch.zeros(len(self.legs), self.num_envs, device=self.device)
     """Per leg: 0 = partner on the walking policy, 1 = partner fully held."""
     if cfg.hold_mode not in ("off", "cmd", "freeze"):
@@ -185,6 +214,15 @@ class MultiLegRecoveryAction(ActionTerm):
     gap = self._gap_left[self.legs.index(leg)] > 0
     return busy | gap
 
+  def _in_support_group(self, i: int) -> bool:
+    m = self.cfg.support_mask
+    return True if not m else bool(m[i])
+
+  def _foot_z(self, name: str) -> torch.Tensor:
+    leg = self.legs[0]
+    idx = list(leg._entity.site_names).index(name)
+    return leg._entity.data.site_pos_w[:, idx, 2]
+
   def _update_gap(self) -> None:
     """Keep each leg 'busy' for `serialize_gap_steps` after its swing ends, even
     if the leg has already left RECOVERY (crossing latched)."""
@@ -195,9 +233,15 @@ class MultiLegRecoveryAction(ActionTerm):
       swing = c.step_lift_steps + c.step_advance_steps + c.step_descend_steps
       in_step = (leg.phase == PHASE_RECOVERY) & leg._step_started
       busy = in_step & (leg._step_clock() < swing)
+      if self.cfg.support_diagonal:
+        foot_up = self._foot_z(LEG_NAMES[c.affected_leg_idx]) > self.cfg.support_gate_z
+        busy = busy | ((self._gap_left[i] > 0) & foot_up)
       self._gap_left[i] = torch.where(
         busy,
-        torch.full_like(self._gap_left[i], self.cfg.serialize_gap_steps),
+        torch.full_like(
+          self._gap_left[i],
+          self.cfg.serialize_gap_steps if self._in_support_group(i) else 0,
+        ),
         (self._gap_left[i] - 1).clamp(min=0),
       )
 
@@ -250,6 +294,28 @@ class MultiLegRecoveryAction(ActionTerm):
         for j, other in enumerate(self.legs):
           if j != i:
             block = block | self.leg_busy(other)
+      if self.cfg.support_gate_z > 0.0 and self._in_support_group(i):
+        up = no_block
+        if self.cfg.support_diagonal:
+          me = LEG_NAMES[leg.cfg.affected_leg_idx]
+          for name in LEG_NAMES:
+            if name not in (me, DIAGONAL_PARTNER[me]):
+              up = up | (self._foot_z(name) > self.cfg.support_gate_z)
+        else:
+          for j, other in enumerate(self.legs):
+            if j != i and self._in_support_group(j):
+              up = up | (
+                self._foot_z(LEG_NAMES[other.cfg.affected_leg_idx])
+                > self.cfg.support_gate_z
+              )
+        waiting = (leg.phase == PHASE_RECOVERY) & ~leg._step_started
+        hold = up & waiting & (self._support_wait[i] < self.cfg.support_gate_max_steps)
+        self._support_wait[i] = torch.where(
+          up & waiting,
+          self._support_wait[i] + 1,
+          torch.where(waiting, self._support_wait[i], 0),
+        )
+        block = block | hold
       max_roll = self.cfg.step_max_roll_deg[i : i + 1]
       if max_roll and max_roll[0] is not None:
         grav = self._entity.data.projected_gravity_b
@@ -293,9 +359,33 @@ class MultiLegRecoveryAction(ActionTerm):
         idx = self._partner_idx[i]
         # Raw action 0 is the default (standing) joint pose.
         final[:, idx] = (1.0 - lvl.unsqueeze(-1)) * final[:, idx]
+    if self.cfg.support_lift_thigh or self.cfg.support_lift_calf:
+      final = self._apply_support_lift(final)
     self._prev_final = final.clone()
     self.last_final_raw = final
     first._joint_pos_action.process_actions(final)
+
+  def _apply_support_lift(self, final: torch.Tensor) -> torch.Tensor:
+    busy = {
+      LEG_NAMES[leg.cfg.affected_leg_idx]: self.leg_busy(leg) for leg in self.legs
+    }
+    trigger = self.cfg.support_lift_trigger
+    trig = [b for n, b in busy.items() if not trigger or n in trigger]
+    any_busy = torch.stack(trig).any(0)
+    ramp = 1.0 / max(self.cfg.support_lift_ramp_steps, 1)
+    scale = torch.as_tensor(self.legs[0]._joint_pos_action._scale)
+    for k, name in enumerate(LEG_NAMES):
+      target = (any_busy & ~busy.get(name, torch.zeros_like(any_busy))).float()
+      lvl = self.lift_level[k]
+      self.lift_level[k] = lvl + (target - lvl).clamp(-ramp, ramp)
+      for part, rad in (
+        ("thigh", self.cfg.support_lift_thigh),
+        ("calf", self.cfg.support_lift_calf),
+      ):
+        j = WALK_JOINT_ORDER.index(f"{name}_{part}_joint")
+        sc = scale[:, j] if scale.ndim == 2 else scale.reshape(-1)[j]
+        final[:, j] = final[:, j] + self.lift_level[k] * rad / sc
+    return final
 
   def apply_actions(self) -> None:
     self.legs[0]._joint_pos_action.apply_actions()
@@ -306,8 +396,10 @@ class MultiLegRecoveryAction(ActionTerm):
     self.hold_level[ids] = 0.0
     self._roll_wait[:, ids] = 0
     self._gap_left[:, ids] = 0
+    self._support_wait[:, ids] = 0
     self._hold_prev[ids] = False
     self._hold_steps[ids] = 0
     self.partner_level[:, ids] = 0.0
+    self.lift_level[:, ids] = 0.0
     for leg in self.legs:
       leg.reset(env_ids)
