@@ -140,6 +140,11 @@ class D61Config:
   """Per-leg roll gate (deg), e.g. --max-roll-deg FL 8: hold that leg's step
   start while |lateral tilt| exceeds it (see MultiLegRecoveryActionCfg)."""
   roll_gate_max_steps: int = 30
+  min_body_z: dict[str, float] = field(default_factory=dict)
+  """Per-leg base-height start gate (m), e.g. --min-body-z RL 0.29 RR 0.29: hold
+  that leg's step start while the body is lower than this (see
+  MultiLegRecoveryActionCfg)."""
+  height_gate_max_steps: int = 30
   min_body_vx: dict[str, float] = field(default_factory=dict)
   """Per-leg body forward-velocity start gate (m/s), e.g. --min-body-vx FL
   0.15. Missing legs have no gate."""
@@ -283,6 +288,8 @@ def build_env(cfg: D61Config, seed: int, device: str):
     support_diagonal=cfg.support_diagonal,
     step_min_body_vx=tuple(cfg.min_body_vx.get(leg) for leg in pair),
     step_max_roll_deg=tuple(cfg.max_roll_deg.get(leg) for leg in pair),
+    step_min_body_z=tuple(cfg.min_body_z.get(leg) for leg in pair),
+    height_gate_max_steps=cfg.height_gate_max_steps,
     roll_gate_max_steps=cfg.roll_gate_max_steps,
     partner_hold=cfg.partner_hold,
     partner_hold_ramp_steps=cfg.partner_hold_ramp_steps,

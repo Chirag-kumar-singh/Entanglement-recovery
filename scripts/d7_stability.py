@@ -31,19 +31,17 @@ class Args:
 
 def _verdicts(path: Path) -> dict[int, str]:
   return {
-    int(m[1]): m[2] for line in path.read_text().splitlines() if (m := VERDICT.match(line))
+    int(m[1]): m[2]
+    for line in path.read_text().splitlines()
+    if (m := VERDICT.match(line))
   }
 
 
 def _window(rows: list[dict[str, float]], end: int) -> dict[str, float]:
   win = rows[START : min(len(rows), end)]
   z = [r["base_z"] for r in win]
-  roll = [
-    abs(math.degrees(math.atan2(r["grav_y"], -r["grav_z"]))) for r in win
-  ]
-  pitch = [
-    abs(math.degrees(math.atan2(r["grav_x"], -r["grav_z"]))) for r in win
-  ]
+  roll = [abs(math.degrees(math.atan2(r["grav_y"], -r["grav_z"]))) for r in win]
+  pitch = [abs(math.degrees(math.atan2(r["grav_x"], -r["grav_z"]))) for r in win]
   wxy = [r["angvel_x"] ** 2 + r["angvel_y"] ** 2 for r in win]
   return {
     "z_mean": st.mean(z),

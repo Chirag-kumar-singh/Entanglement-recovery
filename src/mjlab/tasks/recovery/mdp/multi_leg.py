@@ -95,6 +95,13 @@ class MultiLegRecoveryActionCfg(ActionTermCfg):
   are roll instabilities that start during the first leg's step."""
   roll_gate_max_steps: int = 30
   """Release the roll gate after this many held steps."""
+  step_min_body_z: tuple[float | None, ...] = ()
+  """Per leg (same order as ``leg_cfgs``): hold the step start while the base
+  height (m) is below this, for at most ``height_gate_max_steps`` control steps.
+  None or missing = no height gate for that leg. D7.11: rear steps that start
+  while the body is still low after the previous step tip the robot."""
+  height_gate_max_steps: int = 30
+  """Release the height gate after this many held steps."""
   hold_mode: str = "off"
   """"off", "cmd" or "freeze" (see module docstring)."""
   hold_cmd_vx: float = 0.0
@@ -151,6 +158,9 @@ class MultiLegRecoveryAction(ActionTerm):
     self._raw = torch.zeros(self.num_envs, self.action_dim, device=self.device)
     self.body_vx = torch.zeros(self.num_envs, device=self.device)
     self._roll_wait = torch.zeros(
+      len(self.legs), self.num_envs, device=self.device, dtype=torch.long
+    )
+    self._height_wait = torch.zeros(
       len(self.legs), self.num_envs, device=self.device, dtype=torch.long
     )
     self._support_wait = torch.zeros(
@@ -327,6 +337,16 @@ class MultiLegRecoveryAction(ActionTerm):
           over, self._roll_wait[i] + 1, torch.where(waiting, self._roll_wait[i], 0)
         )
         block = block | gate
+      min_z = self.cfg.step_min_body_z[i : i + 1]
+      if min_z and min_z[0] is not None:
+        base_z = self._entity.data.root_link_pos_w[:, 2]
+        waiting = (leg.phase == PHASE_RECOVERY) & ~leg._step_started
+        low = waiting & (base_z < min_z[0])
+        gate = low & (self._height_wait[i] < self.cfg.height_gate_max_steps)
+        self._height_wait[i] = torch.where(
+          low, self._height_wait[i] + 1, torch.where(waiting, self._height_wait[i], 0)
+        )
+        block = block | gate
       min_vx = self.cfg.step_min_body_vx[i : i + 1]
       if min_vx and min_vx[0] is not None:
         block = block | (self.body_vx <= min_vx[0])
@@ -395,6 +415,7 @@ class MultiLegRecoveryAction(ActionTerm):
     self.body_vx[ids] = 0.0
     self.hold_level[ids] = 0.0
     self._roll_wait[:, ids] = 0
+    self._height_wait[:, ids] = 0
     self._gap_left[:, ids] = 0
     self._support_wait[:, ids] = 0
     self._hold_prev[ids] = False

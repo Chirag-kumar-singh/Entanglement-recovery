@@ -11,6 +11,10 @@ Added
 - Added upstream-style Unitree Go2 robot assets and flat/rough velocity task
   configurations, including task registration under the ``Mjlab-Velocity-*``
   naming scheme.
+- Added a body-support lift for the Go2 multi-leg wire recovery
+  (``support_lift_thigh``/``support_lift_calf`` with a ramp and a per-leg trigger), a
+  crossing fallback for the scripted step (``crossing_fallback_steps``) and a
+  base-height start gate for rear steps (``step_min_body_z``). All are off by default.
 
 Changed
 ^^^^^^^
