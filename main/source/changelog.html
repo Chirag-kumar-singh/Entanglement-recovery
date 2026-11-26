@@ -58,7 +58,7 @@
     <link rel="prev" title="Research" href="research.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Nov 24, 2026"/>
+    <meta name="docbuild:last-update" content="Nov 26, 2026"/>
   </head>
   
   
@@ -547,6 +547,10 @@ document.write(`
 <li><p>Added upstream-style Unitree Go2 robot assets and flat/rough velocity task
 configurations, including task registration under the <code class="docutils literal notranslate"><span class="pre">Mjlab-Velocity-*</span></code>
 naming scheme.</p></li>
+<li><p>Added a body-support lift for the Go2 multi-leg wire recovery
+(<code class="docutils literal notranslate"><span class="pre">support_lift_thigh</span></code>/<code class="docutils literal notranslate"><span class="pre">support_lift_calf</span></code> with a ramp and a per-leg trigger), a
+crossing fallback for the scripted step (<code class="docutils literal notranslate"><span class="pre">crossing_fallback_steps</span></code>) and a
+base-height start gate for rear steps (<code class="docutils literal notranslate"><span class="pre">step_min_body_z</span></code>). All are off by default.</p></li>
 </ul>
 </section>
 <section id="changed">
@@ -1763,7 +1767,7 @@ By The mjlab Developers
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Nov 24, 2026.
+  Last updated on Nov 26, 2026.
   <br/>
 </p>
   </div>
