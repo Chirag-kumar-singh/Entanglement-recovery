@@ -1,0 +1,45 @@
+s308 DETECT per_leg_alarm={'FR': 60, 'FL': 60, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 61, 'FL': 62, 'RR': -1, 'RL': -1}
+s308 DETECT at_alarm: lead_steps=1 closest=FL_foot:11.2mm descent_of_closest_since_alarm-10=36.0mm
+s308 DETECT first_alarm=60(FR) first_oracle_contact=61 first_any_part_touch=-1(-) max_p=1.000
+s304 DETECT per_leg_alarm={'FR': 51, 'FL': 54, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 51, 'FL': 49, 'RR': -1, 'RL': -1}
+s304 DETECT at_alarm: lead_steps=-2 closest=FR_calf2:11.1mm descent_of_closest_since_alarm-10=31.1mm
+s304 DETECT first_alarm=51(FR) first_oracle_contact=49 first_any_part_touch=-1(-) max_p=1.000
+s300 DETECT per_leg_alarm={'FR': 53, 'FL': 59, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 60, 'FL': 62, 'RR': -1, 'RL': -1}
+s300 DETECT at_alarm: lead_steps=7 closest=FR_foot:12.8mm descent_of_closest_since_alarm-10=78.2mm
+s300 DETECT first_alarm=53(FR) first_oracle_contact=60 first_any_part_touch=-1(-) max_p=1.000
+s312 DETECT per_leg_alarm={'FR': 52, 'FL': 55, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 51, 'FL': 51, 'RR': -1, 'RL': -1}
+s312 DETECT at_alarm: lead_steps=-1 closest=FR_calf2:11.9mm descent_of_closest_since_alarm-10=35.2mm
+s312 DETECT first_alarm=52(FR) first_oracle_contact=51 first_any_part_touch=-1(-) max_p=1.000
+s316 DETECT per_leg_alarm={'FR': 54, 'FL': 59, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 64, 'FL': 64, 'RR': -1, 'RL': -1}
+s316 DETECT at_alarm: lead_steps=10 closest=FR_foot:16.4mm descent_of_closest_since_alarm-10=86.1mm
+s316 DETECT first_alarm=54(FR) first_oracle_contact=64 first_any_part_touch=-1(-) max_p=1.000
+s320 DETECT per_leg_alarm={'FR': 52, 'FL': 58, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 53, 'FL': 57, 'RR': -1, 'RL': -1}
+s320 DETECT at_alarm: lead_steps=1 closest=FR_calf2:15.3mm descent_of_closest_since_alarm-10=43.0mm
+s320 DETECT first_alarm=52(FR) first_oracle_contact=53 first_any_part_touch=-1(-) max_p=1.000
+s324 DETECT per_leg_alarm={'FR': 65, 'FL': 60, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 69, 'FL': 65, 'RR': -1, 'RL': -1}
+s324 DETECT at_alarm: lead_steps=5 closest=FL_foot:8.7mm descent_of_closest_since_alarm-10=51.9mm
+s324 DETECT first_alarm=60(FL) first_oracle_contact=65 first_any_part_touch=-1(-) max_p=1.000
+s332 DETECT per_leg_alarm={'FR': 66, 'FL': 61, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 71, 'FL': 66, 'RR': -1, 'RL': -1}
+s332 DETECT at_alarm: lead_steps=5 closest=FL_foot:13.5mm descent_of_closest_since_alarm-10=52.8mm
+s332 DETECT first_alarm=61(FL) first_oracle_contact=66 first_any_part_touch=-1(-) max_p=1.000
+s328 DETECT per_leg_alarm={'FR': 52, 'FL': 58, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 53, 'FL': 60, 'RR': -1, 'RL': -1}
+s328 DETECT at_alarm: lead_steps=1 closest=FR_foot:15.5mm descent_of_closest_since_alarm-10=32.8mm
+s328 DETECT first_alarm=52(FR) first_oracle_contact=53 first_any_part_touch=-1(-) max_p=1.000
+s336 DETECT per_leg_alarm={'FR': 51, 'FL': 58, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 55, 'FL': 60, 'RR': -1, 'RL': -1}
+s336 DETECT at_alarm: lead_steps=4 closest=FR_foot:9.5mm descent_of_closest_since_alarm-10=55.4mm
+s336 DETECT first_alarm=51(FR) first_oracle_contact=55 first_any_part_touch=-1(-) max_p=1.000
+s340 DETECT per_leg_alarm={'FR': 71, 'FL': 61, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 72, 'FL': 66, 'RR': -1, 'RL': -1}
+s340 DETECT at_alarm: lead_steps=5 closest=FL_foot:12.3mm descent_of_closest_since_alarm-10=59.4mm
+s340 DETECT first_alarm=61(FL) first_oracle_contact=66 first_any_part_touch=-1(-) max_p=1.000
+s344 DETECT per_leg_alarm={'FR': 54, 'FL': 59, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 55, 'FL': 60, 'RR': -1, 'RL': -1}
+s344 DETECT at_alarm: lead_steps=1 closest=FR_calf2:11.3mm descent_of_closest_since_alarm-10=61.8mm
+s344 DETECT first_alarm=54(FR) first_oracle_contact=55 first_any_part_touch=-1(-) max_p=1.000
+s348 DETECT per_leg_alarm={'FR': 71, 'FL': 62, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 72, 'FL': 67, 'RR': -1, 'RL': -1}
+s348 DETECT at_alarm: lead_steps=5 closest=FL_foot:15.4mm descent_of_closest_since_alarm-10=64.0mm
+s348 DETECT first_alarm=62(FL) first_oracle_contact=67 first_any_part_touch=-1(-) max_p=1.000
+s356 DETECT per_leg_alarm={'FR': 71, 'FL': 64, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 73, 'FL': 68, 'RR': -1, 'RL': -1}
+s356 DETECT at_alarm: lead_steps=4 closest=FL_foot:15.1mm descent_of_closest_since_alarm-10=68.6mm
+s356 DETECT first_alarm=64(FL) first_oracle_contact=68 first_any_part_touch=-1(-) max_p=1.000
+s352 DETECT per_leg_alarm={'FR': 53, 'FL': 59, 'RR': -1, 'RL': -1} per_leg_oracle={'FR': 55, 'FL': 61, 'RR': -1, 'RL': -1}
+s352 DETECT at_alarm: lead_steps=2 closest=FR_foot:15.1mm descent_of_closest_since_alarm-10=54.1mm
+s352 DETECT first_alarm=53(FR) first_oracle_contact=55 first_any_part_touch=-1(-) max_p=1.000

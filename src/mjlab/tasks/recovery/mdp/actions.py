@@ -537,6 +537,13 @@ class ResidualRecoveryActionCfg(ActionTermCfg):
   # segment geoms (not the wire's static initial placement).
   wire_contact_sensor_name: str = "wire_contact"
 
+  entry_delay_steps: int = 0
+  """Detector-latency model (opt-in, 0 = off, behaviour unchanged). Recovery entry
+  fires this many control steps AFTER the first wire contact instead of on it, so
+  an oracle trigger can stand in for a learned detector that needs time to see the
+  event. The delay is latched: it runs from the first contact even if contact
+  breaks meanwhile. One step is one control step (0.02 s)."""
+
   wire_geom_names: tuple[str, ...] = ()
   """Static geom names of the wire's segments (BallCableCfg.geom_names()),
   used to read the wire's LIVE centerline position each step. Must be set
@@ -847,6 +854,9 @@ class ResidualRecoveryAction(ActionTerm):
     self._release_counter = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.long
     )
+    self._first_contact_age = torch.full(
+      (self.num_envs,), -1, device=self.device, dtype=torch.long
+    )
     self._calf_clearance_achieved = torch.zeros(
       self.num_envs, device=self.device, dtype=torch.bool
     )
@@ -969,6 +979,9 @@ class ResidualRecoveryAction(ActionTerm):
     # Optional [B, 3] command fed to the walking policy instead of the command
     # manager's (MultiLegRecoveryAction's body hold). None = no effect.
     self.walk_command_override: torch.Tensor | None = None
+    # Optional [B] bool set externally (a learned detector) to replace the contact
+    # sensor as the recovery entry trigger. None = original oracle trigger.
+    self.external_trigger: torch.Tensor | None = None
 
   def _find_actuator_ctrl_id(self, joint_name: str, actuator_cls=None) -> int:
     """Resolve the global MuJoCo ctrl id of the actuator targeting
@@ -1430,6 +1443,7 @@ class ResidualRecoveryAction(ActionTerm):
       self._phase.fill_(PHASE_NORMAL_WALK)
       self._recovery_elapsed.zero_()
       self._release_counter.zero_()
+      self._first_contact_age.fill_(-1)
       self._calf_clearance_achieved.zero_()
       self._foot_crossed_achieved.zero_()
       self._far_hold.zero_()
@@ -1457,6 +1471,7 @@ class ResidualRecoveryAction(ActionTerm):
       self._phase[env_ids] = PHASE_NORMAL_WALK
       self._recovery_elapsed[env_ids] = 0
       self._release_counter[env_ids] = 0
+      self._first_contact_age[env_ids] = -1
       self._calf_clearance_achieved[env_ids] = False
       self._foot_crossed_achieved[env_ids] = False
       self._far_hold[env_ids] = 0
@@ -1507,7 +1522,25 @@ class ResidualRecoveryAction(ActionTerm):
     # so later in-recovery yaw perturbations (flailing while entangled)
     # don't redefine "forward" mid-maneuver (see
     # `wire_geometry.signed_forward_distance`).
-    entering_recovery = is_normal & in_contact
+    if self.external_trigger is not None:
+      entering_recovery = is_normal & self.external_trigger
+    elif self.cfg.entry_delay_steps > 0:
+      # Age of the first contact (-1 = none yet). Entry fires once it reaches
+      # the delay; default (0) keeps the original instant trigger above.
+      self._first_contact_age = torch.where(
+        (self._first_contact_age < 0) & in_contact,
+        torch.zeros_like(self._first_contact_age),
+        torch.where(
+          self._first_contact_age >= 0,
+          self._first_contact_age + 1,
+          self._first_contact_age,
+        ),
+      )
+      entering_recovery = is_normal & (
+        self._first_contact_age >= self.cfg.entry_delay_steps
+      )
+    else:
+      entering_recovery = is_normal & in_contact
 
     # --- D5: Compute entry leg speed at recovery trigger (for phase-aware
     # threshold selection). Leg speed = |thigh_vel| + |calf_vel|. ---

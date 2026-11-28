@@ -1,0 +1,8 @@
+s1_slack2_T0.5_h10_sr0.005_ot0: first_contact=1.0825 sag=6.1cm max_overlap_mm=0.0 deep_overlap_substeps=0 max_chain_gap_mm=0.00 max_anchor_lag_mm=6.3 contact_legs=['FL', 'FR']
+s1_slack2_T0.5_h10_sr0.01_ot1: first_contact=1.0825 sag=6.1cm max_overlap_mm=0.0 deep_overlap_substeps=0 max_chain_gap_mm=0.00 max_anchor_lag_mm=18.1 contact_legs=['FL', 'FR']
+s1_slack3_T0.5_h10_sr0.01_ot1: first_contact=1.1025 sag=7.5cm max_overlap_mm=0.0 deep_overlap_substeps=0 max_chain_gap_mm=0.00 max_anchor_lag_mm=19.3 contact_legs=['FL', 'FR']
+s1_slack3_T0.5_h10_sr0.005_ot0: first_contact=1.1025 sag=7.5cm max_overlap_mm=0.0 deep_overlap_substeps=0 max_chain_gap_mm=0.00 max_anchor_lag_mm=7.2 contact_legs=['FL', 'FR']
+s2_slack2_T0.5_h10_sr0.01_ot1: first_contact=1.3275000000000001 sag=6.1cm max_overlap_mm=0.0 deep_overlap_substeps=0 max_chain_gap_mm=0.00 max_anchor_lag_mm=18.4 contact_legs=['FL', 'FR']
+s2_slack2_T0.5_h10_sr0.005_ot0: first_contact=1.3275000000000001 sag=6.1cm max_overlap_mm=0.0 deep_overlap_substeps=0 max_chain_gap_mm=0.00 max_anchor_lag_mm=6.4 contact_legs=['FL', 'FR']
+s2_slack3_T0.5_h10_sr0.01_ot1: first_contact=1.4325 sag=7.5cm max_overlap_mm=0.0 deep_overlap_substeps=0 max_chain_gap_mm=0.00 max_anchor_lag_mm=20.2 contact_legs=['FL', 'FR']
+s2_slack3_T0.5_h10_sr0.005_ot0: first_contact=1.43 sag=7.5cm max_overlap_mm=0.0 deep_overlap_substeps=0 max_chain_gap_mm=0.00 max_anchor_lag_mm=8.1 contact_legs=['FL', 'FR']

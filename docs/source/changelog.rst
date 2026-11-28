@@ -11,6 +11,9 @@ Added
 - Added upstream-style Unitree Go2 robot assets and flat/rough velocity task
   configurations, including task registration under the ``Mjlab-Velocity-*``
   naming scheme.
+- Added opt-in recovery entry triggers for the Go2 wire recovery: ``entry_delay_steps``
+  (a latency model for the contact trigger) and ``external_trigger`` (lets a learned
+  detector replace the contact sensor). Both are off by default.
 - Added a body-support lift for the Go2 multi-leg wire recovery
   (``support_lift_thigh``/``support_lift_calf`` with a ramp and a per-leg trigger), a
   crossing fallback for the scripted step (``crossing_fallback_steps``) and a

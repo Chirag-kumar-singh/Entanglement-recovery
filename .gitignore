@@ -48,3 +48,24 @@ logs/rsl_rl/go2_velocity/2026-09-17_13-00-16/*.pt
 
 # Allow kept directory placeholders.
 !**/.gitkeep
+
+# D9 detector work: regenerable scratch, raw per-episode dumps and invalidated data.
+# Result .txt files, run scripts, datasets (data_v*), models and docs are kept.
+logs/d6_1_front_pair_wire/FL+FR+RL+RR_seed*/
+logs/d8_wire_height/h*/
+logs/d9_*/scratch*/
+logs/d9_detector/invalid_*
+logs/d9_detector/test/
+logs/d9_detector/data_v1v2/
+logs/d9_entry_delay/scratch/
+logs/d9_loose_wire/raw/
+logs/d9_loose_wire/raw2/
+logs/d9_loose_wire/raw3/
+logs/d9_loose_wire/raw5/
+logs/d9_loose_wire/rec/
+logs/d9_loose_wire/rec_test/
+logs/d9_loose_wire/test/
+logs/d9_loose_wire/test2/
+logs/d9_loose_wire/test2_res/
+logs/d9_loose_wire/viewer_check/
+logs/d9_loose_wire/refactor_check/

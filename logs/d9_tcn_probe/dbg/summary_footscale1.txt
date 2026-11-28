@@ -1,0 +1,2 @@
+seed0_h10      contact=1.38s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.38, 'FR': 1.46, 'RL': None, 'RR': None}
+seed1_h10      contact=1.04s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.2, 'FR': 1.04, 'RL': None, 'RR': None}

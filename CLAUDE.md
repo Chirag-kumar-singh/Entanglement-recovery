@@ -1,3 +1,8 @@
+# Start here
+
+Read `HANDOFF.md` first: it has the current project state, the best baseline, the
+working rules from earlier sessions and the next steps.
+
 # Development Workflow
 
 **Always use `uv run`, not python**.

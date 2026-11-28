@@ -169,6 +169,13 @@ class D61Config:
   hold_ramp_steps: int = 1
   hold_max_steps: int = 40
   spawn_y_offset: float = 0.0
+  wire_height: float = 0.10
+  """Wire anchor height (m). Both anchors are set to this z, so the wire hangs from
+  both ends at this height (it can sag a little between them). 0.10 is the value
+  every earlier result used."""
+  entry_delay_steps: int = 0
+  """D8 detector-latency model: every leg enters recovery this many control steps
+  (0.02 s each) after its first wire contact. 0 = original instant oracle trigger."""
   start_x: float | None = None
   """Pin the start x (m, world frame), replacing the +-0.02 m jitter. The default
   spawn is wire x - 0.35; moving it changes the gait phase at wire contact and
@@ -211,6 +218,7 @@ def _step_overrides(leg: str, cfg: D61Config) -> dict:
     "step_max_attempts": cfg.max_attempts.get(leg, 1),
     "step_retry_delay_steps": cfg.retry_delay,
     "step_retry_on": cfg.retry_on,
+    "entry_delay_steps": cfg.entry_delay_steps,
   }
 
 
@@ -228,7 +236,11 @@ def effective_start_x(cfg: D61Config, seed: int) -> float | None:
 
 
 def build_env(cfg: D61Config, seed: int, device: str):
-  wire = DEFAULT_WIRE_CFG
+  wire = dataclasses.replace(
+    DEFAULT_WIRE_CFG,
+    anchor_start=(*DEFAULT_WIRE_CFG.anchor_start[:2], cfg.wire_height),
+    anchor_end=(*DEFAULT_WIRE_CFG.anchor_end[:2], cfg.wire_height),
+  )
   pair = PAIRS[cfg.pair]
   active_legs = pair if cfg.legs is None else cfg.legs
   env_cfg = go2_wire_recovery_residual_env_cfg(
@@ -488,7 +500,7 @@ def run(cfg: D61Config, seed: int, quiet: bool = False) -> tuple[str, str, dict]
     for g, c in ctrl.items():
       calf = entity.data.geom_pos_w[:, c._calf_geom_idx, :]
       foot = entity.data.site_pos_w[:, c._foot_site_idx, :]
-      calf_wx, _ = wire_geometry.local_wire_xz_at_y(seg, calf[:, 1])
+      calf_wx, calf_wz = wire_geometry.local_wire_xz_at_y(seg, calf[:, 1])
       foot_wx, _ = wire_geometry.local_wire_xz_at_y(seg, foot[:, 1])
       sensor = env.scene.sensors[c.cfg.wire_contact_sensor_name]
       started = bool(c._step_started[0])
@@ -508,6 +520,7 @@ def run(cfg: D61Config, seed: int, quiet: bool = False) -> tuple[str, str, dict]
           f"{g}_phase": int(c.phase[0]),
           f"{g}_contact": bool((sensor.data.found[0] > 0).any()),
           f"{g}_calf_dx": float(calf[0, 0] - calf_wx[0]),
+          f"{g}_wire_z": float(calf_wz[0]),
           f"{g}_calf_h": float(c.calf_height_above_wire[0]),
           f"{g}_foot_dx": float(foot[0, 0] - foot_wx[0]),
           f"{g}_calf_latch": bool(c._calf_clearance_achieved[0]),

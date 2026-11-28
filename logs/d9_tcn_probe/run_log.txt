@@ -1,0 +1,10 @@
+seed0_h10: 2560 substeps dt=0.0025 first_contact_substep={'FL': 550, 'FR': 584, 'RL': -1, 'RR': -1}
+seed1_h10: 2560 substeps dt=0.0025 first_contact_substep={'FL': 478, 'FR': 417, 'RL': -1, 'RR': -1}
+seed2_h10: 2560 substeps dt=0.0025 first_contact_substep={'FL': 490, 'FR': 574, 'RL': -1, 'RR': -1}
+seed3_h10: 2560 substeps dt=0.0025 first_contact_substep={'FL': 358, 'FR': 410, 'RL': -1, 'RR': -1}
+seed4_h10: 2560 substeps dt=0.0025 first_contact_substep={'FL': 475, 'FR': 470, 'RL': -1, 'RR': -1}
+seed5_h10: 2560 substeps dt=0.0025 first_contact_substep={'FL': 500, 'FR': 584, 'RL': -1, 'RR': -1}
+seed6_h10: 2560 substeps dt=0.0025 first_contact_substep={'FL': 475, 'FR': 414, 'RL': -1, 'RR': -1}
+seed7_h10: 2560 substeps dt=0.0025 first_contact_substep={'FL': 484, 'FR': 556, 'RL': -1, 'RR': -1}
+seed0_h50: 2560 substeps dt=0.0025 first_contact_substep={'FL': -1, 'FR': -1, 'RL': -1, 'RR': -1}
+seed1_h50: 2560 substeps dt=0.0025 first_contact_substep={'FL': -1, 'FR': -1, 'RL': -1, 'RR': -1}

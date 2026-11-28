@@ -1,0 +1,120 @@
+s12 closed_s12_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 66, 'FL': 59, 'RR': 173, 'RL': -1} max_overlap_mm=0.0 deep=0
+s12 DETECT per_leg_alarm={'FR': 68, 'FL': 62, 'RR': 147, 'RL': 155} per_leg_oracle={'FR': 66, 'FL': 59, 'RR': 173, 'RL': -1}
+s12 DETECT first_alarm=62(FL) first_oracle_contact=59 first_any_part_touch=-1(-) max_p=1.000
+s11 closed_s11_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 51, 'FL': 59, 'RR': 293, 'RL': 141} max_overlap_mm=0.0 deep=0
+s11 DETECT per_leg_alarm={'FR': 51, 'FL': 60, 'RR': 270, 'RL': 141} per_leg_oracle={'FR': 51, 'FL': 59, 'RR': 293, 'RL': 141}
+s11 DETECT first_alarm=51(FR) first_oracle_contact=51 first_any_part_touch=196(RR_thigh) max_p=1.000
+s10 closed_s10_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 72, 'FL': 61, 'RR': 234, 'RL': -1} max_overlap_mm=2.5 deep=0
+s10 DETECT per_leg_alarm={'FR': 72, 'FL': 70, 'RR': 168, 'RL': 173} per_leg_oracle={'FR': 72, 'FL': 61, 'RR': 234, 'RL': -1}
+s10 DETECT first_alarm=70(FL) first_oracle_contact=61 first_any_part_touch=215(FR_thigh) max_p=1.000
+s14 closed_s14_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 52, 'FL': 59, 'RR': 143, 'RL': 151} max_overlap_mm=0.0 deep=0
+s14 DETECT per_leg_alarm={'FR': 52, 'FL': 60, 'RR': 142, 'RL': 150} per_leg_oracle={'FR': 52, 'FL': 59, 'RR': 143, 'RL': 151}
+s14 DETECT first_alarm=52(FR) first_oracle_contact=52 first_any_part_touch=-1(-) max_p=1.000
+s13 closed_s13_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 72, 'FL': 66, 'RR': 178, 'RL': 197} max_overlap_mm=0.0 deep=0
+s13 DETECT per_leg_alarm={'FR': 73, 'FL': 78, 'RR': 167, 'RL': 174} per_leg_oracle={'FR': 72, 'FL': 66, 'RR': 178, 'RL': 197}
+s13 DETECT first_alarm=73(FR) first_oracle_contact=66 first_any_part_touch=-1(-) max_p=1.000
+s15 closed_s15_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 71, 'FL': 60, 'RR': -1, 'RL': -1} max_overlap_mm=0.0 deep=0
+s15 DETECT per_leg_alarm={'FR': 71, 'FL': 65, 'RR': 212, 'RL': 210} per_leg_oracle={'FR': 71, 'FL': 60, 'RR': -1, 'RL': -1}
+s15 DETECT first_alarm=65(FL) first_oracle_contact=60 first_any_part_touch=-1(-) max_p=1.000
+s16 closed_s16_h10: T=320 verdict=PASS first_contact_step={'FR': 51, 'FL': 43, 'RR': 174, 'RL': 150} max_overlap_mm=1.5 deep=0
+s16 DETECT per_leg_alarm={'FR': 51, 'FL': 59, 'RR': 157, 'RL': 150} per_leg_oracle={'FR': 51, 'FL': 43, 'RR': 174, 'RL': 150}
+s16 DETECT first_alarm=51(FR) first_oracle_contact=43 first_any_part_touch=172(RL_thigh) max_p=1.000
+s18 closed_s18_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 72, 'FL': 62, 'RR': 165, 'RL': 160} max_overlap_mm=4.6 deep=0
+s18 DETECT per_leg_alarm={'FR': 72, 'FL': 73, 'RR': 166, 'RL': 168} per_leg_oracle={'FR': 72, 'FL': 62, 'RR': 165, 'RL': 160}
+s18 DETECT first_alarm=72(FR) first_oracle_contact=62 first_any_part_touch=173(RL_calf2) max_p=1.000
+s17 closed_s17_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 53, 'FL': 59, 'RR': 255, 'RL': 154} max_overlap_mm=0.0 deep=0
+s17 DETECT per_leg_alarm={'FR': 53, 'FL': 60, 'RR': 222, 'RL': 131} per_leg_oracle={'FR': 53, 'FL': 59, 'RR': 255, 'RL': 154}
+s17 DETECT first_alarm=53(FR) first_oracle_contact=53 first_any_part_touch=68(FL_calf1) max_p=1.000
+s19 closed_s19_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 51, 'FL': 59, 'RR': 125, 'RL': 128} max_overlap_mm=0.5 deep=0
+s19 DETECT per_leg_alarm={'FR': 52, 'FL': 59, 'RR': 133, 'RL': 128} per_leg_oracle={'FR': 51, 'FL': 59, 'RR': 125, 'RL': 128}
+s19 DETECT first_alarm=52(FR) first_oracle_contact=51 first_any_part_touch=185(FL_thigh) max_p=1.000
+s20 closed_s20_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 65, 'FL': 60, 'RR': -1, 'RL': -1} max_overlap_mm=0.0 deep=0
+s20 DETECT per_leg_alarm={'FR': 69, 'FL': 63, 'RR': 204, 'RL': -1} per_leg_oracle={'FR': 65, 'FL': 60, 'RR': -1, 'RL': -1}
+s20 DETECT first_alarm=63(FL) first_oracle_contact=60 first_any_part_touch=-1(-) max_p=1.000
+s21 closed_s21_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 50, 'FL': 39, 'RR': 259, 'RL': 147} max_overlap_mm=0.0 deep=0
+s21 DETECT per_leg_alarm={'FR': 50, 'FL': 56, 'RR': 149, 'RL': 151} per_leg_oracle={'FR': 50, 'FL': 39, 'RR': 259, 'RL': 147}
+s21 DETECT first_alarm=50(FR) first_oracle_contact=39 first_any_part_touch=-1(-) max_p=1.000
+s22 closed_s22_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 52, 'FL': 59, 'RR': 143, 'RL': 152} max_overlap_mm=2.5 deep=0
+s22 DETECT per_leg_alarm={'FR': 53, 'FL': 60, 'RR': 143, 'RL': 151} per_leg_oracle={'FR': 52, 'FL': 59, 'RR': 143, 'RL': 152}
+s22 DETECT first_alarm=53(FR) first_oracle_contact=52 first_any_part_touch=190(RR_foot) max_p=1.000
+s24 closed_s24_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 51, 'FL': 47, 'RR': 249, 'RL': 143} max_overlap_mm=0.0 deep=0
+s24 DETECT per_leg_alarm={'FR': 51, 'FL': 59, 'RR': 233, 'RL': 144} per_leg_oracle={'FR': 51, 'FL': 47, 'RR': 249, 'RL': 143}
+s24 DETECT first_alarm=51(FR) first_oracle_contact=47 first_any_part_touch=-1(-) max_p=1.000
+s23 closed_s23_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 72, 'FL': 61, 'RR': -1, 'RL': -1} max_overlap_mm=0.0 deep=0
+s23 DETECT per_leg_alarm={'FR': 71, 'FL': 66, 'RR': 209, 'RL': 202} per_leg_oracle={'FR': 72, 'FL': 61, 'RR': -1, 'RL': -1}
+s23 DETECT first_alarm=66(FL) first_oracle_contact=61 first_any_part_touch=-1(-) max_p=1.000
+s25 closed_s25_h10: T=320 verdict=PASS first_contact_step={'FR': 58, 'FL': 59, 'RR': 151, 'RL': 171} max_overlap_mm=0.0 deep=0
+s25 DETECT per_leg_alarm={'FR': 73, 'FL': 61, 'RR': 152, 'RL': 203} per_leg_oracle={'FR': 58, 'FL': 59, 'RR': 151, 'RL': 171}
+s25 DETECT first_alarm=61(FL) first_oracle_contact=58 first_any_part_touch=-1(-) max_p=1.000
+s26 closed_s26_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 73, 'FL': 63, 'RR': 169, 'RL': 229} max_overlap_mm=0.0 deep=0
+s26 DETECT per_leg_alarm={'FR': 73, 'FL': 73, 'RR': 151, 'RL': 185} per_leg_oracle={'FR': 73, 'FL': 63, 'RR': 169, 'RL': 229}
+s26 DETECT first_alarm=73(FR) first_oracle_contact=63 first_any_part_touch=-1(-) max_p=1.000
+s27 closed_s27_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 51, 'FL': 59, 'RR': 142, 'RL': 153} max_overlap_mm=11.3 deep=9
+s27 DETECT per_leg_alarm={'FR': 52, 'FL': 60, 'RR': 143, 'RL': 153} per_leg_oracle={'FR': 51, 'FL': 59, 'RR': 142, 'RL': 153}
+s27 DETECT first_alarm=52(FR) first_oracle_contact=51 first_any_part_touch=151(RL_foot) max_p=1.000
+s28 closed_s28_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 72, 'FL': 60, 'RR': 203, 'RL': -1} max_overlap_mm=0.0 deep=0
+s28 DETECT per_leg_alarm={'FR': 69, 'FL': 63, 'RR': 205, 'RL': 280} per_leg_oracle={'FR': 72, 'FL': 60, 'RR': 203, 'RL': -1}
+s28 DETECT first_alarm=63(FL) first_oracle_contact=60 first_any_part_touch=-1(-) max_p=1.000
+s29 closed_s29_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 50, 'FL': 43, 'RR': -1, 'RL': 152} max_overlap_mm=0.0 deep=0
+s29 DETECT per_leg_alarm={'FR': 51, 'FL': 59, 'RR': -1, 'RL': 159} per_leg_oracle={'FR': 50, 'FL': 43, 'RR': -1, 'RL': 152}
+s29 DETECT first_alarm=51(FR) first_oracle_contact=43 first_any_part_touch=195(RR_thigh) max_p=1.000
+s30 closed_s30_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 52, 'FL': 59, 'RR': -1, 'RL': 154} max_overlap_mm=0.0 deep=0
+s30 DETECT per_leg_alarm={'FR': 53, 'FL': 60, 'RR': -1, 'RL': 131} per_leg_oracle={'FR': 52, 'FL': 59, 'RR': -1, 'RL': 154}
+s30 DETECT first_alarm=53(FR) first_oracle_contact=52 first_any_part_touch=68(FL_calf1) max_p=1.000
+s31 closed_s31_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 72, 'FL': 62, 'RR': 165, 'RL': 158} max_overlap_mm=1.7 deep=0
+s31 DETECT per_leg_alarm={'FR': 72, 'FL': 71, 'RR': 165, 'RL': 167} per_leg_oracle={'FR': 72, 'FL': 62, 'RR': 165, 'RL': 158}
+s31 DETECT first_alarm=71(FL) first_oracle_contact=62 first_any_part_touch=172(RL_calf2) max_p=1.000
+s32 closed_s32_h10: T=320 verdict=PASS first_contact_step={'FR': 51, 'FL': 59, 'RR': 128, 'RL': 134} max_overlap_mm=0.0 deep=0
+s32 DETECT per_leg_alarm={'FR': 51, 'FL': 60, 'RR': 143, 'RL': 137} per_leg_oracle={'FR': 51, 'FL': 59, 'RR': 128, 'RL': 134}
+s32 DETECT first_alarm=51(FR) first_oracle_contact=51 first_any_part_touch=-1(-) max_p=1.000
+s33 closed_s33_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 54, 'FL': 60, 'RR': 151, 'RL': -1} max_overlap_mm=3.8 deep=0
+s33 DETECT per_leg_alarm={'FR': 67, 'FL': 62, 'RR': 151, 'RL': 153} per_leg_oracle={'FR': 54, 'FL': 60, 'RR': 151, 'RL': -1}
+s33 DETECT first_alarm=62(FL) first_oracle_contact=54 first_any_part_touch=205(FL_foot) max_p=1.000
+s34 closed_s34_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 73, 'FL': 65, 'RR': -1, 'RL': -1} max_overlap_mm=1.2 deep=0
+s34 DETECT per_leg_alarm={'FR': 73, 'FL': 73, 'RR': 197, 'RL': -1} per_leg_oracle={'FR': 73, 'FL': 65, 'RR': -1, 'RL': -1}
+s34 DETECT first_alarm=73(FR) first_oracle_contact=65 first_any_part_touch=131(FL_foot) max_p=1.000
+s35 closed_s35_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 52, 'FL': 58, 'RR': 141, 'RL': 147} max_overlap_mm=0.0 deep=0
+s35 DETECT per_leg_alarm={'FR': 53, 'FL': 59, 'RR': 156, 'RL': 151} per_leg_oracle={'FR': 52, 'FL': 58, 'RR': 141, 'RL': 147}
+s35 DETECT first_alarm=53(FR) first_oracle_contact=52 first_any_part_touch=68(FL_calf1) max_p=1.000
+s36 closed_s36_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 72, 'FL': 60, 'RR': -1, 'RL': -1} max_overlap_mm=0.0 deep=0
+s36 DETECT per_leg_alarm={'FR': 71, 'FL': 65, 'RR': 224, 'RL': -1} per_leg_oracle={'FR': 72, 'FL': 60, 'RR': -1, 'RL': -1}
+s36 DETECT first_alarm=65(FL) first_oracle_contact=60 first_any_part_touch=-1(-) max_p=1.000
+s37 closed_s37_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 50, 'FL': 47, 'RR': 218, 'RL': 172} max_overlap_mm=4.5 deep=0
+s37 DETECT per_leg_alarm={'FR': 51, 'FL': 59, 'RR': 182, 'RL': 173} per_leg_oracle={'FR': 50, 'FL': 47, 'RR': 218, 'RL': 172}
+s37 DETECT first_alarm=51(FR) first_oracle_contact=47 first_any_part_touch=201(RR_thigh) max_p=1.000
+s38 closed_s38_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 53, 'FL': 59, 'RR': 280, 'RL': 150} max_overlap_mm=0.0 deep=0
+s38 DETECT per_leg_alarm={'FR': 54, 'FL': 60, 'RR': 197, 'RL': 130} per_leg_oracle={'FR': 53, 'FL': 59, 'RR': 280, 'RL': 150}
+s38 DETECT first_alarm=54(FR) first_oracle_contact=53 first_any_part_touch=-1(-) max_p=1.000
+s39 closed_s39_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 72, 'FL': 63, 'RR': 203, 'RL': 194} max_overlap_mm=4.8 deep=0
+s39 DETECT per_leg_alarm={'FR': 72, 'FL': 77, 'RR': 205, 'RL': 206} per_leg_oracle={'FR': 72, 'FL': 63, 'RR': 203, 'RL': 194}
+s39 DETECT first_alarm=72(FR) first_oracle_contact=63 first_any_part_touch=212(RL_foot) max_p=1.000
+s40 closed_s40_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 51, 'FL': 59, 'RR': 127, 'RL': 134} max_overlap_mm=2.2 deep=0
+s40 DETECT per_leg_alarm={'FR': 52, 'FL': 60, 'RR': 146, 'RL': 135} per_leg_oracle={'FR': 51, 'FL': 59, 'RR': 127, 'RL': 134}
+s40 DETECT first_alarm=52(FR) first_oracle_contact=51 first_any_part_touch=184(RL_foot) max_p=1.000
+s42 closed_s42_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 50, 'FL': 43, 'RR': 172, 'RL': 151} max_overlap_mm=2.7 deep=0
+s42 DETECT per_leg_alarm={'FR': 51, 'FL': 59, 'RR': 161, 'RL': 151} per_leg_oracle={'FR': 50, 'FL': 43, 'RR': 172, 'RL': 151}
+s42 DETECT first_alarm=51(FR) first_oracle_contact=43 first_any_part_touch=223(RR_foot) max_p=1.000
+s41 closed_s41_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 66, 'FL': 60, 'RR': -1, 'RL': -1} max_overlap_mm=0.0 deep=0
+s41 DETECT per_leg_alarm={'FR': 69, 'FL': 63, 'RR': 198, 'RL': -1} per_leg_oracle={'FR': 66, 'FL': 60, 'RR': -1, 'RL': -1}
+s41 DETECT first_alarm=63(FL) first_oracle_contact=60 first_any_part_touch=-1(-) max_p=1.000
+s43 closed_s43_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 53, 'FL': 59, 'RR': 141, 'RL': 150} max_overlap_mm=12.4 deep=12
+s43 DETECT per_leg_alarm={'FR': 53, 'FL': 59, 'RR': 139, 'RL': 216} per_leg_oracle={'FR': 53, 'FL': 59, 'RR': 141, 'RL': 150}
+s43 DETECT first_alarm=53(FR) first_oracle_contact=53 first_any_part_touch=147(RL_foot) max_p=1.000
+s44 closed_s44_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 71, 'FL': 61, 'RR': 175, 'RL': 188} max_overlap_mm=0.0 deep=0
+s44 DETECT per_leg_alarm={'FR': 72, 'FL': 70, 'RR': 164, 'RL': 171} per_leg_oracle={'FR': 71, 'FL': 61, 'RR': 175, 'RL': 188}
+s44 DETECT first_alarm=70(FL) first_oracle_contact=61 first_any_part_touch=-1(-) max_p=1.000
+s45 closed_s45_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 50, 'FL': 58, 'RR': -1, 'RL': 137} max_overlap_mm=0.0 deep=0
+s45 DETECT per_leg_alarm={'FR': 51, 'FL': 59, 'RR': -1, 'RL': 137} per_leg_oracle={'FR': 50, 'FL': 58, 'RR': -1, 'RL': 137}
+s45 DETECT first_alarm=51(FR) first_oracle_contact=50 first_any_part_touch=-1(-) max_p=1.000
+s46 closed_s46_h10: T=320 verdict=PASS first_contact_step={'FR': 54, 'FL': 60, 'RR': -1, 'RL': 150} max_overlap_mm=0.0 deep=0
+s46 DETECT per_leg_alarm={'FR': 54, 'FL': 61, 'RR': 132, 'RL': 157} per_leg_oracle={'FR': 54, 'FL': 60, 'RR': -1, 'RL': 150}
+s46 DETECT first_alarm=54(FR) first_oracle_contact=54 first_any_part_touch=-1(-) max_p=1.000
+s47 closed_s47_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 72, 'FL': 66, 'RR': 166, 'RL': 172} max_overlap_mm=4.3 deep=0
+s47 DETECT per_leg_alarm={'FR': 72, 'FL': 77, 'RR': 164, 'RL': 171} per_leg_oracle={'FR': 72, 'FL': 66, 'RR': 166, 'RL': 172}
+s47 DETECT first_alarm=72(FR) first_oracle_contact=66 first_any_part_touch=171(RL_foot) max_p=1.000
+s48 closed_s48_h10: T=320 verdict=FAIL_REAR first_contact_step={'FR': 52, 'FL': 59, 'RR': 142, 'RL': 153} max_overlap_mm=13.0 deep=30
+s48 DETECT per_leg_alarm={'FR': 52, 'FL': 60, 'RR': 143, 'RL': 153} per_leg_oracle={'FR': 52, 'FL': 59, 'RR': 142, 'RL': 153}
+s48 DETECT first_alarm=52(FR) first_oracle_contact=52 first_any_part_touch=151(RL_foot) max_p=1.000
+s49 closed_s49_h10: T=320 verdict=FAIL_FRONT first_contact_step={'FR': 70, 'FL': 60, 'RR': -1, 'RL': -1} max_overlap_mm=0.0 deep=0
+s49 DETECT per_leg_alarm={'FR': 71, 'FL': 65, 'RR': 246, 'RL': 255} per_leg_oracle={'FR': 70, 'FL': 60, 'RR': -1, 'RL': -1}
+s49 DETECT first_alarm=65(FL) first_oracle_contact=60 first_any_part_touch=-1(-) max_p=1.000

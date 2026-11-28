@@ -1,0 +1,10 @@
+seed0_h10      contact=1.38s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.38, 'FR': 1.46, 'RL': None, 'RR': None}
+seed1_h10      contact=1.04s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.2, 'FR': 1.04, 'RL': None, 'RR': None}
+seed2_h10      contact=1.23s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.23, 'FR': 1.44, 'RL': None, 'RR': None}
+seed3_h10      contact=0.90s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 0.9, 'FR': 1.02, 'RL': None, 'RR': None}
+seed4_h10      contact=1.18s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.19, 'FR': 1.18, 'RL': None, 'RR': None}
+seed5_h10      contact=1.25s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.25, 'FR': 1.46, 'RL': None, 'RR': None}
+seed6_h10      contact=1.03s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.19, 'FR': 1.03, 'RL': None, 'RR': None}
+seed7_h10      contact=1.21s alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=1.0000 first_contact_by_leg={'FL': 1.21, 'FR': 1.39, 'RL': None, 'RR': None}
+seed0_h50      contact=none alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=0.5310 first_contact_by_leg={'FL': None, 'FR': None, 'RL': None, 'RR': None}
+seed1_h50      contact=none alarm=none latency_ms=- alarm_leg=- fire%pre-contact=0.0 max_p_raw=0.5113 first_contact_by_leg={'FL': None, 'FR': None, 'RL': None, 'RR': None}
