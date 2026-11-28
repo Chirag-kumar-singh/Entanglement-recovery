@@ -47,12 +47,10 @@ comparable to MuJoCo's own `contact.dist` (also a surface gap).
 from __future__ import annotations
 
 import csv
-import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-import mujoco
 import torch
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -61,6 +59,7 @@ from d3_ground_contact_diagnostic import (  # noqa: E402
   D3GroundConfig,
   build_env,
 )
+
 from mjlab.tasks.recovery.env_cfg_residual import ISOLATED_FL_WIRE_CFG  # noqa: E402
 from mjlab.tasks.recovery.mdp.wire_geometry import (  # noqa: E402
   resolve_wire_segment_geom_ids,

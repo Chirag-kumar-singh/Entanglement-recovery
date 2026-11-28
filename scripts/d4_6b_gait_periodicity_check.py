@@ -80,7 +80,7 @@ def analyze_seed(seed: int) -> None:
     swing_lens = [(steps[r[1]] - steps[r[0]] + 1) for r in pre_runs if r[2] is False]
 
     print(f"\n  -- {leg} --")
-    print(f"  Pre-recovery (steps 0-43) stance/swing runs (step range : state):")
+    print("  Pre-recovery (steps 0-43) stance/swing runs (step range : state):")
     for r in pre_runs:
       state = "STANCE" if r[2] else "SWING"
       print(f"    [{steps[r[0]]:3d}-{steps[r[1]]:3d}] {state}")
@@ -95,7 +95,7 @@ def analyze_seed(seed: int) -> None:
 
     # Post-entry behavior: find the run containing/following step 47.
     post_runs = [r for r in leg_runs if steps[r[1]] >= 44]
-    print(f"  Post-entry (>=step 44) runs:")
+    print("  Post-entry (>=step 44) runs:")
     for r in post_runs[:6]:
       state = "STANCE" if r[2] else "SWING"
       print(f"    [{steps[r[0]]:3d}-{steps[r[1]]:3d}] {state}")

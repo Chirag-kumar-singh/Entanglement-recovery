@@ -18,7 +18,7 @@ import torch
 
 from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
-from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY, PHASE_POST_RECOVERY
+from mjlab.tasks.recovery.mdp.actions import PHASE_POST_RECOVERY, PHASE_RECOVERY
 
 if TYPE_CHECKING:
   from mjlab.envs import ManagerBasedRlEnv

@@ -17,11 +17,12 @@ logic is irrelevant -- phase is forced directly for N steps then
 released.
 """
 
-import mjlab.tasks  # noqa: F401
-from mjlab.tasks.recovery.env_cfg_residual import go2_wire_recovery_residual_env_cfg
-from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY, PHASE_NORMAL_WALK
-from mjlab.envs import ManagerBasedRlEnv
 import torch
+
+import mjlab.tasks  # noqa: F401
+from mjlab.envs import ManagerBasedRlEnv
+from mjlab.tasks.recovery.env_cfg_residual import go2_wire_recovery_residual_env_cfg
+from mjlab.tasks.recovery.mdp.actions import PHASE_NORMAL_WALK, PHASE_RECOVERY
 
 
 def run_one(thigh_vel_sign: float, calf_torque_sign: float, n_steps: int = 40):

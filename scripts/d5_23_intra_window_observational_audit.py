@@ -43,6 +43,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).parent))
 
 from d3_ground_contact_diagnostic import D3GroundConfig  # noqa: E402
+
 from mjlab.utils.lab_api.math import quat_apply_inverse  # noqa: E402
 
 PHASE_RECOVERY = 1
@@ -77,6 +78,7 @@ def run(cfg: D523Config) -> Path:
   d3_cfg = D3GroundConfig(seed=cfg.seed, device=device, use_isolated_wire=True)
 
   import mujoco  # noqa: F401
+
   from mjlab.sensor import ContactMatch, ContactSensorCfg
   from mjlab.tasks.recovery.env_cfg_residual import (
     ISOLATED_FL_WIRE_CFG,

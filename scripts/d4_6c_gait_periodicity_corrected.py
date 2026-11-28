@@ -181,7 +181,7 @@ def analyze_seed(seed: int, lines: list[str]) -> None:
         )
 
   # Full step-by-step dump for steps 38-62, cross-referenced with other events.
-  lines.append(f"\n  -- Full FR/RL/hip-wire contact states, steps 38-62 --")
+  lines.append("\n  -- Full FR/RL/hip-wire contact states, steps 38-62 --")
   lines.append(f"  {'step':>5} {'FR':>6} {'RL':>6} {'hip_wire':>9}")
   for s in steps:
     if 38 <= s <= 62:

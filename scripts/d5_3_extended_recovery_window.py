@@ -50,6 +50,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).parent))
 
 from d3_ground_contact_diagnostic import D3GroundConfig  # noqa: E402
+
 from mjlab.tasks.recovery.env_cfg_residual import (  # noqa: E402
   ISOLATED_FL_WIRE_CFG,
   ISOLATED_FL_WIRE_SPAWN_Y,

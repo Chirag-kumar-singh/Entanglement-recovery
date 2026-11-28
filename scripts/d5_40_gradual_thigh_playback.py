@@ -15,10 +15,12 @@ from pathlib import Path
 
 from d5_40_annotated_playback import (  # noqa: F401
   D540Config,
-  PlaybackConfig as AnnotatedPlaybackConfig,
   RunSpec,
   _record_run,
   configure_torch_backends,
+)
+from d5_40_annotated_playback import (
+  PlaybackConfig as AnnotatedPlaybackConfig,
 )
 
 

@@ -7,11 +7,11 @@ The affected leg is provided as an oracle observation.
 from __future__ import annotations
 
 import math
-import mujoco
-import torch
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from mjlab.asset_zoo.robots import get_go2_robot_cfg, GO2_ACTION_SCALE
+import mujoco
+
+from mjlab.asset_zoo.robots import GO2_ACTION_SCALE, get_go2_robot_cfg
 from mjlab.envs import ManagerBasedRlEnvCfg
 from mjlab.envs import mdp as envs_mdp
 from mjlab.envs.mdp.actions import JointPositionActionCfg

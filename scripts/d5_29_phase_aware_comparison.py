@@ -14,25 +14,22 @@ For each variant/seed pair, we log:
 """
 
 import csv
-import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
-import subprocess
 
 import torch
 
 # Reuse D5.23 diagnostic infrastructure
 sys.path.insert(0, str(Path(__file__).parent))
 
-from d3_ground_contact_diagnostic import D3GroundConfig
+from mjlab.envs import ManagerBasedRlEnv
 from mjlab.tasks.recovery.env_cfg_residual import (
   ISOLATED_FL_WIRE_CFG,
   ISOLATED_FL_WIRE_SPAWN_Y,
   go2_wire_recovery_residual_env_cfg,
 )
-from mjlab.envs import ManagerBasedRlEnv
 
 PHASE_RECOVERY = 1
 PHASE_POST_RECOVERY = 2
@@ -162,24 +159,24 @@ def run_single_trial(
 
   run_log_file = out_path / "run_log.txt"
   with open(run_log_file, "w") as f:
-    f.write(f"D5.29 Phase-aware FSM Comparison\n")
+    f.write("D5.29 Phase-aware FSM Comparison\n")
     f.write(f"{'=' * 60}\n")
     f.write(f"Seed: {seed}\n")
     f.write(f"Variant: {variant}\n")
     f.write(f"Recovery mode: {cfg.recovery_mode}\n")
-    f.write(f"\nEntry State:\n")
+    f.write("\nEntry State:\n")
     f.write(f"  Entry leg speed: {entry_leg_speed:.4f} rad/s\n")
-    f.write(f"  Entry leg speed tier: ")
+    f.write("  Entry leg speed tier: ")
     if entry_leg_speed < 4.5:
       f.write("SLOW\n")
     elif entry_leg_speed < 6.5:
       f.write("MEDIUM\n")
     else:
       f.write("FAST\n")
-    f.write(f"\nEffective Thresholds:\n")
+    f.write("\nEffective Thresholds:\n")
     f.write(f"  Clearance margin: {effective_clear:.4f} m\n")
     f.write(f"  Foot crossing margin: {effective_cross:.4f} m\n")
-    f.write(f"\nRecovery Outcome:\n")
+    f.write("\nRecovery Outcome:\n")
     f.write(f"  Genuinely recovered: {genuinely_recovered}\n")
     f.write(f"  Stage 1 reached: {stage1_reached}\n")
     f.write(f"  Stage 2 reached: {stage2_reached}\n")

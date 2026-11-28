@@ -22,7 +22,6 @@ Outputs go under ``logs/d5_48/``:
 from __future__ import annotations
 
 import csv
-import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,7 +32,6 @@ import torch
 sys.path.insert(0, str(Path(__file__).parent))
 
 import mjlab.tasks  # noqa: F401
-from mjlab.actuator.builtin_actuator import BuiltinPositionActuator
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.tasks.recovery.env_cfg_residual import (
   ISOLATED_FL_WIRE_CFG,

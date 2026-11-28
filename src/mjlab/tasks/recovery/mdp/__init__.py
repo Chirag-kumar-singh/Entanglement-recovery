@@ -1,11 +1,22 @@
 """Recovery task MDP functions."""
 
 from .actions import ResidualRecoveryAction, ResidualRecoveryActionCfg
+from .metrics import (
+  metric_crossing_achieved,
+  metric_fell_over,
+  metric_forward_progress,
+  metric_in_recovery,
+  metric_post_recovery_tilt,
+  metric_recovery_cap_hit,
+  metric_recovery_success,
+  metric_recovery_triggered,
+  metric_residual_magnitude,
+)
 from .observations import (
-  affected_leg_contact,
-  affected_leg_oracle,
   affected_foot_pos_rel_body,
   affected_foot_vel_rel_body,
+  affected_leg_contact,
+  affected_leg_oracle,
   calf_forward_dist_norm,
   calf_height_above_wire_norm,
   previous_residual,
@@ -39,20 +50,9 @@ from .rewards import (
 )
 from .terminations import (
   fell_over,
-  recovery_timeout,
   recovery_success,
+  recovery_timeout,
   wire_recovery_success,
-)
-from .metrics import (
-  metric_recovery_triggered,
-  metric_recovery_success,
-  metric_crossing_achieved,
-  metric_recovery_cap_hit,
-  metric_fell_over,
-  metric_residual_magnitude,
-  metric_forward_progress,
-  metric_post_recovery_tilt,
-  metric_in_recovery,
 )
 
 __all__ = [

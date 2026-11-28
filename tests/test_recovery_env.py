@@ -1,6 +1,5 @@
 """Smoke test for Go2 entanglement recovery environment."""
 
-import pytest
 import torch
 
 from mjlab.envs import ManagerBasedRlEnv
@@ -12,7 +11,7 @@ def test_recovery_env_creation():
   cfg = go2_entanglement_recovery_env_cfg(affected_leg_idx=2, play=False)
   env = ManagerBasedRlEnv(cfg, device="cpu")
   assert env is not None
-  print(f"✓ Environment created successfully")
+  print("✓ Environment created successfully")
   print(f"  Num envs: {env.num_envs}")
   print(f"  Device: {env.device}")
   env.close()
@@ -25,7 +24,7 @@ def test_recovery_env_reset():
   obs, info = env.reset()
   assert obs is not None
   assert isinstance(obs, dict)
-  print(f"✓ Environment reset successfully")
+  print("✓ Environment reset successfully")
   print(f"  Observation keys: {list(obs.keys())}")
   env.close()
 
@@ -39,7 +38,7 @@ def test_observation_dimensions():
   actor_obs = obs["actor"]
   critic_obs = obs["critic"]
 
-  print(f"✓ Observation dimensions:")
+  print("✓ Observation dimensions:")
   print(f"  Actor obs shape: {actor_obs.shape}")
   print(f"  Critic obs shape: {critic_obs.shape}")
 
@@ -62,7 +61,7 @@ def test_action_dimensions():
   num_actions = 12
   actions = torch.zeros((env.num_envs, num_actions), device=env.device)
 
-  print(f"✓ Action dimensions:")
+  print("✓ Action dimensions:")
   print(f"  Action shape: {actions.shape}")
   print(f"  Expected: ({env.num_envs}, {num_actions})")
 
@@ -81,7 +80,7 @@ def test_zero_action_step():
   assert obs is not None
   assert rewards is not None
   assert dones is not None
-  print(f"✓ Zero action step successful")
+  print("✓ Zero action step successful")
   print(f"  Rewards shape: {rewards.shape}")
   print(f"  Dones shape: {dones.shape}")
 
@@ -98,7 +97,7 @@ def test_random_action_step():
   obs, rewards, dones, truncs, info = env.step(actions)
 
   assert obs is not None
-  print(f"✓ Random action step successful")
+  print("✓ Random action step successful")
   print(f"  Sample reward: {rewards[0].item():.4f}")
 
   env.close()
@@ -116,10 +115,10 @@ def test_affected_leg_oracle():
 
   # Verify oracle is present in the MDP
   # Oracle should be 4-dimensional (one-hot for 4 legs)
-  print(f"✓ Affected leg oracle test:")
+  print("✓ Affected leg oracle test:")
   print(f"  Actor obs total dim: {actor_obs.shape[1]}")
   print(f"  Critic obs total dim: {critic_obs.shape[1]}")
-  print(f"  (First 4 dims should be one-hot: [0, 0, 1, 0] for RL leg)")
+  print("  (First 4 dims should be one-hot: [0, 0, 1, 0] for RL leg)")
 
   env.close()
 
@@ -151,7 +150,7 @@ def test_play_mode():
   obs_train, _ = env_train.reset()
   obs_play, _ = env_play.reset()
 
-  print(f"✓ Play mode test successful")
+  print("✓ Play mode test successful")
   print(f"  Training env obs shape: {obs_train['actor'].shape}")
   print(f"  Play env obs shape: {obs_play['actor'].shape}")
 
@@ -176,9 +175,9 @@ def test_episode_length():
       done = True
       break
 
-  print(f"✓ Episode length test:")
+  print("✓ Episode length test:")
   print(f"  Episode ended after {steps} steps")
-  print(f"  Expected ~50 steps (10s * 200Hz / decimation)")
+  print("  Expected ~50 steps (10s * 200Hz / decimation)")
 
   env.close()
 

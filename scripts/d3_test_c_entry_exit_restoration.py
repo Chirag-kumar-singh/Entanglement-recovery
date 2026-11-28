@@ -29,7 +29,6 @@ import mjlab.tasks  # noqa: F401
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.tasks.recovery.env_cfg_residual import go2_wire_recovery_residual_env_cfg
 from mjlab.tasks.recovery.mdp.actions import (
-  LEG_NAMES,
   PHASE_NORMAL_WALK,
   PHASE_RECOVERY,
 )

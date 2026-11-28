@@ -131,13 +131,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-import mujoco
 import torch
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 from d3_ground_contact_diagnostic import D3GroundConfig  # noqa: E402
 from d5_3_extended_recovery_window import build_ablation_env  # noqa: E402
+
 from mjlab.utils.lab_api.math import quat_apply_inverse  # noqa: E402
 
 PHASE_RECOVERY = 1

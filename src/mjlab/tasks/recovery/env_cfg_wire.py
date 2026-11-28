@@ -50,10 +50,8 @@ validated this wire against the existing trained Go2 walking policy:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
 
-import mujoco
-from mjlab.asset_zoo.robots import get_go2_robot_cfg, GO2_ACTION_SCALE
+from mjlab.asset_zoo.robots import GO2_ACTION_SCALE, get_go2_robot_cfg
 from mjlab.envs import ManagerBasedRlEnvCfg
 from mjlab.envs import mdp as envs_mdp
 from mjlab.envs.mdp.actions import JointPositionActionCfg

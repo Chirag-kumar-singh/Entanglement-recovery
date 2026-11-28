@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 
 import torch
-import math
 
 from mjlab.entity import Entity
 from mjlab.managers.manager_base import ManagerTermBase, ManagerTermBaseCfg

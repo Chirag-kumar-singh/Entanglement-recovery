@@ -38,6 +38,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).parent))
 
 from d3_ground_contact_diagnostic import D3GroundConfig  # noqa: E402
+
 from mjlab.utils.lab_api.math import quat_apply_inverse  # noqa: E402
 
 PHASE_RECOVERY = 1
@@ -74,7 +75,6 @@ def run(cfg: D518Config) -> Path:
   # go2_wire_recovery_residual_env_cfg(...) factory call and isolated
   # wire config, with NO FSM/actuator modification of any kind (pure
   # observation-only additions).
-  import mujoco
   from mjlab.sensor import ContactMatch, ContactSensorCfg
   from mjlab.tasks.recovery.env_cfg_residual import (
     ISOLATED_FL_WIRE_CFG,

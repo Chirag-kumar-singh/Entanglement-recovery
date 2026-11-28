@@ -5,11 +5,12 @@ kept in NORMAL, and verifies that env B's actuator gains/joint behavior
 are completely unaffected by env A's recovery state.
 """
 
-import mjlab.tasks  # noqa: F401
-from mjlab.tasks.recovery.env_cfg_residual import go2_wire_recovery_residual_env_cfg
-from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY, PHASE_NORMAL_WALK
-from mjlab.envs import ManagerBasedRlEnv
 import torch
+
+import mjlab.tasks  # noqa: F401
+from mjlab.envs import ManagerBasedRlEnv
+from mjlab.tasks.recovery.env_cfg_residual import go2_wire_recovery_residual_env_cfg
+from mjlab.tasks.recovery.mdp.actions import PHASE_NORMAL_WALK, PHASE_RECOVERY
 
 cfg = go2_wire_recovery_residual_env_cfg(
   affected_leg_idx=0, num_envs=2, recovery_mode="hybrid", policy_device="cpu", play=True

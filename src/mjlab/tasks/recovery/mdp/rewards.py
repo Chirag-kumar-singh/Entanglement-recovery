@@ -9,7 +9,6 @@ import torch
 
 from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
-from mjlab.sensor import ContactSensor
 from mjlab.tasks.recovery.mdp.actions import PHASE_RECOVERY
 
 if TYPE_CHECKING:

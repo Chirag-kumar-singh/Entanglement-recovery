@@ -9,10 +9,9 @@ This script verifies that:
 4. The FSM uses the correct thresholds in both baseline and phase-aware modes
 """
 
-import torch
-import numpy as np
-from pathlib import Path
 import sys
+
+import torch
 
 
 def test_config_parameters():
@@ -69,8 +68,9 @@ def test_environment_factory():
   print("TEST 2: Environment Factory")
   print("=" * 60)
 
-  from mjlab.tasks.recovery.env_cfg_residual import go2_wire_recovery_residual_env_cfg
   import inspect
+
+  from mjlab.tasks.recovery.env_cfg_residual import go2_wire_recovery_residual_env_cfg
 
   sig = inspect.signature(go2_wire_recovery_residual_env_cfg)
 
@@ -86,7 +86,7 @@ def test_environment_factory():
     print(f"  ✗ FAILED: Default value should be False, got {param.default}")
     return False
 
-  print(f"  ✓ Default value is False (preserves baseline)")
+  print("  ✓ Default value is False (preserves baseline)")
 
   return True
 
@@ -187,7 +187,7 @@ def test_fsm_thresholds_instance():
   #  so we'll just verify the method signature)
   import inspect
 
-  method = getattr(ResidualRecoveryAction, "_update_phase_aware_thresholds")
+  method = ResidualRecoveryAction._update_phase_aware_thresholds
   sig = inspect.signature(method)
 
   if "entry_leg_speed" not in sig.parameters:

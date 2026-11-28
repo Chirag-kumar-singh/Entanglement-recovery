@@ -68,6 +68,7 @@ from d4_hip_wire_geometry_reconstruction import (  # noqa: E402
   quat_to_zaxis,
   segment_segment_min_dist,
 )
+
 from mjlab.tasks.recovery.env_cfg_residual import ISOLATED_FL_WIRE_CFG  # noqa: E402
 from mjlab.tasks.recovery.mdp.wire_geometry import (  # noqa: E402
   resolve_wire_segment_geom_ids,

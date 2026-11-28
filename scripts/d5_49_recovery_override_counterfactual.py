@@ -42,6 +42,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from d3_ground_contact_diagnostic import D3GroundConfig  # noqa: E402
 from d5_16_trajectory_audit import build_env  # noqa: E402
+
 from mjlab.envs import ManagerBasedRlEnv  # noqa: E402
 from mjlab.tasks.recovery.mdp.actions import (  # noqa: E402
   PHASE_NORMAL_WALK,
@@ -739,11 +740,11 @@ def _write_report(
     "",
     "## Artifacts",
     "",
-    f"- Baseline trace: [baseline_trace.csv](baseline_trace.csv)",
-    f"- Counterfactual trace: [counterfactual_trace.csv](counterfactual_trace.csv)",
-    f"- Shared entry snapshot: [entry_snapshot.csv](entry_snapshot.csv)",
-    f"- Summary metrics: [comparison_summary.csv](comparison_summary.csv)",
-    f"- Aligned window: [aligned_entry_window.csv](aligned_entry_window.csv)",
+    "- Baseline trace: [baseline_trace.csv](baseline_trace.csv)",
+    "- Counterfactual trace: [counterfactual_trace.csv](counterfactual_trace.csv)",
+    "- Shared entry snapshot: [entry_snapshot.csv](entry_snapshot.csv)",
+    "- Summary metrics: [comparison_summary.csv](comparison_summary.csv)",
+    "- Aligned window: [aligned_entry_window.csv](aligned_entry_window.csv)",
     "",
     "## What changed in Run B",
     "",
